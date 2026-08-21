@@ -158,3 +158,4 @@ C:\Users\Zehra\Desktop\Projeler\ERP_Projesi\src\Presentation\ERP.API\obj\Debug\n
 C:\Users\Zehra\Desktop\Projeler\ERP_Projesi\src\Presentation\ERP.API\obj\Debug\net8.0\ERP.API.pdb
 C:\Users\Zehra\Desktop\Projeler\ERP_Projesi\src\Presentation\ERP.API\obj\Debug\net8.0\ERP.API.genruntimeconfig.cache
 C:\Users\Zehra\Desktop\Projeler\ERP_Projesi\src\Presentation\ERP.API\obj\Debug\net8.0\ref\ERP.API.dll
+C:\Users\Zehra\Desktop\Projeler\ERP_Projesi\src\Presentation\ERP.API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.InMemory.dll

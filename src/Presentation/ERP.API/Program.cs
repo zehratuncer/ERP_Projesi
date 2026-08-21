@@ -1,6 +1,7 @@
 using ERP.API.Middleware;
 using ERP.Application;
 using ERP.Infrastructure;
+using ERP.Infrastructure.Persistence;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,10 +60,17 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// 4. Global Hata Yakalama Middleware'i
+// 4. Veritabanı ve Seed Verilerinin Başlatılması
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.EnsureCreated();
+}
+
+// 5. Global Hata Yakalama Middleware'i
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-// 5. HTTP Pipeline Yapılandırması
+// 6. HTTP Pipeline Yapılandırması
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

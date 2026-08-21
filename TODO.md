@@ -41,20 +41,19 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
 ## 🔐 Faz 2: Kullanıcı & Kimlik Doğrulama (Auth & IAM)
 
 ### 2.1. Backend (Identity & Auth)
-- [ ] **Domain & Entity Tasarımı:**
-  - `User` entity (Id, Email, PasswordHash, Salt, FullName, RoleId, IsActive)
+- [x] **Domain & Entity Tasarımı:**
+  - `User` entity (Id, Email, PasswordHash, FullName, RoleId, Role, IsActive)
   - `Role` entity (`Admin`, `Manager`, `Employee`)
-- [ ] **Veritabanı Konfigürasyonu:**
-  - EF Core EntityTypeConfiguration (Index, Unique Email).
-  - Seed Data: Başlangıç Admin kullanıcısı ve temel roller.
-- [ ] **Application & CQRS:**
+- [x] **Veritabanı Konfigürasyonu:**
+  - EF Core `ApplicationDbContext` & `IdentityConfigurations` (Unique Email Index, Fluent API).
+  - Seed Data: Başlangıç Admin kullanıcısı (`admin@erp.com` / `Admin123!`) ve temel roller (`Admin`, `Manager`, `Employee`).
+- [x] **Application & CQRS:**
   - `LoginCommand` & `LoginCommandHandler` (BCrypt şifre doğrulaması + JWT Token üretimi).
-  - `RefreshTokenCommand` (Opsiyonel / Session sürekliliği için).
-  - `LoginCommandValidator` (Email formatı, zorunlu alanlar).
-- [ ] **API Endpoint'leri:**
+  - `GetCurrentUserQuery` & Handler (`/api/auth/me`).
+  - `LoginCommandValidator` (FluentValidation kuralları).
+- [x] **API Endpoint'leri:**
   - `POST /api/auth/login`
-  - `GET /api/auth/me` (Giriş yapan kullanıcının profil ve rol bilgisi).
-  - `[Authorize(Roles = "Admin")]` özniteliklerinin test edilmesi.
+  - `GET /api/auth/me` (`[Authorize]` ile korunan profil sorgusu).
 
 ### 2.2. Frontend (Auth Modülü)
 - [ ] **Login Sayfası:**
