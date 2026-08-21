@@ -56,13 +56,13 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
   - `GET /api/auth/me` (`[Authorize]` ile korunan profil sorgusu).
 
 ### 2.2. Frontend (Auth Modülü)
-- [ ] **Login Sayfası:**
-  - Modern, şık ve responsive login formu (Email, Şifre, Beni Hatırla).
-  - Form validasyonları ve hata mesajları.
-- [ ] **Auth State & Interceptor:**
-  - `AuthService` (Token saklama, `currentUser$` sinyali/observable).
-  - `JwtInterceptor` (Tüm giden isteklere `Authorization: Bearer <token>` ekleme).
-  - `ErrorInterceptor` (401/403 durumunda login'e yönlendirme).
+- [x] **Login Sayfası:**
+  - Modern, şık ve responsive login formu (Email, Şifre, Beni Hatırla, Hızlı Doldur).
+  - Form validasyonları, hata uyarı kutusu ve yükleniyor animasyonu (Spinner).
+- [x] **Auth State & Interceptor:**
+  - `AuthService` (Gerçek backend `http://localhost:5000/api/auth/login` ve `/api/auth/me` entegrasyonu, `currentUser` sinyali).
+  - `JwtInterceptor` (Tüm giden HTTP isteklerine `Authorization: Bearer <token>` ekleme).
+  - `ErrorInterceptor` (401/403 ve 500 durumlarında otomatik Toast uyarısı ve Login'e yönlendirme).
 
 ---
 
