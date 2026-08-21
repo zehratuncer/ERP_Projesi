@@ -1,0 +1,78 @@
+<div class="layout-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">🚀</div>
+      <div class="brand-text">
+        <h2>ERP Core</h2>
+        <span class="brand-badge">v1 MVP</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">ANA MENÜ</div>
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+
+      <div class="nav-section-title">YÖNETİM</div>
+      <a routerLink="/inventory" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">📦</span>
+        <span class="nav-label">Stok & Ürünler</span>
+      </a>
+      <a routerLink="/suppliers" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">🚚</span>
+        <span class="nav-label">Tedarikçiler</span>
+      </a>
+
+      <div class="nav-section-title">GELECEK FAZLAR</div>
+      <a class="nav-link disabled" title="v2 ile eklenecek">
+        <span class="nav-icon">📑</span>
+        <span class="nav-label">Satın Alma (v2)</span>
+        <span class="badge badge-info">Yakında</span>
+      </a>
+      <a class="nav-link disabled" title="v3 ile eklenecek">
+        <span class="nav-icon">🤖</span>
+        <span class="nav-label">AI Copilot (v3)</span>
+        <span class="badge badge-warning">AI</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-avatar">
+          {{ userInitial() }}
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{ authService.currentUser()?.fullName || 'Yönetici' }}</span>
+          <span class="user-role badge badge-success">{{ authService.currentUser()?.role || 'Admin' }}</span>
+        </div>
+      </div>
+      <button (click)="logout()" class="btn-logout" title="Çıkış Yap">
+        🚪
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="main-container">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="navbar-left">
+        <h1 class="page-title">{{ currentRouteTitle() }}</h1>
+      </div>
+      <div class="navbar-right">
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span class="status-text">Sistem Çevrimiçi</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dynamic Router Outlet -->
+    <main class="content-body">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

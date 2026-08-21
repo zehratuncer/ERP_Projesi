@@ -1,0 +1,114 @@
+<div class="dashboard-container">
+  <!-- Top Stat Cards (KPIs) -->
+  <div class="kpi-grid">
+    <app-stat-card
+      title="TOPLAM ÜRÜN ÇEŞİDİ"
+      [value]="totalProducts"
+      icon="📦"
+      iconBg="rgba(59, 130, 246, 0.15)"
+      subtitle="Aktif stok envanteri"
+      subtitleClass="text-secondary"
+    ></app-stat-card>
+
+    <app-stat-card
+      title="KRİTİK STOK UYARISI"
+      [value]="criticalStockCount"
+      icon="⚠️"
+      iconBg="rgba(239, 68, 68, 0.15)"
+      subtitle="Eşik değerin altında"
+      subtitleClass="badge badge-danger"
+    ></app-stat-card>
+
+    <app-stat-card
+      title="TOPLAM TEDARİKÇİ"
+      [value]="totalSuppliers"
+      icon="🚚"
+      iconBg="rgba(16, 185, 129, 0.15)"
+      subtitle="Kayıtlı ve aktif partnerler"
+      subtitleClass="text-secondary"
+    ></app-stat-card>
+
+    <app-stat-card
+      title="BUGÜNKÜ HAREKETLER"
+      value="24 İşlem"
+      icon="⚡"
+      iconBg="rgba(99, 102, 241, 0.15)"
+      subtitle="Giriş / Çıkış operasyonu"
+      subtitleClass="text-secondary"
+    ></app-stat-card>
+  </div>
+
+  <!-- Dashboard Main Grid (2 Columns) -->
+  <div class="dashboard-grid">
+    <!-- Critical Stock Alerts Table -->
+    <div class="card card-hover">
+      <div class="card-header">
+        <div class="header-title">
+          <h3>🚨 Kritik Stoktaki Ürünler</h3>
+          <span class="badge badge-danger">Acil Aksiyon Gerekenler</span>
+        </div>
+        <a routerLink="/inventory" class="btn btn-secondary btn-sm">Tümünü Gör</a>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ürün Kodu</th>
+                <th>Ürün Adı</th>
+                <th>Mevcut Stok</th>
+                <th>Kritik Eşik</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of criticalProducts; track item.code) {
+                <tr>
+                  <td><code>{{ item.code }}</code></td>
+                  <td><strong>{{ item.name }}</strong></td>
+                  <td><span class="stock-critical">{{ item.currentStock }} {{ item.unit }}</span></td>
+                  <td>{{ item.minStock }} {{ item.unit }}</td>
+                  <td>
+                    <span class="badge badge-danger">Tükenmek Üzere</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Stock Movements -->
+    <div class="card card-hover">
+      <div class="card-header">
+        <div class="header-title">
+          <h3>🕒 Son Stok Hareketleri</h3>
+          <span class="badge badge-info">Canlı Akış</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="activity-timeline">
+          @for (move of recentMovements; track move.id) {
+            <div class="timeline-item">
+              <div class="timeline-badge" [ngClass]="move.type === 'IN' ? 'badge-in' : 'badge-out'">
+                {{ move.type === 'IN' ? '↓' : '↑' }}
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="product-name">{{ move.productName }}</span>
+                  <span class="movement-amount" [ngClass]="move.type === 'IN' ? 'text-success' : 'text-danger'">
+                    {{ move.type === 'IN' ? '+' : '-' }}{{ move.quantity }} Adet
+                  </span>
+                </div>
+                <div class="timeline-meta">
+                  <span>{{ move.user }}</span> • <span>{{ move.time }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
