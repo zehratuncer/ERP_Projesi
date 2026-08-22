@@ -2,6 +2,7 @@ using ERP.API.Middleware;
 using ERP.Application;
 using ERP.Infrastructure;
 using ERP.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,7 +65,14 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    dbContext.Database.EnsureCreated();
+    if (dbContext.Database.IsSqlServer())
+    {
+        dbContext.Database.Migrate();
+    }
+    else
+    {
+        dbContext.Database.EnsureCreated();
+    }
 }
 
 // 5. Global Hata Yakalama Middleware'i
