@@ -13,8 +13,9 @@ public class Product : BaseEntity
     public decimal UnitPrice { get; set; } = 0.0m;
     public bool IsActive { get; set; } = true;
 
-    // Tedarikçi ilişkisi (opsiyonel veya Faz 4'te Supplier eklendiğinde bağlanacak)
+    // Tedarikçi ilişkisi
     public Guid? SupplierId { get; set; }
+    public virtual Supplier? Supplier { get; set; }
 
     // Navigation property
     public virtual ICollection<InventoryTransaction> Transactions { get; set; } = new List<InventoryTransaction>();

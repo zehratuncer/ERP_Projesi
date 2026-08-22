@@ -107,14 +107,14 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
 ## 🚚 Faz 4: Tedarikçi Yönetimi (Supplier Module)
 
 ### 4.1. Backend (Tedarikçi)
-- [ ] **Domain & Entity Tasarımı:**
+- [x] **Domain & Entity Tasarımı:**
   - `Supplier` entity (Name, ContactPerson, Email, Phone, Address, TaxNumber, IsActive)
-- [ ] **Application & CQRS:**
+- [x] **Application & CQRS:**
   - `CreateSupplierCommand` & Validator.
   - `UpdateSupplierCommand` & `DeleteSupplierCommand`.
   - `GetSuppliersQuery` (Arama & filtreleme).
-  - `GetSupplierProductsQuery` (Seçili tedarikçinin sağladığı ürünler).
-- [ ] **API Endpoint'leri:**
+  - `GetSupplierByIdQuery` & `GetSupplierProductsQuery` (Seçili tedarikçinin sağladığı ürünler).
+- [x] **API Endpoint'leri:**
   - `GET /api/suppliers`, `POST /api/suppliers`, `PUT /api/suppliers/{id}`, `DELETE /api/suppliers/{id}`
   - `GET /api/suppliers/{id}/products`
 

@@ -12,6 +12,8 @@ public class ProductDto
     public decimal UnitPrice { get; set; }
     public bool IsActive { get; set; }
     public bool IsLowStock => CurrentStock <= MinStockLevel;
+    public Guid? SupplierId { get; set; }
+    public string? SupplierName { get; set; }
     public DateTime CreatedDate { get; set; }
     public DateTime? UpdatedDate { get; set; }
 }

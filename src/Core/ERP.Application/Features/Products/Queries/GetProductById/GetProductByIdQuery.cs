@@ -22,6 +22,7 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, A
     {
         var product = await _context.Products
             .AsNoTracking()
+            .Include(p => p.Supplier)
             .FirstOrDefaultAsync(p => p.Id == request.Id && !p.IsDeleted, cancellationToken);
 
         if (product == null)
@@ -40,6 +41,8 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, A
             MinStockLevel = product.MinStockLevel,
             UnitPrice = product.UnitPrice,
             IsActive = product.IsActive,
+            SupplierId = product.SupplierId,
+            SupplierName = product.Supplier?.Name,
             CreatedDate = product.CreatedDate,
             UpdatedDate = product.UpdatedDate
         };

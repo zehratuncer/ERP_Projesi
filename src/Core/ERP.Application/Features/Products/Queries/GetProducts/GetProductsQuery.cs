@@ -47,6 +47,8 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, ApiResp
                 MinStockLevel = p.MinStockLevel,
                 UnitPrice = p.UnitPrice,
                 IsActive = p.IsActive,
+                SupplierId = p.SupplierId,
+                SupplierName = p.Supplier != null ? p.Supplier.Name : null,
                 CreatedDate = p.CreatedDate,
                 UpdatedDate = p.UpdatedDate
             })

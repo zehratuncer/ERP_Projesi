@@ -51,6 +51,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 CurrentStock = 8, // Kritik stokta (MinStockLevel: 25)
                 MinStockLevel = 25,
                 UnitPrice = 120.50m,
+                SupplierId = SupplierConfiguration.SampleSupplier1Id,
                 IsActive = true,
                 CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IsDeleted = false
@@ -65,6 +66,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 CurrentStock = 2, // Kritik stokta (MinStockLevel: 5)
                 MinStockLevel = 5,
                 UnitPrice = 2450.00m,
+                SupplierId = SupplierConfiguration.SampleSupplier2Id,
                 IsActive = true,
                 CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IsDeleted = false
@@ -79,6 +81,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 CurrentStock = 12, // Kritik stokta (MinStockLevel: 30)
                 MinStockLevel = 30,
                 UnitPrice = 85.00m,
+                SupplierId = SupplierConfiguration.SampleSupplier3Id,
                 IsActive = true,
                 CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IsDeleted = false
@@ -93,6 +96,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 CurrentStock = 45, // Normal stok
                 MinStockLevel = 10,
                 UnitPrice = 4200.00m,
+                SupplierId = SupplierConfiguration.SampleSupplier1Id,
                 IsActive = true,
                 CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IsDeleted = false
