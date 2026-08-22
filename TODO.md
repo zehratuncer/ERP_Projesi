@@ -143,12 +143,12 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
   - `GET /api/dashboard/summary`
 
 ### 5.2. Frontend (Dashboard Görünümü)
-- [ ] **KPI Sayaç Kartları (Stat Cards):**
-  - Toplam Ürün, Kritik Stok Uyarısı, Tedarikçi Sayısı.
-- [ ] **Kritik Stok Uyarı Tablosu:**
-  - Acil sipariş verilmesi gereken ürünlerin hızlı görünümü.
-- [ ] **Son Hareketler Zaman Çizelgesi (Recent Activity Stream):**
-  - Kim, hangi üründen ne kadar girdi/çıkardı akışı.
+- [x] **KPI Sayaç Kartları (Stat Cards):**
+  - Toplam Ürün, Kritik Stok Uyarısı, Tedarikçi Sayısı, Toplam Stok Adedi ve Parasal Değer.
+- [x] **Kritik Stok Uyarı Tablosu:**
+  - Acil sipariş verilmesi gereken ürünlerin hızlı görünümü ve tedarikçi bağlantıları.
+- [x] **Son Hareketler Zaman Çizelgesi (Recent Activity Stream):**
+  - Kim, hangi üründen ne kadar girdi/çıkardı akışı (Giriş / Çıkış / Düzeltme renk kodlarıyla).
 
 ---
 

@@ -1,114 +1,239 @@
 <div class="dashboard-container">
-  <!-- Top Stat Cards (KPIs) -->
-  <div class="kpi-grid">
-    <app-stat-card
-      title="TOPLAM ÜRÜN ÇEŞİDİ"
-      [value]="totalProducts"
-      icon="📦"
-      iconBg="rgba(59, 130, 246, 0.15)"
-      subtitle="Aktif stok envanteri"
-      subtitleClass="text-secondary"
-    ></app-stat-card>
-
-    <app-stat-card
-      title="KRİTİK STOK UYARISI"
-      [value]="criticalStockCount"
-      icon="⚠️"
-      iconBg="rgba(239, 68, 68, 0.15)"
-      subtitle="Eşik değerin altında"
-      subtitleClass="badge badge-danger"
-    ></app-stat-card>
-
-    <app-stat-card
-      title="TOPLAM TEDARİKÇİ"
-      [value]="totalSuppliers"
-      icon="🚚"
-      iconBg="rgba(16, 185, 129, 0.15)"
-      subtitle="Kayıtlı ve aktif partnerler"
-      subtitleClass="text-secondary"
-    ></app-stat-card>
-
-    <app-stat-card
-      title="BUGÜNKÜ HAREKETLER"
-      value="24 İşlem"
-      icon="⚡"
-      iconBg="rgba(99, 102, 241, 0.15)"
-      subtitle="Giriş / Çıkış operasyonu"
-      subtitleClass="text-secondary"
-    ></app-stat-card>
+  <!-- Top Action Header & Quick Refresh -->
+  <div class="page-header">
+    <div class="header-left">
+      <h2>📊 Yönetici Özeti & KPI Dashboard</h2>
+      <p>Gerçek zamanlı envanter durumu, kritik stok alarmları ve son depo hareketleri</p>
+    </div>
+    <div class="header-actions">
+      <span class="last-sync-time">
+        🕒 Son Güncelleme: {{ lastUpdated | date:'HH:mm:ss' }}
+      </span>
+      <button (click)="loadDashboardData(true)" class="btn btn-secondary" [disabled]="isLoading" title="Verileri Yenile">
+        <span>🔄 Yenile</span>
+      </button>
+      <a routerLink="/inventory" class="btn btn-primary">
+        <span>📦 Stok Yönetimi</span>
+      </a>
+    </div>
   </div>
 
-  <!-- Dashboard Main Grid (2 Columns) -->
-  <div class="dashboard-grid">
-    <!-- Critical Stock Alerts Table -->
-    <div class="card card-hover">
-      <div class="card-header">
-        <div class="header-title">
-          <h3>🚨 Kritik Stoktaki Ürünler</h3>
-          <span class="badge badge-danger">Acil Aksiyon Gerekenler</span>
-        </div>
-        <a routerLink="/inventory" class="btn btn-secondary btn-sm">Tümünü Gör</a>
+  @if (isLoading && !summary) {
+    <div class="loading-state card">
+      <div class="spinner"></div>
+      <p>Yönetici paneli verileri hesaplanıyor...</p>
+    </div>
+  } @else if (summary) {
+    <!-- Top Stat Cards (KPIs Grid) -->
+    <div class="kpi-grid">
+      <app-stat-card
+        title="TOPLAM ÜRÜN ÇEŞİDİ"
+        [value]="summary.totalProductsCount"
+        icon="📦"
+        iconBg="rgba(59, 130, 246, 0.15)"
+        subtitle="Sistemde kayıtlı aktif ürünler"
+        subtitleClass="text-secondary"
+      ></app-stat-card>
+
+      <app-stat-card
+        title="KRİTİK STOK UYARISI"
+        [value]="summary.criticalStockCount"
+        icon="🚨"
+        iconBg="rgba(239, 68, 68, 0.15)"
+        [subtitle]="summary.criticalStockCount > 0 ? 'Acil sipariş gerekiyor!' : 'Tüm stoklar yeterli'"
+        [subtitleClass]="summary.criticalStockCount > 0 ? 'badge badge-danger' : 'badge badge-success'"
+      ></app-stat-card>
+
+      <app-stat-card
+        title="TOPLAM TEDARİKÇİ"
+        [value]="summary.totalSuppliersCount"
+        icon="🏢"
+        iconBg="rgba(16, 185, 129, 0.15)"
+        subtitle="Aktif çalışan iş ortakları"
+        subtitleClass="text-secondary"
+      ></app-stat-card>
+
+      <app-stat-card
+        title="TOPLAM ENVANTER ADEDİ"
+        [value]="summary.totalInventoryQuantity"
+        icon="📊"
+        iconBg="rgba(168, 85, 247, 0.15)"
+        subtitle="Depolardaki fiziki toplam adet"
+        subtitleClass="text-secondary"
+      ></app-stat-card>
+
+      <app-stat-card
+        title="TOPLAM ENVANTER DEĞERİ"
+        [value]="(summary.totalInventoryValue | currency:'TRY':'symbol-narrow':'1.0-0') || '0 ₺'"
+        icon="💰"
+        iconBg="rgba(245, 158, 11, 0.15)"
+        subtitle="Mevcut stokların maliyet tutarı"
+        subtitleClass="text-secondary"
+      ></app-stat-card>
+    </div>
+
+    <!-- Quick Shortcuts Bar -->
+    <div class="quick-shortcuts card">
+      <div class="shortcuts-title">
+        <span>⚡ Hızlı Erişim:</span>
       </div>
-      <div class="card-body" style="padding: 0;">
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Ürün Kodu</th>
-                <th>Ürün Adı</th>
-                <th>Mevcut Stok</th>
-                <th>Kritik Eşik</th>
-                <th>Durum</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of criticalProducts; track item.code) {
-                <tr>
-                  <td><code>{{ item.code }}</code></td>
-                  <td><strong>{{ item.name }}</strong></td>
-                  <td><span class="stock-critical">{{ item.currentStock }} {{ item.unit }}</span></td>
-                  <td>{{ item.minStock }} {{ item.unit }}</td>
-                  <td>
-                    <span class="badge badge-danger">Tükenmek Üzere</span>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+      <div class="shortcuts-actions">
+        <a routerLink="/inventory" class="shortcut-chip">
+          <span>➕ Yeni Ürün Ekle</span>
+        </a>
+        <a routerLink="/inventory" class="shortcut-chip">
+          <span>⚡ Stok Giriş / Çıkış Hareketi</span>
+        </a>
+        <a routerLink="/suppliers" class="shortcut-chip">
+          <span>🚚 Yeni Tedarikçi Tanımla</span>
+        </a>
+        <a routerLink="/suppliers" class="shortcut-chip">
+          <span>🔗 Tedarikçi Ürün Eşleştirmeleri</span>
+        </a>
       </div>
     </div>
 
-    <!-- Recent Stock Movements -->
-    <div class="card card-hover">
-      <div class="card-header">
-        <div class="header-title">
-          <h3>🕒 Son Stok Hareketleri</h3>
-          <span class="badge badge-info">Canlı Akış</span>
+    <!-- Dashboard Main Grid (2 Columns) -->
+    <div class="dashboard-grid">
+      <!-- Left Column: Critical Stock Alerts Table -->
+      <div class="card card-hover critical-alerts-card">
+        <div class="card-header">
+          <div class="header-title">
+            <h3>🚨 Kritik Stoktaki Ürünler</h3>
+            @if (summary.criticalStockCount > 0) {
+              <span class="badge badge-danger">{{ summary.criticalStockCount }} Ürün Acil Eşikte</span>
+            } @else {
+              <span class="badge badge-success">Güvenli Düzeyde</span>
+            }
+          </div>
+          <a routerLink="/inventory" class="btn btn-secondary btn-sm">Envantere Git →</a>
+        </div>
+        <div class="card-body p-0">
+          @if (summary.criticalStockAlerts.length === 0) {
+            <div class="empty-state-card py-4">
+              <span class="empty-icon">🎉</span>
+              <h4>Kritik Seviyede Ürün Yok</h4>
+              <p>Harika! Depolardaki tüm ürünlerin stok miktarları belirlenen minimum eşiğin üzerindedir.</p>
+            </div>
+          } @else {
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ürün</th>
+                    <th>Tedarikçi</th>
+                    <th>Birim Fiyat</th>
+                    <th class="text-center">Mevcut Stok</th>
+                    <th class="text-center">Kritik Eşik</th>
+                    <th class="text-right">Aksiyon</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of summary.criticalStockAlerts; track item.id) {
+                    <tr class="row-critical">
+                      <td>
+                        <div class="product-info-cell">
+                          <span class="product-code-pill">{{ item.code }}</span>
+                          <strong class="product-title">{{ item.name }}</strong>
+                        </div>
+                      </td>
+                      <td>
+                        @if (item.supplierName) {
+                          <span class="supplier-tag">🚚 {{ item.supplierName }}</span>
+                        } @else {
+                          <span class="text-muted text-sm">—</span>
+                        }
+                      </td>
+                      <td class="font-mono">{{ item.unitPrice | number:'1.2-2' }} ₺</td>
+                      <td class="text-center">
+                        <span class="stock-badge stock-danger font-bold">
+                          {{ item.currentStock }} {{ item.unit }}
+                        </span>
+                      </td>
+                      <td class="text-center text-muted font-bold">
+                        {{ item.minStockLevel }} {{ item.unit }}
+                      </td>
+                      <td class="text-right">
+                        <a routerLink="/inventory" class="btn-quick-action" title="Stok girişi yap veya detayları gör">
+                          İncele ➔
+                        </a>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         </div>
       </div>
-      <div class="card-body">
-        <div class="activity-timeline">
-          @for (move of recentMovements; track move.id) {
-            <div class="timeline-item">
-              <div class="timeline-badge" [ngClass]="move.type === 'IN' ? 'badge-in' : 'badge-out'">
-                {{ move.type === 'IN' ? '↓' : '↑' }}
-              </div>
-              <div class="timeline-content">
-                <div class="timeline-header">
-                  <span class="product-name">{{ move.productName }}</span>
-                  <span class="movement-amount" [ngClass]="move.type === 'IN' ? 'text-success' : 'text-danger'">
-                    {{ move.type === 'IN' ? '+' : '-' }}{{ move.quantity }} Adet
-                  </span>
+
+      <!-- Right Column: Recent Stock Movements Stream -->
+      <div class="card card-hover recent-movements-card">
+        <div class="card-header">
+          <div class="header-title">
+            <h3>🕒 Son Stok Hareketleri</h3>
+            <span class="badge badge-info">Canlı Hareket Akışı</span>
+          </div>
+          <a routerLink="/inventory" class="btn btn-secondary btn-sm">Tüm Hareketler</a>
+        </div>
+        <div class="card-body">
+          @if (summary.recentStockMovements.length === 0) {
+            <div class="empty-state-card py-4">
+              <span class="empty-icon">📭</span>
+              <h4>Henüz Hareket Kaydı Yok</h4>
+              <p>Sistemde henüz bir stok giriş veya çıkış işlemi gerçekleştirilmedi.</p>
+            </div>
+          } @else {
+            <div class="activity-timeline">
+              @for (move of summary.recentStockMovements; track move.id) {
+                <div class="timeline-item">
+                  <div
+                    class="timeline-badge"
+                    [class.badge-in]="move.transactionType === TransactionType.In"
+                    [class.badge-out]="move.transactionType === TransactionType.Out"
+                    [class.badge-adj]="move.transactionType === TransactionType.Adjustment"
+                    [title]="move.transactionTypeName"
+                  >
+                    @if (move.transactionType === TransactionType.In) {
+                      ↓
+                    } @else if (move.transactionType === TransactionType.Out) {
+                      ↑
+                    } @else {
+                      ⇄
+                    }
+                  </div>
+                  <div class="timeline-content">
+                    <div class="timeline-header">
+                      <div class="movement-product-group">
+                        <span class="product-code-tag">{{ move.productCode }}</span>
+                        <span class="product-name">{{ move.productName }}</span>
+                      </div>
+                      <span
+                        class="movement-amount font-bold font-mono"
+                        [class.text-success]="move.transactionType === TransactionType.In"
+                        [class.text-danger]="move.transactionType === TransactionType.Out"
+                        [class.text-warning]="move.transactionType === TransactionType.Adjustment"
+                      >
+                        {{ move.transactionType === TransactionType.In ? '+' : (move.transactionType === TransactionType.Out ? '-' : '±') }}{{ move.quantity }} {{ move.unit }}
+                      </span>
+                    </div>
+                    @if (move.description) {
+                      <div class="movement-desc">
+                        "{{ move.description }}"
+                      </div>
+                    }
+                    <div class="timeline-meta">
+                      <span class="user-tag">👤 {{ move.userName || 'Sistem' }}</span>
+                      <span class="dot">•</span>
+                      <span class="time-tag">🕒 {{ getTimeAgo(move.transactionDate.toString()) }}</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="timeline-meta">
-                  <span>{{ move.user }}</span> • <span>{{ move.time }}</span>
-                </div>
-              </div>
+              }
             </div>
           }
         </div>
       </div>
     </div>
-  </div>
+  }
 </div>
