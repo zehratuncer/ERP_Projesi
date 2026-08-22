@@ -10,6 +10,7 @@ export interface Product {
   isActive: boolean;
   isLowStock?: boolean;
   supplierId?: string;
+  supplierName?: string;
   createdDate: string;
   updatedDate?: string;
 }

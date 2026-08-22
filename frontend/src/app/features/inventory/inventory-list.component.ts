@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
 import { InventoryService } from '../../core/services/inventory.service';
+import { SupplierService } from '../../core/services/supplier.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Product, CreateProductRequest, UpdateProductRequest } from '../../core/models/product.model';
 import { StockMovement, CreateStockMovementRequest, TransactionType } from '../../core/models/inventory.model';
+import { Supplier } from '../../core/models/supplier.model';
 
 @Component({
   selector: 'app-inventory-list',
@@ -17,11 +19,13 @@ import { StockMovement, CreateStockMovementRequest, TransactionType } from '../.
 export class InventoryListComponent implements OnInit {
   private productService = inject(ProductService);
   private inventoryService = inject(InventoryService);
+  private supplierService = inject(SupplierService);
   private toastService = inject(ToastService);
 
   products: Product[] = [];
   filteredProducts: Product[] = [];
   movements: StockMovement[] = [];
+  suppliers: Supplier[] = [];
 
   isLoading = false;
   isSubmitting = false;
@@ -38,7 +42,8 @@ export class InventoryListComponent implements OnInit {
     unit: 'Adet',
     initialStock: 0,
     minStockLevel: 10,
-    unitPrice: 0
+    unitPrice: 0,
+    supplierId: undefined
   };
 
   // Stok Hareketi Modal Durumu
@@ -79,6 +84,7 @@ export class InventoryListComponent implements OnInit {
 
   ngOnInit() {
     this.loadProducts();
+    this.loadSuppliers();
   }
 
   loadProducts() {
@@ -97,6 +103,16 @@ export class InventoryListComponent implements OnInit {
     });
   }
 
+  loadSuppliers() {
+    this.supplierService.getSuppliers(undefined, true).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data) {
+          this.suppliers = res.data;
+        }
+      }
+    });
+  }
+
   applyFilters() {
     let list = [...this.products];
 
@@ -106,7 +122,11 @@ export class InventoryListComponent implements OnInit {
 
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase().trim();
-      list = list.filter(p => p.code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q));
+      list = list.filter(p =>
+        p.code.toLowerCase().includes(q) ||
+        p.name.toLowerCase().includes(q) ||
+        (p.supplierName && p.supplierName.toLowerCase().includes(q))
+      );
     }
 
     this.filteredProducts = list;
@@ -131,7 +151,8 @@ export class InventoryListComponent implements OnInit {
       unit: 'Adet',
       initialStock: 0,
       minStockLevel: 10,
-      unitPrice: 0
+      unitPrice: 0,
+      supplierId: undefined
     };
     this.isProductModalOpen = true;
   }
@@ -145,7 +166,8 @@ export class InventoryListComponent implements OnInit {
       unit: product.unit,
       initialStock: product.currentStock,
       minStockLevel: product.minStockLevel,
-      unitPrice: product.unitPrice
+      unitPrice: product.unitPrice,
+      supplierId: product.supplierId
     };
     this.isProductModalOpen = true;
   }
@@ -171,7 +193,8 @@ export class InventoryListComponent implements OnInit {
         unit: this.productForm.unit,
         minStockLevel: this.productForm.minStockLevel,
         unitPrice: this.productForm.unitPrice,
-        isActive: true
+        isActive: true,
+        supplierId: this.productForm.supplierId || undefined
       };
 
       this.productService.updateProduct(this.editingProductId, updateReq).subscribe({

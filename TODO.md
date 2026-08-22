@@ -119,11 +119,11 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
   - `GET /api/suppliers/{id}/products`
 
 ### 4.2. Frontend (Tedarikçi Arayüzü)
-- [ ] **Tedarikçi Listesi:**
+- [x] **Tedarikçi Listesi:**
   - Firma adı, iletişim kişisi, telefon, e-posta ve aktif ürün sayısı.
-- [ ] **Tedarikçi Ekle / Güncelle Formu:**
+- [x] **Tedarikçi Ekle / Güncelle Formu:**
   - Form validasyonları ve telefon/vergi no maskelemesi.
-- [ ] **Tedarikçi Detay & Ürün Listesi Görünümü:**
+- [x] **Tedarikçi Detay & Ürün Listesi Görünümü:**
   - Tedarikçiye ait kayıtlı ürünlerin listelenmesi ve yeni ürün ilişkilendirme.
 
 ---

@@ -1,0 +1,519 @@
+<div class="suppliers-container">
+  <!-- Top Action Header & Quick Stats -->
+  <div class="page-header">
+    <div class="header-left">
+      <h2>🚚 Tedarikçi Yönetimi</h2>
+      <p>Tüm tedarikçi firmalar, iletişim yetkilileri ve sağlanan ürünlerin yönetimi</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="openCreateModal()" class="btn btn-primary">
+        <span>+ Yeni Tedarikçi Ekle</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Quick Stats -->
+  <div class="quick-stats-grid">
+    <div class="mini-stat-card card">
+      <div class="stat-icon-box bg-blue">🏢</div>
+      <div class="stat-info">
+        <span class="stat-label">Toplam Tedarikçi</span>
+        <h3 class="stat-number">{{ totalSuppliersCount }}</h3>
+      </div>
+    </div>
+    <div class="mini-stat-card card">
+      <div class="stat-icon-box bg-green">✅</div>
+      <div class="stat-info">
+        <span class="stat-label">Aktif Tedarikçiler</span>
+        <h3 class="stat-number text-success">{{ activeSuppliersCount }}</h3>
+      </div>
+    </div>
+    <div class="mini-stat-card card">
+      <div class="stat-icon-box bg-purple">📦</div>
+      <div class="stat-info">
+        <span class="stat-label">Bağlı Ürün Adedi</span>
+        <h3 class="stat-number text-primary">{{ totalSuppliedProductsCount }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Search Toolbar -->
+  <div class="toolbar card">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchChange()"
+        placeholder="Firma adı, yetkili, telefon veya vergi no ile ara..."
+        class="form-control search-input"
+      />
+    </div>
+
+    <div class="filter-group">
+      <button
+        class="filter-btn"
+        [class.active]="activeTab === 'all'"
+        (click)="setTab('all')"
+      >
+        Tümü ({{ suppliers.length }})
+      </button>
+      <button
+        class="filter-btn success-tab"
+        [class.active]="activeTab === 'active'"
+        (click)="setTab('active')"
+      >
+        Aktif ({{ activeSuppliersCount }})
+      </button>
+      <button
+        class="filter-btn muted-tab"
+        [class.active]="activeTab === 'inactive'"
+        (click)="setTab('inactive')"
+      >
+        Pasif ({{ suppliers.length - activeSuppliersCount }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Suppliers Table -->
+  <div class="card table-container">
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Tedarikçiler yükleniyor...</p>
+      </div>
+    } @else if (filteredSuppliers.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">🚚</span>
+        <h4>Henüz Tedarikçi Bulunamadı</h4>
+        <p>Arama kriterlerinize uygun tedarikçi kaydı bulunmuyor veya henüz firma eklenmemiş.</p>
+        <button (click)="openCreateModal()" class="btn btn-primary btn-sm mt-3">
+          İlk Tedarikçiyi Ekle
+        </button>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Firma Adı</th>
+              <th>İletişim Yetkilisi</th>
+              <th>Telefon & E-posta</th>
+              <th>Vergi No / Adres</th>
+              <th class="text-center">Sağladığı Ürünler</th>
+              <th class="text-center">Durum</th>
+              <th class="text-right">İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (supplier of filteredSuppliers; track supplier.id) {
+              <tr [class.row-inactive]="!supplier.isActive">
+                <!-- Firma Adı -->
+                <td class="col-supplier-name">
+                  <div class="supplier-avatar-wrapper">
+                    <div class="supplier-avatar">
+                      {{ supplier.name.charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="supplier-main-info">
+                      <span class="supplier-name font-bold">{{ supplier.name }}</span>
+                      <span class="supplier-date">Kayıt: {{ supplier.createdDate | date:'dd.MM.yyyy' }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- İletişim Yetkilisi -->
+                <td>
+                  @if (supplier.contactPerson) {
+                    <div class="contact-person">
+                      <span class="person-icon">👤</span>
+                      <span>{{ supplier.contactPerson }}</span>
+                    </div>
+                  } @else {
+                    <span class="text-muted text-sm">—</span>
+                  }
+                </td>
+
+                <!-- Telefon & E-posta -->
+                <td>
+                  <div class="contact-methods">
+                    @if (supplier.phone) {
+                      <div class="contact-item">
+                        <span class="icon">📞</span>
+                        <a [href]="'tel:' + supplier.phone" class="contact-link">{{ supplier.phone }}</a>
+                      </div>
+                    }
+                    @if (supplier.email) {
+                      <div class="contact-item">
+                        <span class="icon">✉️</span>
+                        <a [href]="'mailto:' + supplier.email" class="contact-link email-link">{{ supplier.email }}</a>
+                      </div>
+                    }
+                    @if (!supplier.phone && !supplier.email) {
+                      <span class="text-muted text-sm">—</span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Vergi No / Adres -->
+                <td>
+                  <div class="tax-address-col">
+                    @if (supplier.taxNumber) {
+                      <span class="badge badge-neutral">VKN: {{ supplier.taxNumber }}</span>
+                    }
+                    @if (supplier.address) {
+                      <span class="address-snippet" [title]="supplier.address">
+                        📍 {{ supplier.address }}
+                      </span>
+                    }
+                    @if (!supplier.taxNumber && !supplier.address) {
+                      <span class="text-muted text-sm">—</span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Sağladığı Ürünler -->
+                <td class="text-center">
+                  <button
+                    (click)="openProductsModal(supplier)"
+                    class="product-count-btn"
+                    [class.has-products]="supplier.productCount > 0"
+                    title="Bu tedarikçinin ürünlerini gör ve yönet"
+                  >
+                    <span>📦 {{ supplier.productCount || 0 }} Ürün</span>
+                    <span class="arrow">›</span>
+                  </button>
+                </td>
+
+                <!-- Durum -->
+                <td class="text-center">
+                  @if (supplier.isActive) {
+                    <span class="badge badge-success">Aktif</span>
+                  } @else {
+                    <span class="badge badge-muted">Pasif</span>
+                  }
+                </td>
+
+                <!-- İşlemler -->
+                <td class="text-right col-actions">
+                  <button
+                    (click)="openProductsModal(supplier)"
+                    class="btn-icon btn-action-products"
+                    title="Ürünleri Listele & Eşle"
+                  >
+                    📦
+                  </button>
+                  <button
+                    (click)="openEditModal(supplier)"
+                    class="btn-icon btn-action-edit"
+                    title="Düzenle"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    (click)="openDeleteModal(supplier)"
+                    class="btn-icon btn-action-delete"
+                    title="Sil"
+                  >
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 1. TEDARİKÇİ EKLE / DÜZENLE MODAL FORM                        -->
+<!-- ============================================================ -->
+@if (isSupplierModalOpen) {
+  <div class="modal-backdrop" (click)="closeSupplierModal()">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>{{ editingSupplierId ? '✏️ Tedarikçi Bilgilerini Düzenle' : '🚚 Yeni Tedarikçi Tanımla' }}</h3>
+          <p class="modal-subtitle">Firma profili, yetkili iletişim bilgileri ve vergi detayları</p>
+        </div>
+        <button (click)="closeSupplierModal()" class="btn-close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <!-- Firma Adı -->
+          <div class="form-group full-width">
+            <label>Firma / Tedarikçi Tam Ünvanı <span class="required">*</span></label>
+            <input
+              type="text"
+              [(ngModel)]="supplierForm.name"
+              placeholder="Örn: Alfa Endüstri ve Ticaret Ltd. Şti."
+              class="form-control"
+              autofocus
+            />
+          </div>
+
+          <!-- İletişim Yetkilisi -->
+          <div class="form-group">
+            <label>İletişim Yetkilisi</label>
+            <input
+              type="text"
+              [(ngModel)]="supplierForm.contactPerson"
+              placeholder="Örn: Mehmet Yılmaz (Satış Müdürü)"
+              class="form-control"
+            />
+          </div>
+
+          <!-- E-posta -->
+          <div class="form-group">
+            <label>E-posta Adresi</label>
+            <input
+              type="email"
+              [(ngModel)]="supplierForm.email"
+              placeholder="Örn: siparis@firma.com"
+              class="form-control"
+            />
+          </div>
+
+          <!-- Telefon Numarası (Maskelenmiş) -->
+          <div class="form-group">
+            <label>Telefon Numarası</label>
+            <input
+              type="text"
+              [value]="supplierForm.phone"
+              (input)="onPhoneInput($event)"
+              placeholder="Örn: +90 (555) 000 00 00"
+              class="form-control"
+            />
+          </div>
+
+          <!-- Vergi Numarası -->
+          <div class="form-group">
+            <label>Vergi Numarası (VKN / TCKN)</label>
+            <input
+              type="text"
+              [value]="supplierForm.taxNumber"
+              (input)="onTaxNumberInput($event)"
+              placeholder="Örn: 1234567890"
+              class="form-control"
+            />
+          </div>
+
+          <!-- Açık Adres -->
+          <div class="form-group full-width">
+            <label>Açık Adres / Şube Bilgisi</label>
+            <textarea
+              [(ngModel)]="supplierForm.address"
+              rows="3"
+              placeholder="Örn: İkitelli Organize Sanayi Bölgesi, Metal İş San. Sit. 12. Blok No:45 Başakşehir / İstanbul"
+              class="form-control textarea"
+            ></textarea>
+          </div>
+
+          <!-- Aktiflik Durumu (Düzenleme modunda) -->
+          @if (editingSupplierId) {
+            <div class="form-group full-width switch-row">
+              <label class="switch-label">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="supplierForm.isActive"
+                  class="custom-checkbox"
+                />
+                <span>Bu tedarikçi aktif olarak faaliyet gösteriyor</span>
+              </label>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeSupplierModal()" class="btn btn-secondary" [disabled]="isSubmitting">
+          İptal
+        </button>
+        <button (click)="saveSupplier()" class="btn btn-primary" [disabled]="isSubmitting">
+          @if (isSubmitting) {
+            <span class="spinner-sm"></span>
+            <span>Kaydediliyor...</span>
+          } @else {
+            <span>{{ editingSupplierId ? 'Güncellemeleri Kaydet' : 'Tedarikçiyi Oluştur' }}</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ============================================================ -->
+<!-- 2. TEDARİKÇİYE AİT ÜRÜNLER & İLİŞKİLENDİRME MODALI            -->
+<!-- ============================================================ -->
+@if (isProductsModalOpen && selectedSupplierForProducts) {
+  <div class="modal-backdrop" (click)="closeProductsModal()">
+    <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>📦 {{ selectedSupplierForProducts.name }}</h3>
+          <p class="modal-subtitle">Bu tedarikçiden temin edilen ürünlerin listesi ve yeni ürün bağlama</p>
+        </div>
+        <button (click)="closeProductsModal()" class="btn-close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Tedarikçi Özet Kartı -->
+        <div class="supplier-summary-card">
+          <div class="summary-col">
+            <span class="summary-label">Yetkili:</span>
+            <span class="summary-val">{{ selectedSupplierForProducts.contactPerson || 'Belirtilmedi' }}</span>
+          </div>
+          <div class="summary-col">
+            <span class="summary-label">Telefon:</span>
+            <span class="summary-val">{{ selectedSupplierForProducts.phone || 'Belirtilmedi' }}</span>
+          </div>
+          <div class="summary-col">
+            <span class="summary-label">E-posta:</span>
+            <span class="summary-val">{{ selectedSupplierForProducts.email || 'Belirtilmedi' }}</span>
+          </div>
+          <div class="summary-col">
+            <span class="summary-label">VKN:</span>
+            <span class="summary-val">{{ selectedSupplierForProducts.taxNumber || 'Belirtilmedi' }}</span>
+          </div>
+        </div>
+
+        <!-- Hızlı Ürün İlişkilendirme Barı -->
+        <div class="assign-bar card">
+          <div class="assign-bar-title">
+            <span>🔗 Bu Tedarikçiye Ürün İlişkilendir:</span>
+          </div>
+          <div class="assign-inputs">
+            <select [(ngModel)]="selectedProductIdToAssign" class="form-control select-product">
+              <option value="" disabled selected>Listeden bir ürün seçiniz...</option>
+              @for (p of unassignedOrOtherProducts; track p.id) {
+                <option [value]="p.id">
+                  [{{ p.code }}] {{ p.name }} - (Mevcut Tedarikçi: {{ p.supplierName || 'Yok' }})
+                </option>
+              }
+            </select>
+            <button
+              (click)="assignProduct()"
+              class="btn btn-primary"
+              [disabled]="!selectedProductIdToAssign || isAssigningProduct"
+            >
+              @if (isAssigningProduct) {
+                <span class="spinner-sm"></span>
+              } @else {
+                <span>+ Ürünü Bağla</span>
+              }
+            </button>
+          </div>
+        </div>
+
+        <!-- Tedarikçinin Ürünleri Listesi -->
+        <div class="supplier-products-table-wrapper">
+          @if (isLoadingProducts) {
+            <div class="loading-state py-4">
+              <div class="spinner"></div>
+              <p>Ürünler yükleniyor...</p>
+            </div>
+          } @else if (supplierProducts.length === 0) {
+            <div class="empty-state py-4">
+              <span class="empty-icon">📭</span>
+              <h4>Kayıtlı Ürün Bulunamadı</h4>
+              <p>Bu tedarikçiye henüz atanmış bir ürün bulunmamaktadır. Yukarıdaki seçim kutusundan ürün bağlayabilirsiniz.</p>
+            </div>
+          } @else {
+            <table class="data-table mt-2">
+              <thead>
+                <tr>
+                  <th>Ürün Kodu</th>
+                  <th>Ürün Adı</th>
+                  <th>Birim</th>
+                  <th>Birim Fiyat</th>
+                  <th>Mevcut Stok</th>
+                  <th>Durum</th>
+                  <th class="text-right">Aksiyon</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (prod of supplierProducts; track prod.id) {
+                  <tr>
+                    <td>
+                      <span class="product-code-badge">{{ prod.code }}</span>
+                    </td>
+                    <td class="font-bold">{{ prod.name }}</td>
+                    <td>{{ prod.unit }}</td>
+                    <td class="font-mono">{{ prod.unitPrice | number:'1.2-2' }} ₺</td>
+                    <td>
+                      <span [class.text-danger]="prod.isLowStock || prod.currentStock <= prod.minStockLevel" class="font-bold">
+                        {{ prod.currentStock }}
+                      </span>
+                    </td>
+                    <td>
+                      @if (prod.isLowStock || prod.currentStock <= prod.minStockLevel) {
+                        <span class="badge badge-danger">Kritik Stok</span>
+                      } @else {
+                        <span class="badge badge-success">Yeterli</span>
+                      }
+                    </td>
+                    <td class="text-right">
+                      <button
+                        (click)="unassignProduct(prod)"
+                        class="btn-unassign"
+                        title="Bu ürünün tedarikçi eşleşmesini kaldır"
+                      >
+                        Bağlantıyı Kaldır ✕
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeProductsModal()" class="btn btn-secondary">
+          Kapat
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ============================================================ -->
+<!-- 3. SİLME ONAY MODALI                                         -->
+<!-- ============================================================ -->
+@if (isDeleteModalOpen && supplierToDelete) {
+  <div class="modal-backdrop" (click)="closeDeleteModal()">
+    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header delete-header">
+        <h3>⚠️ Tedarikçiyi Sil</h3>
+        <button (click)="closeDeleteModal()" class="btn-close">✕</button>
+      </div>
+
+      <div class="modal-body text-center">
+        <div class="delete-icon-box">🗑️</div>
+        <p class="delete-warning-text">
+          <strong>"{{ supplierToDelete.name }}"</strong> tedarikçi kaydını silmek istediğinize emin misiniz?
+        </p>
+        <p class="delete-sub-text">
+          Bu işlem tedarikçiyi sistemde pasife alacak ve soft-delete olarak işaretleyecektir.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-center">
+        <button (click)="closeDeleteModal()" class="btn btn-secondary" [disabled]="isSubmitting">
+          Vazgeç
+        </button>
+        <button (click)="confirmDelete()" class="btn btn-danger" [disabled]="isSubmitting">
+          @if (isSubmitting) {
+            <span class="spinner-sm"></span>
+            <span>Siliniyor...</span>
+          } @else {
+            <span>Evet, Sil</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
