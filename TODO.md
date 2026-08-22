@@ -69,21 +69,22 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
 ## 📦 Faz 3: Stok & Ürün Yönetimi (Inventory Module)
 
 ### 3.1. Backend (Ürün & Stok)
-- [ ] **Domain & Entity Tasarımı:**
+- [x] **Domain & Entity Tasarımı:**
   - `Product` entity (Code, Name, Description, Unit, MinStockLevel, CurrentStock, UnitPrice, SupplierId, IsActive)
   - `InventoryTransaction` entity (ProductId, Quantity, TransactionType [In/Out/Adjustment], Description, TransactionDate, UserId)
-- [ ] **Application & CQRS (Ürün İşlemleri):**
+  - `TransactionType` enum (In, Out, Adjustment).
+- [x] **Application & CQRS (Ürün İşlemleri):**
   - `CreateProductCommand` & Validator (Benzersiz ürün kodu kontrolü).
   - `UpdateProductCommand` & `DeleteProductCommand` (Soft-delete).
-  - `GetProductsQuery` (Sayfalama, arama, filtreleme).
+  - `GetProductsQuery` (Arama, filtreleme, listeleme).
   - `GetProductByIdQuery`.
-  - `GetLowStockProductsQuery` (Mevcut stok <= MinStockLevel olan ürünler).
-- [ ] **Application & CQRS (Stok Hareketleri):**
+  - `GetLowStockProductsQuery` (Mevcut stok <= MinStockLevel olan kritik ürünler).
+- [x] **Application & CQRS (Stok Hareketleri):**
   - `CreateStockMovementCommand` (Giriş / Çıkış):
-    - Stok çıkışında yeterli miktar kontrolü (Yetersiz stok hatası fırlatma).
+    - Stok çıkışında yeterli bakiye kontrolü (`product.CurrentStock < request.Quantity` durumunda hata).
     - `Product.CurrentStock` alanının atomik olarak güncellenmesi.
   - `GetStockMovementsQuery` (Ürün bazlı veya genel son hareketler).
-- [ ] **API Endpoint'leri:**
+- [x] **API Endpoint'leri:**
   - `GET /api/products`, `POST /api/products`, `PUT /api/products/{id}`, `DELETE /api/products/{id}`
   - `GET /api/products/low-stock`
   - `POST /api/inventory/movement` (Stok Giriş/Çıkış)
