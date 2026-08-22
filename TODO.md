@@ -131,14 +131,15 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
 ## 📊 Faz 5: Yönetici Özeti (Dashboard Module)
 
 ### 5.1. Backend (Dashboard KPI API)
-- [ ] **Application & CQRS:**
+- [x] **Application & CQRS:**
   - `GetDashboardSummaryQuery`:
     - Toplam Ürün Sayısı (`TotalProductsCount`)
     - Kritik Stoktaki Ürün Sayısı (`CriticalStockCount`)
     - Toplam Tedarikçi Sayısı (`TotalSuppliersCount`)
+    - Toplam Envanter Adedi & Değeri (`TotalInventoryQuantity`, `TotalInventoryValue`)
     - Son 10 Stok Hareketi (`RecentStockMovements`)
     - Kritik Stok Uyarı Listesi (`CriticalStockAlerts`)
-- [ ] **API Endpoint:**
+- [x] **API Endpoint:**
   - `GET /api/dashboard/summary`
 
 ### 5.2. Frontend (Dashboard Görünümü)
