@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # 1. SQL Server 2022 Veritabanı
+  erp-sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: erp-sqlserver
+    restart: always
+    user: root
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=ERP_Strong_Password123!
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql/data
+    networks:
+      - erp-network
+
+  # 2. ASP.NET Core Web API (Backend)
+  erp-api:
+    build:
+      context: .
+      dockerfile: src/Presentation/ERP.API/Dockerfile
+    container_name: erp-api
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Server=erp-sqlserver,1433;Database=ERP_Db;User Id=sa;Password=ERP_Strong_Password123!;TrustServerCertificate=True;
+      - Jwt__SecretKey=SuperSecretKeyForERPProjectThatIsAtLeast32CharactersLong!
+      - Jwt__Issuer=ERP_Core_API
+      - Jwt__Audience=ERP_Clients
+    ports:
+      - "5000:5000"
+    depends_on:
+      - erp-sqlserver
+    networks:
+      - erp-network
+
+  # 3. Angular SPA (Frontend)
+  erp-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: erp-frontend
+    restart: always
+    ports:
+      - "4200:80"
+    depends_on:
+      - erp-api
+    networks:
+      - erp-network
+
+volumes:
+  mssql_data:
+    driver: local
+
+networks:
+  erp-network:
+    driver: bridge

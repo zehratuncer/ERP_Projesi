@@ -69,36 +69,38 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
 ## 📦 Faz 3: Stok & Ürün Yönetimi (Inventory Module)
 
 ### 3.1. Backend (Ürün & Stok)
-- [ ] **Domain & Entity Tasarımı:**
+- [x] **Domain & Entity Tasarımı:**
   - `Product` entity (Code, Name, Description, Unit, MinStockLevel, CurrentStock, UnitPrice, SupplierId, IsActive)
   - `InventoryTransaction` entity (ProductId, Quantity, TransactionType [In/Out/Adjustment], Description, TransactionDate, UserId)
-- [ ] **Application & CQRS (Ürün İşlemleri):**
+  - `TransactionType` enum (In, Out, Adjustment).
+- [x] **Application & CQRS (Ürün İşlemleri):**
   - `CreateProductCommand` & Validator (Benzersiz ürün kodu kontrolü).
   - `UpdateProductCommand` & `DeleteProductCommand` (Soft-delete).
-  - `GetProductsQuery` (Sayfalama, arama, filtreleme).
+  - `GetProductsQuery` (Arama, filtreleme, listeleme).
   - `GetProductByIdQuery`.
-  - `GetLowStockProductsQuery` (Mevcut stok <= MinStockLevel olan ürünler).
-- [ ] **Application & CQRS (Stok Hareketleri):**
+  - `GetLowStockProductsQuery` (Mevcut stok <= MinStockLevel olan kritik ürünler).
+- [x] **Application & CQRS (Stok Hareketleri):**
   - `CreateStockMovementCommand` (Giriş / Çıkış):
-    - Stok çıkışında yeterli miktar kontrolü (Yetersiz stok hatası fırlatma).
+    - Stok çıkışında yeterli bakiye kontrolü (`product.CurrentStock < request.Quantity` durumunda hata).
     - `Product.CurrentStock` alanının atomik olarak güncellenmesi.
   - `GetStockMovementsQuery` (Ürün bazlı veya genel son hareketler).
-- [ ] **API Endpoint'leri:**
+- [x] **API Endpoint'leri:**
   - `GET /api/products`, `POST /api/products`, `PUT /api/products/{id}`, `DELETE /api/products/{id}`
   - `GET /api/products/low-stock`
   - `POST /api/inventory/movement` (Stok Giriş/Çıkış)
   - `GET /api/inventory/movements`
 
 ### 3.2. Frontend (Ürün & Stok Arayüzü)
-- [ ] **Ürün Listesi Sayfası:**
-  - Dinamik tablo (Ürün Adı, Kodu, Mevcut Stok, Kritik Eşik, Birim Fiyat, Tedarikçi, Durum).
-  - Arama, filtreleme ve sayfalama bileşenleri.
-  - Kritik stok seviyesinin altındaki ürünler için görsel badge/uyarı (`danger/warning`).
-- [ ] **Ürün Ekleme & Düzenleme Modalı/Formu:**
-  - Reaktif form kontrolleri ve doğrulamalar.
-- [ ] **Stok Giriş/Çıkış Hızlı Aksiyon Modalı:**
-  - Miktar, hareket tipi (Giriş/Çıkış), açıklama girişi.
-  - Başarılı işlem sonrası anında tablo yenileme.
+- [x] **Ürün Listesi Sayfası:**
+  - Dinamik tablo (Ürün Kodu, Ürün Adı, Açıklama, Birim, Birim Fiyat, Mevcut Stok, Kritik Eşik, Durum).
+  - Canlı arama kutusu ve "Tümü / Kritik Stok" sekmeleri.
+  - Kritik stok seviyesinin altındaki ürünler için görsel kırmızı badge ve satır vurgusu.
+- [x] **Ürün Ekleme & Düzenleme Modalı/Formu:**
+  - Reaktif modal formu, birim seçimi, fiyat/stok doğrulamaları ve soft-delete silme aksiyonu.
+- [x] **Stok Giriş/Çıkış Hızlı Aksiyon Modalı:**
+  - Giriş / Çıkış / Sayım Düzeltmesi radyo butonları.
+  - Canlı yeni stok önizlemesi ve yetersiz bakiye hata uyarısı.
+  - Tüm stok hareket geçmişi listeleme penceresi (Audit drawer/modal).
 
 ---
 
