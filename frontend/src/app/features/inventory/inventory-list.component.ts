@@ -94,11 +94,12 @@ export class InventoryListComponent implements OnInit {
         this.isLoading = false;
         if (res.isSuccess && res.data) {
           this.products = res.data;
-          this.applyFilters();
         }
+        this.applyFilters();
       },
       error: () => {
         this.isLoading = false;
+        this.applyFilters();
       }
     });
   }

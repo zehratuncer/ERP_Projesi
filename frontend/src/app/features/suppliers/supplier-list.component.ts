@@ -90,11 +90,12 @@ export class SupplierListComponent implements OnInit {
         this.isLoading = false;
         if (res.isSuccess && res.data) {
           this.suppliers = res.data;
-          this.applyFilters();
         }
+        this.applyFilters();
       },
       error: () => {
         this.isLoading = false;
+        this.applyFilters();
       }
     });
   }

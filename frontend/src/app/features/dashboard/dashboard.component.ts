@@ -20,6 +20,7 @@ export class DashboardComponent implements OnInit {
 
   summary: DashboardSummary | null = null;
   isLoading = true;
+  hasError = false;
   lastUpdated: Date = new Date();
 
   readonly TransactionType = TransactionType;
@@ -30,6 +31,7 @@ export class DashboardComponent implements OnInit {
 
   loadDashboardData(isManualRefresh = false) {
     this.isLoading = true;
+    this.hasError = false;
     this.dashboardService.getDashboardSummary().subscribe({
       next: (res) => {
         this.isLoading = false;
@@ -43,6 +45,7 @@ export class DashboardComponent implements OnInit {
       },
       error: () => {
         this.isLoading = false;
+        this.hasError = true;
         this.toastService.error('Dashboard verileri yüklenirken bir hata oluştu.');
       }
     });
