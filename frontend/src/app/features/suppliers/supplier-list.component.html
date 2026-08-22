@@ -2,8 +2,8 @@
   <!-- Top Action Header & Quick Stats -->
   <div class="page-header">
     <div class="header-left">
-      <h2>🚚 Tedarikçi Yönetimi</h2>
-      <p>Tüm tedarikçi firmalar, iletişim yetkilileri ve sağlanan ürünlerin yönetimi</p>
+      <h2>🚚 Kırtasiye & Yayın Tedarikçileri</h2>
+      <p>Yayınevleri, kağıt üreticileri, kırtasiye distribütörleri ve toptancı firmaların yönetimi</p>
     </div>
     <div class="header-actions">
       <button (click)="openCreateModal()" class="btn btn-primary">
@@ -45,7 +45,7 @@
         type="text"
         [(ngModel)]="searchQuery"
         (input)="onSearchChange()"
-        placeholder="Firma adı, yetkili, telefon veya vergi no ile ara..."
+        placeholder="Tedarikçi adı, yayınevi veya yetkili ile ara (Örn: Adel, Gıpta, Kopier)..."
         class="form-control search-input"
       />
     </div>

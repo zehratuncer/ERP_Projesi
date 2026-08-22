@@ -40,17 +40,17 @@ public class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
             .HasForeignKey(p => p.SupplierId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Seed Sample Suppliers for MVP
+        // Seed Stationery Suppliers
         builder.HasData(
             new Supplier
             {
                 Id = SampleSupplier1Id,
-                Name = "Alfa Civata & Bağlantı Elemanları San. Tic. Ltd. Şti.",
+                Name = "Adel Kalemcilik & Kırtasiye A.Ş.",
                 ContactPerson = "Mehmet Yılmaz",
-                Email = "siparis@alfacivata.com",
-                Phone = "+90 (212) 555 10 20",
-                Address = "İkitelli OSB, Metal İş Sanayi Sitesi 12. Blok No:45, Başakşehir/İstanbul",
-                TaxNumber = "1234567890",
+                Email = "siparis@adel.com.tr",
+                Phone = "+90 (216) 555 20 20",
+                Address = "Saray Mah. Site Yolu Cad. No:5, Ümraniye/İstanbul",
+                TaxNumber = "0080012345",
                 IsActive = true,
                 CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IsDeleted = false
@@ -58,12 +58,12 @@ public class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
             new Supplier
             {
                 Id = SampleSupplier2Id,
-                Name = "PetroKimya Endüstriyel Yağlar A.Ş.",
+                Name = "Kopier A4 Kağıt & Ambalaj Sanayi Ltd.",
                 ContactPerson = "Ayşe Demir",
-                Email = "info@petrokimya.com.tr",
-                Phone = "+90 (262) 641 33 44",
-                Address = "Gebze Organize Sanayi Bölgesi 1000. Sokak No:12, Gebze/Kocaeli",
-                TaxNumber = "9876543210",
+                Email = "satis@kopierkagit.com",
+                Phone = "+90 (212) 641 10 30",
+                Address = "İkitelli OSB, Kağıtçılar Sanayi Sitesi 3. Cadde No:14, Başakşehir/İstanbul",
+                TaxNumber = "5840987654",
                 IsActive = true,
                 CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IsDeleted = false
@@ -71,12 +71,12 @@ public class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
             new Supplier
             {
                 Id = SampleSupplier3Id,
-                Name = "RulmanTek Makine ve Güç Aktarım Ltd.",
+                Name = "Gıpta Ofis & Okul Kırtasiye Ürünleri A.Ş.",
                 ContactPerson = "Kemal Kaya",
-                Email = "satis@rulmantek.com",
-                Phone = "+90 (216) 444 88 99",
-                Address = "Dudullu OSB DES Sanayi Sitesi 105. Sokak No:8, Ümraniye/İstanbul",
-                TaxNumber = "4567891230",
+                Email = "info@gipta.com.tr",
+                Phone = "+90 (312) 888 40 50",
+                Address = "1. Organize Sanayi Bölgesi Dağıstan Cad. No:7, Sincan/Ankara",
+                TaxNumber = "4110456789",
                 IsActive = true,
                 CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IsDeleted = false

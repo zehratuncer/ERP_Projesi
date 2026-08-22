@@ -2,8 +2,8 @@
   <!-- Top Action Header & Quick Stats -->
   <div class="page-header">
     <div class="header-left">
-      <h2>📦 Stok ve Ürün Yönetimi</h2>
-      <p>Tüm hammadde, yarı mamul ve ticari ürünlerin stok takibi</p>
+      <h2>📦 Kırtasiye Stok ve Ürün Yönetimi</h2>
+      <p>Kitap, defter, A4 fotokopi kağıdı ve ofis kırtasiye ürünlerinin stok takibi</p>
     </div>
     <div class="header-actions">
       <button (click)="openMovementsModal()" class="btn btn-secondary">
@@ -48,7 +48,7 @@
         type="text"
         [(ngModel)]="searchQuery"
         (input)="onSearchChange()"
-        placeholder="Ürün adı veya kodu ile ara..."
+        placeholder="Ürün adı, barkod veya kodu ile ara (Örn: A4 Kağıt, Faber-Castell, Defter)..."
         class="form-control search-input"
       />
     </div>
@@ -217,10 +217,11 @@
               <select id="unit" [(ngModel)]="productForm.unit" name="unit" class="form-control">
                 <option value="Adet">Adet</option>
                 <option value="Paket">Paket</option>
-                <option value="Kg">Kg</option>
-                <option value="Litre">Litre</option>
-                <option value="Metre">Metre</option>
                 <option value="Koli">Koli</option>
+                <option value="Kutu">Kutu</option>
+                <option value="Stand">Stand</option>
+                <option value="Deste">Deste</option>
+                <option value="Rulo">Rulo</option>
               </select>
             </div>
             <div class="form-group flex-1">
