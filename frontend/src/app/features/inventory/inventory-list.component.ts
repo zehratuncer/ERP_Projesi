@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
@@ -21,6 +21,7 @@ export class InventoryListComponent implements OnInit {
   private inventoryService = inject(InventoryService);
   private supplierService = inject(SupplierService);
   private toastService = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
   products: Product[] = [];
   filteredProducts: Product[] = [];
@@ -59,6 +60,12 @@ export class InventoryListComponent implements OnInit {
   // Hareket Geçmişi Modal Durumu
   isHistoryModalOpen = false;
 
+  readonly TransactionType = TransactionType;
+
+  get totalProductsCount(): number {
+    return this.products.length;
+  }
+
   get criticalStockCount(): number {
     return this.products.filter(p => p.isLowStock || p.currentStock <= p.minStockLevel).length;
   }
@@ -89,6 +96,7 @@ export class InventoryListComponent implements OnInit {
 
   loadProducts() {
     this.isLoading = true;
+    this.cdr.markForCheck();
     this.productService.getProducts().subscribe({
       next: (res) => {
         this.isLoading = false;
@@ -109,6 +117,7 @@ export class InventoryListComponent implements OnInit {
       next: (res) => {
         if (res.isSuccess && res.data) {
           this.suppliers = res.data;
+          this.cdr.markForCheck();
         }
       }
     });
@@ -131,6 +140,7 @@ export class InventoryListComponent implements OnInit {
     }
 
     this.filteredProducts = list;
+    this.cdr.markForCheck();
   }
 
   onSearchChange() {
@@ -156,6 +166,7 @@ export class InventoryListComponent implements OnInit {
       supplierId: undefined
     };
     this.isProductModalOpen = true;
+    this.cdr.markForCheck();
   }
 
   openEditModal(product: Product) {
@@ -171,11 +182,13 @@ export class InventoryListComponent implements OnInit {
       supplierId: product.supplierId
     };
     this.isProductModalOpen = true;
+    this.cdr.markForCheck();
   }
 
   closeProductModal() {
     this.isProductModalOpen = false;
     this.editingProductId = null;
+    this.cdr.markForCheck();
   }
 
   saveProduct() {
@@ -185,6 +198,7 @@ export class InventoryListComponent implements OnInit {
     }
 
     this.isSubmitting = true;
+    this.cdr.markForCheck();
 
     if (this.editingProductId) {
       const updateReq: UpdateProductRequest = {
@@ -206,8 +220,12 @@ export class InventoryListComponent implements OnInit {
             this.closeProductModal();
             this.loadProducts();
           }
+          this.cdr.markForCheck();
         },
-        error: () => { this.isSubmitting = false; }
+        error: () => {
+          this.isSubmitting = false;
+          this.cdr.markForCheck();
+        }
       });
     } else {
       this.productService.createProduct(this.productForm).subscribe({
@@ -218,8 +236,12 @@ export class InventoryListComponent implements OnInit {
             this.closeProductModal();
             this.loadProducts();
           }
+          this.cdr.markForCheck();
         },
-        error: () => { this.isSubmitting = false; }
+        error: () => {
+          this.isSubmitting = false;
+          this.cdr.markForCheck();
+        }
       });
     }
   }
@@ -232,6 +254,7 @@ export class InventoryListComponent implements OnInit {
             this.toastService.success('Ürün başarıyla silindi.');
             this.loadProducts();
           }
+          this.cdr.markForCheck();
         }
       });
     }
@@ -247,11 +270,13 @@ export class InventoryListComponent implements OnInit {
       description: ''
     };
     this.isMovementModalOpen = true;
+    this.cdr.markForCheck();
   }
 
   closeMovementModal() {
     this.isMovementModalOpen = false;
     this.selectedProductForMovement = null;
+    this.cdr.markForCheck();
   }
 
   saveStockMovement() {
@@ -261,6 +286,7 @@ export class InventoryListComponent implements OnInit {
     }
 
     this.isSubmitting = true;
+    this.cdr.markForCheck();
     this.inventoryService.createStockMovement(this.movementForm).subscribe({
       next: (res) => {
         this.isSubmitting = false;
@@ -269,18 +295,24 @@ export class InventoryListComponent implements OnInit {
           this.closeMovementModal();
           this.loadProducts();
         }
+        this.cdr.markForCheck();
       },
-      error: () => { this.isSubmitting = false; }
+      error: () => {
+        this.isSubmitting = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
   // --- Hareket Geçmişi Modal ---
   openMovementsModal() {
     this.isHistoryModalOpen = true;
+    this.cdr.markForCheck();
     this.inventoryService.getStockMovements().subscribe({
       next: (res) => {
         if (res.isSuccess && res.data) {
           this.movements = res.data;
+          this.cdr.markForCheck();
         }
       }
     });
@@ -288,5 +320,6 @@ export class InventoryListComponent implements OnInit {
 
   closeMovementsModal() {
     this.isHistoryModalOpen = false;
+    this.cdr.markForCheck();
   }
 }

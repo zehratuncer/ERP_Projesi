@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
@@ -17,6 +17,7 @@ import { TransactionType } from '../../core/models/inventory.model';
 export class DashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);
   private toastService = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
   summary: DashboardSummary | null = null;
   isLoading = true;
@@ -32,6 +33,8 @@ export class DashboardComponent implements OnInit {
   loadDashboardData(isManualRefresh = false) {
     this.isLoading = true;
     this.hasError = false;
+    this.cdr.markForCheck();
+
     this.dashboardService.getDashboardSummary().subscribe({
       next: (res) => {
         this.isLoading = false;
@@ -42,11 +45,13 @@ export class DashboardComponent implements OnInit {
             this.toastService.success('Dashboard verileri güncellendi.');
           }
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isLoading = false;
         this.hasError = true;
         this.toastService.error('Dashboard verileri yüklenirken bir hata oluştu.');
+        this.cdr.markForCheck();
       }
     });
   }

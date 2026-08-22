@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupplierService } from '../../core/services/supplier.service';
@@ -18,6 +18,7 @@ export class SupplierListComponent implements OnInit {
   private supplierService = inject(SupplierService);
   private productService = inject(ProductService);
   private toastService = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
   suppliers: Supplier[] = [];
   filteredSuppliers: Supplier[] = [];
@@ -85,6 +86,7 @@ export class SupplierListComponent implements OnInit {
 
   loadSuppliers() {
     this.isLoading = true;
+    this.cdr.markForCheck();
     this.supplierService.getSuppliers().subscribe({
       next: (res) => {
         this.isLoading = false;
@@ -105,6 +107,7 @@ export class SupplierListComponent implements OnInit {
       next: (res) => {
         if (res.isSuccess && res.data) {
           this.allProducts = res.data;
+          this.cdr.markForCheck();
         }
       }
     });
@@ -131,6 +134,7 @@ export class SupplierListComponent implements OnInit {
     }
 
     this.filteredSuppliers = list;
+    this.cdr.markForCheck();
   }
 
   onSearchChange() {
@@ -167,12 +171,14 @@ export class SupplierListComponent implements OnInit {
       }
     }
     this.supplierForm.phone = formatted;
+    this.cdr.markForCheck();
   }
 
   onTaxNumberInput(event: Event) {
     const input = event.target as HTMLInputElement;
     const digits = input.value.replace(/\D/g, '').substring(0, 11);
     this.supplierForm.taxNumber = digits;
+    this.cdr.markForCheck();
   }
 
   // --- Tedarikçi Ekleme / Düzenleme ---
@@ -188,6 +194,7 @@ export class SupplierListComponent implements OnInit {
       isActive: true
     };
     this.isSupplierModalOpen = true;
+    this.cdr.markForCheck();
   }
 
   openEditModal(supplier: Supplier) {
@@ -202,11 +209,13 @@ export class SupplierListComponent implements OnInit {
       isActive: supplier.isActive
     };
     this.isSupplierModalOpen = true;
+    this.cdr.markForCheck();
   }
 
   closeSupplierModal() {
     this.isSupplierModalOpen = false;
     this.editingSupplierId = null;
+    this.cdr.markForCheck();
   }
 
   saveSupplier() {
@@ -216,6 +225,7 @@ export class SupplierListComponent implements OnInit {
     }
 
     this.isSubmitting = true;
+    this.cdr.markForCheck();
 
     if (this.editingSupplierId) {
       const updateReq: UpdateSupplierRequest = {
@@ -238,9 +248,11 @@ export class SupplierListComponent implements OnInit {
             this.loadSuppliers();
             this.loadAllProducts();
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           this.isSubmitting = false;
+          this.cdr.markForCheck();
         }
       });
     } else {
@@ -262,9 +274,11 @@ export class SupplierListComponent implements OnInit {
             this.loadSuppliers();
             this.loadAllProducts();
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           this.isSubmitting = false;
+          this.cdr.markForCheck();
         }
       });
     }
@@ -274,17 +288,20 @@ export class SupplierListComponent implements OnInit {
   openDeleteModal(supplier: Supplier) {
     this.supplierToDelete = supplier;
     this.isDeleteModalOpen = true;
+    this.cdr.markForCheck();
   }
 
   closeDeleteModal() {
     this.isDeleteModalOpen = false;
     this.supplierToDelete = null;
+    this.cdr.markForCheck();
   }
 
   confirmDelete() {
     if (!this.supplierToDelete) return;
 
     this.isSubmitting = true;
+    this.cdr.markForCheck();
     this.supplierService.deleteSupplier(this.supplierToDelete.id).subscribe({
       next: (res) => {
         this.isSubmitting = false;
@@ -294,9 +311,11 @@ export class SupplierListComponent implements OnInit {
           this.loadSuppliers();
           this.loadAllProducts();
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isSubmitting = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -306,6 +325,7 @@ export class SupplierListComponent implements OnInit {
     this.selectedSupplierForProducts = supplier;
     this.selectedProductIdToAssign = '';
     this.isProductsModalOpen = true;
+    this.cdr.markForCheck();
     this.loadSupplierProducts(supplier.id);
   }
 
@@ -314,19 +334,23 @@ export class SupplierListComponent implements OnInit {
     this.selectedSupplierForProducts = null;
     this.supplierProducts = [];
     this.selectedProductIdToAssign = '';
+    this.cdr.markForCheck();
   }
 
   loadSupplierProducts(supplierId: string) {
     this.isLoadingProducts = true;
+    this.cdr.markForCheck();
     this.supplierService.getSupplierProducts(supplierId).subscribe({
       next: (res) => {
         this.isLoadingProducts = false;
         if (res.isSuccess && res.data) {
           this.supplierProducts = res.data;
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isLoadingProducts = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -341,6 +365,7 @@ export class SupplierListComponent implements OnInit {
     if (!prod) return;
 
     this.isAssigningProduct = true;
+    this.cdr.markForCheck();
     const updateReq: UpdateProductRequest = {
       id: prod.id,
       name: prod.name,
@@ -362,9 +387,11 @@ export class SupplierListComponent implements OnInit {
           this.loadSuppliers();
           this.loadAllProducts();
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isAssigningProduct = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -391,6 +418,7 @@ export class SupplierListComponent implements OnInit {
           this.loadSuppliers();
           this.loadAllProducts();
         }
+        this.cdr.markForCheck();
       }
     });
   }
