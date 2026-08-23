@@ -62,6 +62,7 @@ Sistem geliştirme stratejisi adım adım değer üretecek şekilde fazlara ayr�
 
 ### 🔸 v2 — Kurumsal İş Süreçleri & Değer Katan Özellikler
 İşletmelere doğrudan ticari değer sağlayan ve operasyonel verimliliği artıran kurumsal modüller:
+* 🛒 **Barkodlu Hızlı Satış & Kasa (POS):** Barkod tabancası ile hızlı ürün okutma, sepet yönetimi, nakit/kart tahsilat ve otomatik stoktan düşüş.
 * 📑 **Satın Alma Talepleri:** Departman bazlı satın alma ihtiyaçlarının girilmesi.
 * ✅ **Çok Kademeli Onay Sistemi:** Yönetici onay akışları (`Taslak`, `Onay Bekliyor`, `Onaylandı`, `Reddedildi`).
 * 📈 **Basit & Gelişmiş Raporlama:** Satış/stok devir hızı, tedarikçi performans özetleri.
@@ -122,13 +123,25 @@ src/
 ### 📋 Ön Koşullar
 * [.NET 8+ SDK](https://dotnet.microsoft.com/download)
 * [Node.js (v18+)](https://nodejs.org/) & [Angular CLI](https://angular.io/cli)
-* [Docker Desktop](https://www.docker.com/) *(Opsiyonel)*
+* [Docker Desktop](https://www.docker.com/) *(Önerilir)*
+
+### 🚀 Hızlı Başlatma (Docker ile)
+Projeyi Docker üzerinden tüm servisleriyle (Backend, Frontend, Veritabanı) tek komutla ayağa kaldırmak için:
 
 ```bash
 # Projeyi klonlayın
 git clone https://github.com/kullaniciadi/ERP_Projesi.git
 cd ERP_Projesi
 
+# Docker ile tüm servisleri başlatın
+docker-compose up -d --build
+```
+Sistemi durdurmak için `docker-compose down` komutunu kullanabilirsiniz.
+
+### 💻 Manuel Başlatma (Geliştirici Modu)
+Eğer projeyi Docker olmadan lokalde çalıştırmak isterseniz:
+
+```bash
 # Backend çalıştırma
 cd src/API
 dotnet run

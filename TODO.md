@@ -165,7 +165,185 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
 
 ---
 
+## 🚀 v2: Kurumsal İş Süreçleri & Kırtasiye ERP Geliştirmeleri
+
+Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk stok devir raporlarını, onay mekanizmalarını ve anlık bildirim altyapısını kurmayı amaçlar.
+
+---
+
+## 🛒 Faz 7: Barkodlu Hızlı Satış & Kasa (POS) Modülü
+
+### 7.1. Backend (Satış İşlemleri & Stok Düşümü)
+- [ ] **Domain & Entity Tasarımı:**
+  - `Sale` entity (ReceiptNumber, CashierUserId, TotalAmount, DiscountAmount, FinalAmount, PaymentMethod [Cash, CreditCard, Split, OnAccount], SaleDate, CustomerName).
+  - `SaleItem` entity (SaleId, ProductId, Quantity, UnitPrice, TotalPrice, DiscountRate).
+  - `PaymentMethod` enum (Cash, CreditCard, Split, OnAccount).
+- [ ] **Application & CQRS (Satış & Otomatik Stok Düşümü):**
+  - `GetProductByBarcodeQuery` (Barkod tabancası okuttuğunda ürün koduna/barkoduna göre anında ürün detayını ve stok durumunu getirme).
+  - `CompleteSaleCommand` & `CompleteSaleCommandValidator`:
+    - Sepetteki tüm ürünler için atomik Transaction başlatılması.
+    - Her bir kalem için yeterli stok kontrolü (`product.CurrentStock < item.Quantity` kontrolü).
+    - Her ürünün `CurrentStock` adedinin satılan miktar kadar otomatik düşürülmesi.
+    - Otomatik `InventoryTransaction` kaydı oluşturulması (`TransactionType: Out`, Açıklama: `Fiş No: {ReceiptNumber} Satışı`).
+    - Satış sonrası ürün stoğu `MinStockLevel` kritik eşiğin altına inerse sistemde uyarı oluşturulması.
+  - `GetSalesHistoryQuery` (Günlük kasa satış raporu, fiş sorgulama ve filtreleme).
+- [ ] **API Endpoint'leri:**
+  - `GET /api/pos/product/{barcodeOrCode}` (Barkod ile anlık ürün getirme)
+  - `POST /api/pos/complete-sale` (Sepeti onayla, tahsilatı yap, stoktan düş)
+  - `GET /api/pos/receipt/{receiptNumber}` (Fiş/Satış detayı)
+  - `GET /api/pos/daily-summary` (Günlük ciro ve kasa raporu)
+
+### 7.2. Frontend (Kırtasiye Hızlı Kasa / POS Arayüzü)
+- [ ] **Barkod Odaklı Hızlı Kasa Ekranı (`PosComponent`):**
+  - **Sürekli Aktif Barkod Girişi (Autofocus):** Barkod tabancası her okutmada (`Enter` ile) ürünü sepet listesine `+1` adet olarak anında ekler.
+  - Aynı barkod peş peşe okutulduğunda sepet satırındaki adedi otomatik artırma (`x2`, `x3`).
+  - **Klavye Kısayolları:** `F2` (Satışı Tamamla / Ödeme), `F4` (Sepeti Temizle), `+ / -` (Adet Değiştir), `Delete` (Satır Sil).
+- [ ] **Dinamik Sepet & Tahsilat Paneli:**
+  - Anlık toplam tutar, KDV dökümü, alınan para ve para üstü hesaplama (Örn: 200 TL verildi ➔ 45 TL para üstü).
+  - Ödeme yöntemi seçimi (Nakit / Kredi Kartı / Veresiye-Cari).
+- [ ] **Hızlı Fiş Çıktısı (Thermal Receipt):**
+  - Satış bittiğinde otomatik fiş yazdırma penceresi (58mm/80mm termal fiş şablonu).
+
+---
+
+## 📑 Faz 8: Satın Alma Talepleri Modülü (Purchase Request Module)
+
+### 8.1. Backend (Talep Yönetimi & CQRS)
+- [ ] **Domain & Entity Tasarımı:**
+  - `PurchaseRequest` entity (RequestNumber, Department, RequesterUserId, Priority [Low, Medium, High, Urgent], Status [Draft, PendingApproval, Approved, Rejected, Completed], TotalEstimatedAmount, RequiredDate, Note).
+  - `PurchaseRequestItem` entity (PurchaseRequestId, ProductId, RequestedQuantity, Unit, EstimatedUnitPrice, Notes).
+  - `RequestPriority` ve `RequestStatus` enum tanımlamaları.
+- [ ] **Application & CQRS:**
+  - `CreatePurchaseRequestCommand` & `CreatePurchaseRequestValidator` (En az bir kalem, pozitif miktar, departman doğrulama).
+  - `UpdatePurchaseRequestCommand` (Sadece Taslak/Beklemede durumundaki talepler için).
+  - `CancelPurchaseRequestCommand` (Talep sahibi veya yönetici tarafından iptal).
+  - `GetPurchaseRequestsQuery` (Durum, departman, tarih aralığı, aciliyet ve talep eden bazlı gelişmiş filtreleme ve sayfalama).
+  - `GetPurchaseRequestByIdQuery` (Kalemler, ürün detayları ve onay geçmişi ile birlikte).
+- [ ] **API Endpoint'leri:**
+  - `POST /api/purchase-requests`
+  - `GET /api/purchase-requests`
+  - `GET /api/purchase-requests/{id}`
+  - `PUT /api/purchase-requests/{id}`
+  - `DELETE /api/purchase-requests/{id}/cancel`
+
+### 8.2. Frontend (Kırtasiye Satın Alma Talep Arayüzü)
+- [ ] **Talep Listesi & Filtreleme:**
+  - Talep numarası, departman, ürün çeşit sayısı, tahmini tutar, aciliyet (Renkli badge: Okul Sezonu Acil, Rutin Ofis İhtiyacı) ve onay durumu tablosu.
+- [ ] **Dinamik Çok Satırlı Talep Oluşturma Formu:**
+  - Kırtasiye ürün arama (Defter, Kağıt, Kalem Grubu vb.), miktar/paket seçimi, birim fiyat ve canlı genel toplam hesaplama.
+  - Hedef teslim tarihi ve departman bütçe kodu seçimi.
+- [ ] **Talep Detay & Süreç Takip Ekranı:**
+  - Talep kalemleri, birim/miktar bilgisi ve anlık onay durum ilerleme çubuğu (Stepper).
+
+---
+
+## ✅ Faz 9: Çok Kademeli Onay Sistemi & İş Akışı (Multi-Level Approval Workflow)
+
+### 9.1. Backend (Onay Motoru & Kuralları)
+- [ ] **Domain & Entity Tasarımı:**
+  - `ApprovalWorkflow` & `ApprovalStep` entity'leri (StepNumber, RoleId/UserId, IsRequired, Status).
+  - `ApprovalHistory` entity (PurchaseRequestId, ApproverUserId, Action [Approved, Rejected, Revised], Comment, ActionDate).
+- [ ] **Application & CQRS (Onay İşlemleri):**
+  - `ApprovePurchaseRequestCommand` & `RejectPurchaseRequestCommand`:
+    - Limit bazlı onay kuralı (Örn: 10.000 TL altı Şube/Kırtasiye Müdürü onayı, üzeri Genel Satın Alma Direktörü onayı).
+    - Reddetme durumunda zorunlu açıklama/gerekçe kontrolü.
+  - **Otomasyon / Stok Entegrasyonu:**
+    - Onaylanan satın alma talebinin tek tıkla otomatik olarak Tedarikçi Satın Alma Siparişine (Purchase Order) veya doğrudan Mal Kabul / Stok Giriş Fişine dönüştürülmesi.
+- [ ] **API Endpoint'leri:**
+  - `POST /api/purchase-requests/{id}/approve`
+  - `POST /api/purchase-requests/{id}/reject`
+  - `GET /api/purchase-requests/{id}/approval-history`
+
+### 9.2. Frontend (Yönetici Onay Paneli)
+- [ ] **"Onayımı Bekleyenler" (Pending Approvals) Gelen Kutusu:**
+  - Yöneticinin tek ekranda bekleyen kırtasiye taleplerini inceleyebileceği özet kartlar ve sayaçlar.
+- [ ] **Hızlı Onay / Red Aksiyon Modalı:**
+  - Tek tıkla onaylama veya red gerekçesi girerek geri gönderme arayüzü.
+- [ ] **Görsel İş Akışı Zaman Çizelgesi (Audit Timeline):**
+  - Talebin hangi aşamada kim tarafından incelendiğini gösteren görsel durum akışı.
+
+---
+
+## 📈 Faz 10: Kırtasiye Raporlama & Stok Analitiği (Reporting & Analytics)
+
+### 10.1. Backend (Analitik & İstatistik Servisleri)
+- [ ] **Application & Raporlama CQRS Query'leri:**
+  - `GetStockTurnoverRateQuery` (Kırtasiye ürünlerinin devir hızı, en hızlı eriyen A4 kağıt, fotokopi malzemeleri ve kalem grupları).
+  - `GetSeasonalDemandTrendsQuery` (Okul açılış sezonu [Ağustos-Ekim], sınav dönemleri ve ofis sezonu stok hareket trendleri).
+  - `GetDeadStockQuery` (Son 90/180 günde hiç hareketi olmayan hareketsiz/ölü kırtasiye stokları).
+  - `GetSupplierPerformanceQuery` (Tedarikçilerin ortalama teslimat süresi, fiyat değişim oranları ve sipariş tamamlama başarısı).
+  - `GetCategoryProfitabilityQuery` (Kategori bazında kâr marjı, toplam ciro ve stok maliyeti).
+- [ ] **API Endpoint'leri:**
+  - `GET /api/reports/stock-turnover`
+  - `GET /api/reports/seasonal-trends`
+  - `GET /api/reports/dead-stock`
+  - `GET /api/reports/supplier-performance`
+  - `GET /api/reports/category-analytics`
+
+### 10.2. Frontend (İnteraktif Raporlama Dashboard'u)
+- [ ] **Görsel Veri Grafikleri (Charts):**
+  - Chart.js / ApexCharts entegrasyonu (Kategori dağılım pasta grafiği, aylık tüketim çizgi grafiği, tedarikçi karşılaştırma sütun grafiği).
+- [ ] **Özelleştirilebilir Filtreleme Çubuğu:**
+  - Tarih aralığı (Son 30 Gün, Sezonluk, Yıllık), Kırtasiye Kategorisi (Kağıt, Yazı Gereçleri, Ofis, Sanatsal), Tedarikçi seçimi.
+- [ ] **Özet KPI Analiz Kartları:**
+  - En Hızlı Tükenen Ürün, En Maliyetli Kategori, Hareketsiz Stok Maliyeti vb.
+
+---
+
+## 📄 Faz 11: Excel & PDF Dışa Aktarım Motoru (Export Engine)
+
+### 11.1. Backend (Belge Üretim Servisleri)
+- [ ] **Kütüphane Kurulumu & Altyapı:**
+  - `ClosedXML` / `MiniExcel` (Excel üretimi) ve `QuestPDF` (Vektörel & modern PDF tasarımı).
+- [ ] **Application Servisleri:**
+  - `IExcelExportService` & `IPdfReportService` arayüzleri ve implementasyonları.
+  - Kurumsal Kırtasiye Antetli **Satın Alma Talep Formu PDF** şablonu.
+  - **Mal Kabul & Stok Giriş / Çıkış Fişi PDF** çıktısı.
+  - Filtrelenmiş Ürün Listesi, Stok Hareketleri ve Raporların Biçimlendirilmiş **Excel (.xlsx)** çıktısı (Otomatik kolon genişlikleri, başlık stilleri, para birimi formatı).
+- [ ] **API Endpoint'leri:**
+  - `GET /api/purchase-requests/{id}/export-pdf`
+  - `GET /api/inventory/export-excel`
+  - `GET /api/products/export-excel`
+  - `GET /api/reports/{reportType}/export-excel`
+
+### 11.2. Frontend (Export Butonları & Önizleme)
+- [ ] **Dışa Aktarma Butonları & Durum Yönetimi:**
+  - Tablolarda ve raporlarda "Excel İndir" ve "PDF Yazdır" butonları, indirme esnasında yükleme animasyonu (Loading state).
+- [ ] **PDF Önizleme & Yazdırma Modalı:**
+  - Talep formu ve irsaliye çıktısını tarayıcıda önizleme ve doğrudan yazdırma desteği.
+
+---
+
+## 🔔 Faz 12: Bildirim & Anlık Uyarı Sistemi (Notification System)
+
+### 12.1. Backend (SignalR & E-Posta Altyapısı)
+- [ ] **Domain & Entity Tasarımı:**
+  - `Notification` entity (UserId, Title, Message, Type [Info, Warning, StockAlert, ApprovalNeeded], IsRead, ActionUrl, CreatedDate).
+- [ ] **SignalR Real-Time Hub:**
+  - `NotificationHub` oluşturulması ve kullanıcı/rol gruplarına anlık socket mesajı gönderimi.
+- [ ] **E-Posta Bildirim Servisi (SMTP / MailKit):**
+  - Şablonlu HTML E-postalar:
+    - *"Yeni Satın Alma Talebi Onayınızı Bekliyor"* (Yöneticiye).
+    - *"Talebiniz Onaylandı / Reddedildi"* (Talep sahibine).
+    - *"Kritik Stok Alarmı: [Ürün Adı] tükenmek üzere!"* (Depo sorumlusuna).
+- [ ] **Arka Plan Görevi (Background Worker / Quartz.NET):**
+  - Belirli periyotlarla (örneğin her sabah 08:30) kritik eşiğe düşen kırtasiye ürünlerini tarayıp yöneticilere toplu bildirim/e-posta özeti geçmesi.
+- [ ] **API Endpoint'leri:**
+  - `GET /api/notifications`
+  - `PUT /api/notifications/{id}/read`
+  - `PUT /api/notifications/read-all`
+
+### 12.2. Frontend (Bildirim Çanı & Canlı Uyarılar)
+- [ ] **Navbar Bildirim Çanı & Rozeti (`NotificationBellComponent`):**
+  - Okunmamış bildirim sayısı rozeti (Badge) ve son 10 bildirimin yer aldığı şık açılır panel (Dropdown).
+- [ ] **SignalR İstemci Entegrasyonu (`NotificationService`):**
+  - Canlı web socket bağlantısı, yeni bildirim geldiğinde masaüstü sesi / Toastr animasyonu.
+- [ ] **Bildirim Merkezi Sayfası:**
+  - Tüm geçmiş bildirimlerin filtrelenebileceği, tıklandığında ilgili talebe veya ürüne yönlendiren detay ekranı.
+
+---
+
 ## 📌 Geliştirme Standartları & Notlar
-* **Git Commit Kuralı:** `feat(auth): add jwt login command`, `fix(inventory): prevent negative stock on exit`
+* **Git Commit Kuralı:** `feat(pos): add complete sale command with stock deduction`, `feat(purchase-request): add create request command`
 * **Clean Code:** Controller'lar zayıf (thin), handler'lar bağımsız olmalıdır.
 * **Hata Yönetimi:** Tüm hatalar standart `ApiResponse` nesnesi ile dönmelidir.
