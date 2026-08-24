@@ -269,13 +269,13 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
 ## 📈 Faz 10: Kırtasiye Raporlama & Stok Analitiği (Reporting & Analytics)
 
 ### 10.1. Backend (Analitik & İstatistik Servisleri)
-- [ ] **Application & Raporlama CQRS Query'leri:**
+- [x] **Application & Raporlama CQRS Query'leri:**
   - `GetStockTurnoverRateQuery` (Kırtasiye ürünlerinin devir hızı, en hızlı eriyen A4 kağıt, fotokopi malzemeleri ve kalem grupları).
   - `GetSeasonalDemandTrendsQuery` (Okul açılış sezonu [Ağustos-Ekim], sınav dönemleri ve ofis sezonu stok hareket trendleri).
   - `GetDeadStockQuery` (Son 90/180 günde hiç hareketi olmayan hareketsiz/ölü kırtasiye stokları).
   - `GetSupplierPerformanceQuery` (Tedarikçilerin ortalama teslimat süresi, fiyat değişim oranları ve sipariş tamamlama başarısı).
   - `GetCategoryProfitabilityQuery` (Kategori bazında kâr marjı, toplam ciro ve stok maliyeti).
-- [ ] **API Endpoint'leri:**
+- [x] **API Endpoint'leri:**
   - `GET /api/reports/stock-turnover`
   - `GET /api/reports/seasonal-trends`
   - `GET /api/reports/dead-stock`
