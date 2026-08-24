@@ -174,11 +174,11 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
 ## 🛒 Faz 7: Barkodlu Hızlı Satış & Kasa (POS) Modülü
 
 ### 7.1. Backend (Satış İşlemleri & Stok Düşümü)
-- [ ] **Domain & Entity Tasarımı:**
+- [x] **Domain & Entity Tasarımı:**
   - `Sale` entity (ReceiptNumber, CashierUserId, TotalAmount, DiscountAmount, FinalAmount, PaymentMethod [Cash, CreditCard, Split, OnAccount], SaleDate, CustomerName).
   - `SaleItem` entity (SaleId, ProductId, Quantity, UnitPrice, TotalPrice, DiscountRate).
   - `PaymentMethod` enum (Cash, CreditCard, Split, OnAccount).
-- [ ] **Application & CQRS (Satış & Otomatik Stok Düşümü):**
+- [x] **Application & CQRS (Satış & Otomatik Stok Düşümü):**
   - `GetProductByBarcodeQuery` (Barkod tabancası okuttuğunda ürün koduna/barkoduna göre anında ürün detayını ve stok durumunu getirme).
   - `CompleteSaleCommand` & `CompleteSaleCommandValidator`:
     - Sepetteki tüm ürünler için atomik Transaction başlatılması.
@@ -187,7 +187,7 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
     - Otomatik `InventoryTransaction` kaydı oluşturulması (`TransactionType: Out`, Açıklama: `Fiş No: {ReceiptNumber} Satışı`).
     - Satış sonrası ürün stoğu `MinStockLevel` kritik eşiğin altına inerse sistemde uyarı oluşturulması.
   - `GetSalesHistoryQuery` (Günlük kasa satış raporu, fiş sorgulama ve filtreleme).
-- [ ] **API Endpoint'leri:**
+- [x] **API Endpoint'leri:**
   - `GET /api/pos/product/{barcodeOrCode}` (Barkod ile anlık ürün getirme)
   - `POST /api/pos/complete-sale` (Sepeti onayla, tahsilatı yap, stoktan düş)
   - `GET /api/pos/receipt/{receiptNumber}` (Fiş/Satış detayı)
