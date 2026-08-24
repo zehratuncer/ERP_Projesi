@@ -1,0 +1,704 @@
+<div class="pos-container">
+  <!-- POS Header & Navigation Tabs -->
+  <div class="pos-header">
+    <div class="header-left">
+      <div class="pos-title">
+        <span class="pos-icon">🛒</span>
+        <div>
+          <h2>Kırtasiye Hızlı Satış & Kasa (POS)</h2>
+          <p>Barkod tabancası uyumlu, anlık stok düşümlü perakende satış terminali</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-nav-tabs">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab() === 'pos'"
+        (click)="switchTab('pos')">
+        <span>⚡</span> Hızlı Kasa
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab() === 'summary'"
+        (click)="switchTab('summary')">
+        <span>📊</span> Günlük Kasa Raporu
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab() === 'history'"
+        (click)="switchTab('history')">
+        <span>📜</span> Satış Geçmişi & Fişler
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TAB 1: HIZLI KASA EKRANI (POS MAIN TERMINAL) -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'pos') {
+    <!-- Barcode Scanner & Search Bar -->
+    <div class="barcode-toolbar card">
+      <div class="barcode-input-wrapper">
+        <span class="barcode-icon">║▌║█║▌│║▌║</span>
+        <input 
+          #barcodeInput
+          type="text" 
+          class="form-control barcode-input" 
+          placeholder="Barkod okutun veya ürün kodu yazıp [Enter]'a basın..."
+          [(ngModel)]="barcodeQuery"
+          (keydown.enter)="onBarcodeScan()"
+          [disabled]="isLoading()"
+          autocomplete="off"
+        />
+        <button 
+          class="btn btn-primary" 
+          (click)="onBarcodeScan()" 
+          [disabled]="isLoading() || !barcodeQuery.trim()">
+          <span>➕</span> Ekle
+        </button>
+      </div>
+
+      <div class="toolbar-actions">
+        <button class="btn btn-secondary" (click)="openProductSearchModal()">
+          <span>🔍</span> Ürün Kataloğu
+        </button>
+      </div>
+    </div>
+
+    <!-- Shortcut Ribbon -->
+    <div class="shortcut-ribbon">
+      <span class="shortcut-item"><kbd>F2</kbd> Satışı Tamamla / Ödeme</span>
+      <span class="shortcut-item"><kbd>F4</kbd> Sepeti Temizle</span>
+      <span class="shortcut-item"><kbd>Enter</kbd> Barkod Okut & Ekle</span>
+      <span class="shortcut-item"><kbd>Esc</kbd> Pencere Kapat</span>
+    </div>
+
+    <!-- POS Main Grid (Cart + Payment Panel) -->
+    <div class="pos-grid">
+      <!-- Left Side: Cart Items Table -->
+      <div class="cart-section card">
+        <div class="card-header">
+          <div class="cart-header-title">
+            <h3>Sepetteki Ürünler</h3>
+            <span class="badge badge-info">{{ cart().length }} Kalem</span>
+          </div>
+          @if (cart().length > 0) {
+            <button class="btn btn-sm btn-danger" (click)="clearCart()">
+              <span>🗑️</span> Sepeti Boşalt (F4)
+            </button>
+          }
+        </div>
+
+        <div class="card-body cart-body">
+          @if (cart().length === 0) {
+            <div class="empty-cart">
+              <div class="empty-cart-icon">🛒</div>
+              <h4>Sepetiniz Henüz Boş</h4>
+              <p>Barkod okuyucu ile ürün okutun veya katalogdan ürün seçerek satışa başlayın.</p>
+              <button class="btn btn-secondary mt-3" (click)="openProductSearchModal()">
+                <span>🔍</span> Ürün Listesinden Seç
+              </button>
+            </div>
+          } @else {
+            <div class="table-responsive">
+              <table class="data-table pos-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Barkod / Kod</th>
+                    <th>Ürün Adı</th>
+                    <th>Stok</th>
+                    <th>Birim Fiyat</th>
+                    <th style="width: 140px;">Miktar</th>
+                    <th style="width: 90px;">İnd %</th>
+                    <th class="text-right">Tutar</th>
+                    <th class="text-center">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of cart(); track item.product.id; let i = $index) {
+                    <tr class="cart-row">
+                      <td class="row-num">{{ i + 1 }}</td>
+                      <td>
+                        <span class="code-badge">{{ item.product.code }}</span>
+                      </td>
+                      <td>
+                        <div class="item-name-cell">
+                          <strong>{{ item.product.name }}</strong>
+                          <span class="item-unit-label">{{ item.product.unit }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge" [class.badge-danger]="item.product.isLowStock" [class.badge-success]="!item.product.isLowStock">
+                          {{ item.product.currentStock }} {{ item.product.unit }}
+                        </span>
+                      </td>
+                      <td class="price-cell">
+                        {{ item.unitPrice | number:'1.2-2' }} ₺
+                      </td>
+                      <td>
+                        <div class="qty-control">
+                          <button class="qty-btn" (click)="updateQuantity(item, -1)" title="Azalt">-</button>
+                          <input 
+                            type="number" 
+                            class="qty-input" 
+                            [(ngModel)]="item.quantity" 
+                            (ngModelChange)="onQuantityChange(item)"
+                            min="1" 
+                            [max]="item.product.currentStock"
+                          />
+                          <button class="qty-btn" (click)="updateQuantity(item, 1)" title="Artır">+</button>
+                        </div>
+                      </td>
+                      <td>
+                        <input 
+                          type="number" 
+                          class="form-control discount-input" 
+                          [(ngModel)]="item.discountRate" 
+                          (ngModelChange)="onDiscountChange(item)"
+                          min="0" 
+                          max="100"
+                          placeholder="0"
+                        />
+                      </td>
+                      <td class="text-right total-cell">
+                        <strong>{{ item.totalPrice | number:'1.2-2' }} ₺</strong>
+                      </td>
+                      <td class="text-center">
+                        <button class="btn-icon-delete" (click)="removeItem(item)" title="Satırdan Sil">
+                          ❌
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Right Side: Totals & Checkout Panel -->
+      <div class="checkout-section card">
+        <div class="card-header">
+          <h3>Tahsilat & Ödeme</h3>
+        </div>
+
+        <div class="card-body checkout-body">
+          <!-- Summary Totals -->
+          <div class="summary-box">
+            <div class="summary-line">
+              <span>Ara Toplam</span>
+              <span>{{ getSubTotal() | number:'1.2-2' }} ₺</span>
+            </div>
+            <div class="summary-line text-warning" *ngIf="getItemDiscountsTotal() > 0">
+              <span>Kalem İndirimleri</span>
+              <span>-{{ getItemDiscountsTotal() | number:'1.2-2' }} ₺</span>
+            </div>
+            <div class="summary-line">
+              <span>Genel İndirim (₺)</span>
+              <input 
+                type="number" 
+                class="form-control inline-discount-input" 
+                [(ngModel)]="generalDiscount" 
+                min="0"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="summary-divider"></div>
+            <div class="grand-total-box">
+              <span class="grand-total-label">ÖDENECEK TUTAR</span>
+              <span class="grand-total-amount">{{ getFinalTotal() | number:'1.2-2' }} ₺</span>
+            </div>
+          </div>
+
+          <!-- Customer Name (Optional) -->
+          <div class="form-group mt-3">
+            <label>Müşteri Adı / Ünvanı (Opsiyonel)</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Perakende Müşteri"
+              [(ngModel)]="customerName"
+            />
+          </div>
+
+          <!-- Payment Method Selector -->
+          <div class="form-group mt-3">
+            <label>Ödeme Yöntemi</label>
+            <div class="payment-method-grid">
+              <button 
+                type="button" 
+                class="pay-btn" 
+                [class.selected]="selectedPaymentMethod() === PaymentMethod.Cash"
+                (click)="selectPaymentMethod(PaymentMethod.Cash)">
+                <span class="pay-icon">💵</span>
+                <span>Nakit</span>
+              </button>
+              <button 
+                type="button" 
+                class="pay-btn" 
+                [class.selected]="selectedPaymentMethod() === PaymentMethod.CreditCard"
+                (click)="selectPaymentMethod(PaymentMethod.CreditCard)">
+                <span class="pay-icon">💳</span>
+                <span>Kredi Kartı</span>
+              </button>
+              <button 
+                type="button" 
+                class="pay-btn" 
+                [class.selected]="selectedPaymentMethod() === PaymentMethod.Split"
+                (click)="selectPaymentMethod(PaymentMethod.Split)">
+                <span class="pay-icon">🔄</span>
+                <span>Parçalı</span>
+              </button>
+              <button 
+                type="button" 
+                class="pay-btn" 
+                [class.selected]="selectedPaymentMethod() === PaymentMethod.OnAccount"
+                (click)="selectPaymentMethod(PaymentMethod.OnAccount)">
+                <span class="pay-icon">📝</span>
+                <span>Veresiye / Cari</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Cash Calculation (Only if Cash is selected) -->
+          @if (selectedPaymentMethod() === PaymentMethod.Cash) {
+            <div class="cash-calc-box mt-3">
+              <div class="form-group">
+                <label>Alınan Nakit Para (₺)</label>
+                <div class="received-input-wrapper">
+                  <input 
+                    type="number" 
+                    class="form-control received-input" 
+                    [(ngModel)]="receivedAmount" 
+                    min="0"
+                    placeholder="0.00"
+                  />
+                  <button class="btn btn-sm btn-secondary" (click)="setExactAmount()">
+                    Tam Tutar
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Cash Presets -->
+              <div class="quick-cash-presets">
+                <button type="button" class="preset-btn" (click)="setPresetReceived(50)">50 ₺</button>
+                <button type="button" class="preset-btn" (click)="setPresetReceived(100)">100 ₺</button>
+                <button type="button" class="preset-btn" (click)="setPresetReceived(200)">200 ₺</button>
+                <button type="button" class="preset-btn" (click)="setPresetReceived(500)">500 ₺</button>
+                <button type="button" class="preset-btn" (click)="setPresetReceived(1000)">1000 ₺</button>
+              </div>
+
+              <!-- Change Due Output -->
+              <div class="change-due-box" [class.change-active]="getChangeDue() > 0">
+                <span>PARA ÜSTÜ:</span>
+                <strong>{{ getChangeDue() | number:'1.2-2' }} ₺</strong>
+              </div>
+            </div>
+          }
+
+          <!-- Complete Sale Button -->
+          <div class="checkout-actions mt-4">
+            <button 
+              class="btn btn-primary btn-complete-sale" 
+              (click)="submitSale()"
+              [disabled]="cart().length === 0 || isLoading()">
+              <span class="btn-icon">⚡</span>
+              <span>SATIŞI TAMAMLA & FİŞ KES (F2)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- TAB 2: GÜNLÜK KASA RAPORU (DAILY POS SUMMARY) -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'summary') {
+    <div class="summary-tab-container">
+      <div class="filter-card card mb-4">
+        <div class="filter-row">
+          <div class="form-group mb-0">
+            <label>Rapor Tarihi</label>
+            <input 
+              type="date" 
+              class="form-control" 
+              [(ngModel)]="selectedSummaryDate" 
+              (change)="loadDailySummary()"
+            />
+          </div>
+          <button class="btn btn-primary" (click)="loadDailySummary()" [disabled]="isLoading()">
+            <span>🔄</span> Raporu Yenile
+          </button>
+        </div>
+      </div>
+
+      @if (dailySummary()) {
+        <!-- Summary KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card card">
+            <div class="kpi-icon bg-primary-light">💰</div>
+            <div class="kpi-content">
+              <span class="kpi-label">Toplam Günlük Ciro</span>
+              <h3 class="kpi-value text-success">{{ dailySummary()!.totalRevenue | number:'1.2-2' }} ₺</h3>
+            </div>
+          </div>
+
+          <div class="kpi-card card">
+            <div class="kpi-icon bg-info-light">🧾</div>
+            <div class="kpi-content">
+              <span class="kpi-label">Toplam Fiş Adedi</span>
+              <h3 class="kpi-value">{{ dailySummary()!.totalSalesCount }} Satış</h3>
+            </div>
+          </div>
+
+          <div class="kpi-card card">
+            <div class="kpi-icon bg-warning-light">📦</div>
+            <div class="kpi-content">
+              <span class="kpi-label">Satılan Ürün Adedi</span>
+              <h3 class="kpi-value">{{ dailySummary()!.totalItemsSold }} Kalem</h3>
+            </div>
+          </div>
+
+          <div class="kpi-card card">
+            <div class="kpi-icon bg-danger-light">🏷️</div>
+            <div class="kpi-content">
+              <span class="kpi-label">Toplam Yapılan İndirim</span>
+              <h3 class="kpi-value text-warning">{{ dailySummary()!.totalDiscountsGiven | number:'1.2-2' }} ₺</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Breakdown & Top Selling Split -->
+        <div class="summary-details-grid mt-4">
+          <!-- Payment Method Breakdown -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Ödeme Türü Kasa Dağılımı</h3>
+            </div>
+            <div class="card-body">
+              <div class="payment-breakdown-list">
+                <div class="breakdown-item">
+                  <div class="breakdown-label">
+                    <span>💵 Nakit Kasa</span>
+                  </div>
+                  <strong>{{ dailySummary()!.cashTotal | number:'1.2-2' }} ₺</strong>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-label">
+                    <span>💳 Kredi Kartı (POS)</span>
+                  </div>
+                  <strong>{{ dailySummary()!.creditCardTotal | number:'1.2-2' }} ₺</strong>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-label">
+                    <span>🔄 Parçalı Tahsilat</span>
+                  </div>
+                  <strong>{{ dailySummary()!.splitTotal | number:'1.2-2' }} ₺</strong>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-label">
+                    <span>📝 Veresiye / Cari</span>
+                  </div>
+                  <strong>{{ dailySummary()!.onAccountTotal | number:'1.2-2' }} ₺</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Selling Products -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Günün En Çok Satan Ürünleri</h3>
+            </div>
+            <div class="card-body">
+              @if (dailySummary()!.topSellingProducts.length === 0) {
+                <p class="text-muted">Bu tarihte henüz satış kaydı bulunmamaktadır.</p>
+              } @else {
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Kod</th>
+                        <th>Ürün Adı</th>
+                        <th class="text-right">Satılan Adet</th>
+                        <th class="text-right">Ciro</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (p of dailySummary()!.topSellingProducts; track p.productId) {
+                        <tr>
+                          <td><span class="code-badge">{{ p.productCode }}</span></td>
+                          <td><strong>{{ p.productName }}</strong></td>
+                          <td class="text-right">{{ p.totalQuantitySold }}</td>
+                          <td class="text-right text-success font-weight-bold">{{ p.totalRevenue | number:'1.2-2' }} ₺</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- TAB 3: SATIŞ GEÇMİŞİ & FİŞ ARAMA (SALES HISTORY) -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'history') {
+    <div class="history-tab-container">
+      <!-- Search & Filters -->
+      <div class="filter-card card mb-4">
+        <div class="filter-row">
+          <div class="form-group mb-0">
+            <label>Başlangıç Tarihi</label>
+            <input type="date" class="form-control" [(ngModel)]="historyStartDate" />
+          </div>
+          <div class="form-group mb-0">
+            <label>Bitiş Tarihi</label>
+            <input type="date" class="form-control" [(ngModel)]="historyEndDate" />
+          </div>
+          <div class="form-group mb-0">
+            <label>Ödeme Türü</label>
+            <select class="form-control" [(ngModel)]="historyPaymentMethod">
+              <option [ngValue]="null">Tümü</option>
+              <option [ngValue]="PaymentMethod.Cash">Nakit</option>
+              <option [ngValue]="PaymentMethod.CreditCard">Kredi Kartı</option>
+              <option [ngValue]="PaymentMethod.Split">Parçalı</option>
+              <option [ngValue]="PaymentMethod.OnAccount">Veresiye / Cari</option>
+            </select>
+          </div>
+          <div class="form-group mb-0 search-col">
+            <label>Fiş No / Müşteri Ara</label>
+            <input type="text" class="form-control" placeholder="Fiş no veya müşteri adı..." [(ngModel)]="historySearch" />
+          </div>
+          <button class="btn btn-primary" (click)="loadSalesHistory()" [disabled]="isLoading()">
+            <span>🔍</span> Filtrele
+          </button>
+        </div>
+      </div>
+
+      <!-- History Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Geçmiş Satış Fişleri</h3>
+          <span class="badge badge-info">{{ salesHistory().length }} Kayıt</span>
+        </div>
+        <div class="card-body">
+          @if (salesHistory().length === 0) {
+            <p class="text-muted text-center py-4">Kriterlere uygun satış kaydı bulunamadı.</p>
+          } @else {
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Fiş No</th>
+                    <th>Tarih / Saat</th>
+                    <th>Kasiyer</th>
+                    <th>Müşteri</th>
+                    <th>Ödeme Yöntemi</th>
+                    <th>Kalem Sayısı</th>
+                    <th class="text-right">Tutar</th>
+                    <th class="text-center">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (sale of salesHistory(); track sale.id) {
+                    <tr>
+                      <td>
+                        <span class="code-badge">{{ sale.receiptNumber }}</span>
+                      </td>
+                      <td>{{ sale.saleDate | date:'dd.MM.yyyy HH:mm' }}</td>
+                      <td>{{ sale.cashierName }}</td>
+                      <td>{{ sale.customerName || 'Perakende Müşteri' }}</td>
+                      <td>
+                        <span class="badge badge-info">{{ sale.paymentMethodName }}</span>
+                      </td>
+                      <td>{{ sale.itemCount }} Kalem</td>
+                      <td class="text-right text-success font-weight-bold">
+                        {{ sale.finalAmount | number:'1.2-2' }} ₺
+                      </td>
+                      <td class="text-center">
+                        <button class="btn btn-sm btn-secondary" (click)="viewPastReceipt(sale.receiptNumber)">
+                          <span>🧾</span> Fiş Görüntüle
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: HIZLI ÜRÜN KATALOĞU SEÇİMİ -->
+<!-- ========================================================================= -->
+@if (isProductSearchOpen()) {
+  <div class="modal-overlay" (click)="closeProductSearchModal()">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📦 Ürün Kataloğundan Hızlı Seçim</h3>
+        <button class="btn-close" (click)="closeProductSearchModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group mb-3">
+          <input 
+            type="text" 
+            class="form-control search-input" 
+            placeholder="Ürün adı, barkod veya kodu ile arayın..."
+            [(ngModel)]="productSearchQuery"
+            (keyup)="onProductSearchKeyUp()"
+            autofocus
+          />
+        </div>
+
+        <div class="product-catalog-grid">
+          @for (p of availableProducts(); track p.id) {
+            <div class="product-catalog-card" (click)="selectProductFromSearch(p)">
+              <div class="catalog-card-header">
+                <span class="code-badge">{{ p.code }}</span>
+                <span class="badge" [class.badge-danger]="p.currentStock <= p.minStockLevel" [class.badge-success]="p.currentStock > p.minStockLevel">
+                  Stok: {{ p.currentStock }} {{ p.unit }}
+                </span>
+              </div>
+              <h4 class="catalog-prod-name">{{ p.name }}</h4>
+              <p class="catalog-prod-desc">{{ p.description }}</p>
+              <div class="catalog-card-footer">
+                <span class="catalog-price">{{ p.unitPrice | number:'1.2-2' }} ₺</span>
+                <button class="btn btn-sm btn-primary">➕ Ekle</button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL: TERMAL FİŞ ÇIKTISI & YAZDIRMA (THERMAL RECEIPT) -->
+<!-- ========================================================================= -->
+@if (isReceiptModalOpen() && currentReceipt()) {
+  <div class="modal-overlay" (click)="closeReceiptModal()">
+    <div class="modal-card modal-receipt-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header no-print">
+        <h3>🧾 Satış Fişi Önizleme</h3>
+        <button class="btn-close" (click)="closeReceiptModal()">✕</button>
+      </div>
+
+      <!-- Critical Stock Warning inside Receipt Modal -->
+      @if (currentReceipt()!.criticalStockAlerts && currentReceipt()!.criticalStockAlerts.length > 0) {
+        <div class="critical-alerts-box no-print mb-3">
+          <div class="alert-title">⚠️ Kritik Stok Uyarıları:</div>
+          <ul>
+            @for (alert of currentReceipt()!.criticalStockAlerts; track alert) {
+              <li>{{ alert }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="modal-body print-area">
+        <!-- Thermal Receipt Template (80mm / 58mm POS Style) -->
+        <div class="thermal-receipt" id="thermalReceipt">
+          <div class="receipt-header text-center">
+            <h2>📚 KIRTASİYE DÜNYASI</h2>
+            <p>Kitap, Kırtasiye & Ofis Malzemeleri Ltd. Şti.</p>
+            <p>Tel: 0212 555 0199 | www.kirtasiye.erp</p>
+            <div class="receipt-divider">================================</div>
+            <div class="receipt-meta">
+              <div><strong>FİŞ NO:</strong> {{ currentReceipt()!.receiptNumber }}</div>
+              <div><strong>TARİH:</strong> {{ currentReceipt()!.saleDate | date:'dd.MM.yyyy HH:mm:ss' }}</div>
+              <div><strong>KASİYER:</strong> {{ currentReceipt()!.cashierName }}</div>
+              <div><strong>MÜŞTERİ:</strong> {{ currentReceipt()!.customerName || 'Perakende Müşteri' }}</div>
+            </div>
+            <div class="receipt-divider">--------------------------------</div>
+          </div>
+
+          <!-- Items Table -->
+          <table class="receipt-table">
+            <thead>
+              <tr>
+                <th class="text-left">ÜRÜN</th>
+                <th class="text-center">ADET</th>
+                <th class="text-right">FİYAT</th>
+                <th class="text-right">TUTAR</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of currentReceipt()!.items; track item.id) {
+                <tr>
+                  <td class="text-left">
+                    {{ item.productName }}
+                    @if (item.discountRate > 0) {
+                      <br><small>(%{{ item.discountRate }} İndirim)</small>
+                    }
+                  </td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                  <td class="text-right">{{ item.unitPrice | number:'1.2-2' }}</td>
+                  <td class="text-right">{{ item.totalPrice | number:'1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <div class="receipt-divider">--------------------------------</div>
+
+          <!-- Totals -->
+          <div class="receipt-totals">
+            <div class="receipt-row">
+              <span>Ara Toplam:</span>
+              <span>{{ currentReceipt()!.totalAmount | number:'1.2-2' }} ₺</span>
+            </div>
+            @if (currentReceipt()!.discountAmount > 0) {
+              <div class="receipt-row">
+                <span>Toplam İndirim:</span>
+                <span>-{{ currentReceipt()!.discountAmount | number:'1.2-2' }} ₺</span>
+              </div>
+            }
+            <div class="receipt-row receipt-grand-total">
+              <strong>GENEL TOPLAM:</strong>
+              <strong>{{ currentReceipt()!.finalAmount | number:'1.2-2' }} ₺</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Ödeme Şekli:</span>
+              <span>{{ currentReceipt()!.paymentMethodName }}</span>
+            </div>
+          </div>
+
+          <div class="receipt-divider">================================</div>
+
+          <div class="receipt-footer text-center">
+            <p>Bizi tercih ettiğiniz için teşekkür ederiz!</p>
+            <p>İyi günlerde kullanınız.</p>
+            <div class="barcode-mock">
+              ||| | ||||| || |||| ||| |||| |
+              <br>
+              <small>{{ currentReceipt()!.receiptNumber }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print">
+        <button class="btn btn-secondary" (click)="closeReceiptModal()">
+          <span>✕</span> Kapat
+        </button>
+        <button class="btn btn-primary" (click)="printReceipt()">
+          <span>🖨️</span> Fişi Yazdır (Print)
+        </button>
+      </div>
+    </div>
+  </div>
+}

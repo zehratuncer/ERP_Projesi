@@ -4,6 +4,7 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { InventoryListComponent } from './features/inventory/inventory-list.component';
 import { SupplierListComponent } from './features/suppliers/supplier-list.component';
+import { PosComponent } from './features/pos/pos.component';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -18,6 +19,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
+      { path: 'pos', component: PosComponent },
       { path: 'inventory', component: InventoryListComponent },
       { path: 'suppliers', component: SupplierListComponent }
     ]

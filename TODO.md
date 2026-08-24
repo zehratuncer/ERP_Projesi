@@ -194,14 +194,14 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
   - `GET /api/pos/daily-summary` (Günlük ciro ve kasa raporu)
 
 ### 7.2. Frontend (Kırtasiye Hızlı Kasa / POS Arayüzü)
-- [ ] **Barkod Odaklı Hızlı Kasa Ekranı (`PosComponent`):**
+- [x] **Barkod Odaklı Hızlı Kasa Ekranı (`PosComponent`):**
   - **Sürekli Aktif Barkod Girişi (Autofocus):** Barkod tabancası her okutmada (`Enter` ile) ürünü sepet listesine `+1` adet olarak anında ekler.
   - Aynı barkod peş peşe okutulduğunda sepet satırındaki adedi otomatik artırma (`x2`, `x3`).
   - **Klavye Kısayolları:** `F2` (Satışı Tamamla / Ödeme), `F4` (Sepeti Temizle), `+ / -` (Adet Değiştir), `Delete` (Satır Sil).
-- [ ] **Dinamik Sepet & Tahsilat Paneli:**
+- [x] **Dinamik Sepet & Tahsilat Paneli:**
   - Anlık toplam tutar, KDV dökümü, alınan para ve para üstü hesaplama (Örn: 200 TL verildi ➔ 45 TL para üstü).
   - Ödeme yöntemi seçimi (Nakit / Kredi Kartı / Veresiye-Cari).
-- [ ] **Hızlı Fiş Çıktısı (Thermal Receipt):**
+- [x] **Hızlı Fiş Çıktısı (Thermal Receipt):**
   - Satış bittiğinde otomatik fiş yazdırma penceresi (58mm/80mm termal fiş şablonu).
 
 ---
