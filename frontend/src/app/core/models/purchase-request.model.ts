@@ -14,6 +14,25 @@ export enum RequestStatus {
   Cancelled = 6
 }
 
+export enum ApprovalAction {
+  Approved = 1,
+  Rejected = 2,
+  Revised = 3
+}
+
+export interface ApprovalHistoryDto {
+  id: string;
+  purchaseRequestId: string;
+  approverUserId?: string;
+  approverUserName: string;
+  stepNumber: number;
+  stepName: string;
+  action: ApprovalAction;
+  actionName: string;
+  comment?: string;
+  actionDate: string;
+}
+
 export interface PurchaseRequestItemDto {
   id: string;
   productId: string;
@@ -39,10 +58,12 @@ export interface PurchaseRequest {
   status: RequestStatus;
   statusName: string;
   totalEstimatedAmount: number;
+  currentApprovalStep: number;
   requiredDate?: string;
   note?: string;
   createdDate: string;
   items: PurchaseRequestItemDto[];
+  approvalHistories: ApprovalHistoryDto[];
 }
 
 export interface PurchaseRequestListItem {
@@ -57,6 +78,7 @@ export interface PurchaseRequestListItem {
   statusName: string;
   itemCount: number;
   totalEstimatedAmount: number;
+  currentApprovalStep: number;
   requiredDate?: string;
   createdDate: string;
   note?: string;

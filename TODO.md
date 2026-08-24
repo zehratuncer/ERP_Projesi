@@ -256,12 +256,13 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
   - `POST /api/purchase-requests/{id}/convert-to-inventory`
 
 ### 9.2. Frontend (Yönetici Onay Paneli)
-- [ ] **"Onayımı Bekleyenler" (Pending Approvals) Gelen Kutusu:**
+- [x] **"Onayımı Bekleyenler" (Pending Approvals) Gelen Kutusu:**
   - Yöneticinin tek ekranda bekleyen kırtasiye taleplerini inceleyebileceği özet kartlar ve sayaçlar.
-- [ ] **Hızlı Onay / Red Aksiyon Modalı:**
-  - Tek tıkla onaylama veya red gerekçesi girerek geri gönderme arayüzü.
-- [ ] **Görsel İş Akışı Zaman Çizelgesi (Audit Timeline):**
-  - Talebin hangi aşamada kim tarafından incelendiğini gösteren görsel durum akışı.
+- [x] **Hızlı Onay / Red Aksiyon Modalı:**
+  - Tek tıkla onaylama veya red gerekçesi girerek geri gönderme arayüzü (`isApproveModalOpen`, `isRejectModalOpen`, `isConvertModalOpen`).
+- [x] **Görsel İş Akışı Zaman Çizelgesi (Audit Timeline):**
+  - Talebin hangi aşamada kim tarafından incelendiğini gösteren görsel durum akışı ve geçmiş denetim kaydı.
+
 
 ---
 

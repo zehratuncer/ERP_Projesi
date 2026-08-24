@@ -8,7 +8,8 @@ import {
   CreatePurchaseRequestRequest, 
   UpdatePurchaseRequestRequest,
   RequestStatus,
-  RequestPriority
+  RequestPriority,
+  ApprovalHistoryDto
 } from '../models/purchase-request.model';
 
 @Injectable({
@@ -54,5 +55,21 @@ export class PurchaseRequestService {
     if (reason) params = params.set('reason', reason);
 
     return this.http.delete<ApiResponse<boolean>>(`${this.apiUrl}/${id}/cancel`, { params });
+  }
+
+  approvePurchaseRequest(id: string, comment?: string): Observable<ApiResponse<PurchaseRequest>> {
+    return this.http.post<ApiResponse<PurchaseRequest>>(`${this.apiUrl}/${id}/approve`, { comment });
+  }
+
+  rejectPurchaseRequest(id: string, reason: string): Observable<ApiResponse<PurchaseRequest>> {
+    return this.http.post<ApiResponse<PurchaseRequest>>(`${this.apiUrl}/${id}/reject`, { reason });
+  }
+
+  getApprovalHistory(id: string): Observable<ApiResponse<ApprovalHistoryDto[]>> {
+    return this.http.get<ApiResponse<ApprovalHistoryDto[]>>(`${this.apiUrl}/${id}/approval-history`);
+  }
+
+  convertToInventory(id: string, note?: string): Observable<ApiResponse<PurchaseRequest>> {
+    return this.http.post<ApiResponse<PurchaseRequest>>(`${this.apiUrl}/${id}/convert-to-inventory`, { note });
   }
 }

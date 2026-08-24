@@ -5,8 +5,8 @@
       <div class="page-title-badge">
         <span class="icon">📑</span>
         <div>
-          <h2>Satın Alma Talepleri</h2>
-          <p>Kırtasiye mağaza, depo ve okul sezonu ürün ihtiyaç talepleri ve süreç takibi</p>
+          <h2>Satın Alma & Onay Yönetim Paneli</h2>
+          <p>Kırtasiye mağaza talepleri, limit bazlı çok kademeli onay motoru ve mal kabul entegrasyonu</p>
         </div>
       </div>
     </div>
@@ -20,50 +20,80 @@
   <!-- KPI Summary Cards -->
   <div class="kpi-grid">
     <div class="kpi-card card">
-      <div class="kpi-icon bg-info-light">📋</div>
-      <div class="kpi-content">
-        <span class="kpi-label">Toplam Talep</span>
-        <h3 class="kpi-value">{{ getTotalCount() }}</h3>
-      </div>
-    </div>
-
-    <div class="kpi-card card">
       <div class="kpi-icon bg-warning-light">⏳</div>
       <div class="kpi-content">
-        <span class="kpi-label">Onay Bekleyenler</span>
-        <h3 class="kpi-value text-warning">{{ getPendingCount() }}</h3>
+        <span class="kpi-label">Onayımı Bekleyenler</span>
+        <h3 class="kpi-value text-warning">{{ getPendingCount() }} Talep</h3>
       </div>
     </div>
 
     <div class="kpi-card card">
-      <div class="kpi-icon bg-success-light">✅</div>
+      <div class="kpi-icon bg-danger-light">💎</div>
       <div class="kpi-content">
-        <span class="kpi-label">Onaylanan / Tamamlanan</span>
-        <h3 class="kpi-value text-success">{{ getApprovedCount() }}</h3>
+        <span class="kpi-label">Yüksek Tutar (>10.000 ₺)</span>
+        <h3 class="kpi-value text-danger">{{ getHighValuePendingCount() }} Direktör Onayı</h3>
       </div>
     </div>
 
     <div class="kpi-card card">
-      <div class="kpi-icon bg-primary-light">💰</div>
+      <div class="kpi-icon bg-info-light">📦</div>
       <div class="kpi-content">
-        <span class="kpi-label">Toplam Tahmini Bütçe</span>
-        <h3 class="kpi-value">{{ getTotalBudget() | number:'1.2-2' }} ₺</h3>
+        <span class="kpi-label">Mal Kabul Bekleyenler</span>
+        <h3 class="kpi-value text-info">{{ getApprovedPendingStockCount() }} Onaylı</h3>
+      </div>
+    </div>
+
+    <div class="kpi-card card">
+      <div class="kpi-icon bg-success-light">💰</div>
+      <div class="kpi-content">
+        <span class="kpi-label">Bekleyen Toplam Bütçe</span>
+        <h3 class="kpi-value text-success">{{ getPendingTotalBudget() | number:'1.2-2' }} ₺</h3>
       </div>
     </div>
   </div>
 
-  <!-- Filter & Search Card -->
+  <!-- Tab Navigation Switcher -->
+  <div class="panel-tabs">
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'inbox'" 
+      (click)="setTab('inbox')">
+      <span class="tab-icon">⚡</span>
+      <span>Onayımı Bekleyenler</span>
+      <span class="badge badge-warning" *ngIf="getPendingCount() > 0">{{ getPendingCount() }}</span>
+    </button>
+
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'approved'" 
+      (click)="setTab('approved')">
+      <span class="tab-icon">📦</span>
+      <span>Mal Kabul & Stok Girişi Bekleyenler</span>
+      <span class="badge badge-info" *ngIf="getApprovedPendingStockCount() > 0">{{ getApprovedPendingStockCount() }}</span>
+    </button>
+
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'all'" 
+      (click)="setTab('all')">
+      <span class="tab-icon">📑</span>
+      <span>Tüm Talepler & Arşiv</span>
+      <span class="badge badge-secondary">{{ getTotalCount() }}</span>
+    </button>
+  </div>
+
+  <!-- Filter & Search Card (for 'all' or filtering current view) -->
   <div class="filter-card card">
     <div class="filter-grid">
-      <div class="form-group mb-0">
+      <div class="form-group mb-0" *ngIf="activeTab() === 'all'">
         <label>Durum</label>
         <select class="form-control" [(ngModel)]="selectedStatus" (change)="loadRequests()">
-          <option [ngValue]="null">Tümü</option>
-          <option [ngValue]="RequestStatus.Draft">Taslak</option>
+          <option [ngValue]="null">Tüm Durumlar</option>
           <option [ngValue]="RequestStatus.PendingApproval">Onay Bekliyor</option>
           <option [ngValue]="RequestStatus.Approved">Onaylandı</option>
+          <option [ngValue]="RequestStatus.Completed">Tamamlandı (Mal Kabul Edildi)</option>
           <option [ngValue]="RequestStatus.Rejected">Reddedildi</option>
-          <option [ngValue]="RequestStatus.Completed">Tamamlandı</option>
+          <option [ngValue]="RequestStatus.Draft">Taslak</option>
           <option [ngValue]="RequestStatus.Cancelled">İptal Edildi</option>
         </select>
       </div>
@@ -108,21 +138,25 @@
     </div>
   </div>
 
-  <!-- Requests Table Card -->
+  <!-- Requests List Table Card -->
   <div class="card table-card">
     <div class="card-header">
       <div class="header-info">
-        <h3>Talep Listesi</h3>
-        <span class="badge badge-info">{{ requests().length }} Kayıt</span>
+        <h3 *ngIf="activeTab() === 'inbox'">⚡ Onay Bekleyen Kırtasiye Talepleri</h3>
+        <h3 *ngIf="activeTab() === 'approved'">📦 Mal Kabul & Stok Girişine Hazır Onaylı Talepler</h3>
+        <h3 *ngIf="activeTab() === 'all'">📑 Tüm Satın Alma Talepleri</h3>
+        <span class="badge badge-info">{{ displayedRequests().length }} Kayıt</span>
       </div>
     </div>
 
     <div class="card-body p-0">
-      @if (requests().length === 0) {
+      @if (displayedRequests().length === 0) {
         <div class="empty-state">
-          <span class="empty-icon">📑</span>
-          <h4>Henüz Satın Alma Talebi Bulunmuyor</h4>
-          <p>Departman ihtiyaçları için yukarıdaki "+ Yeni Satın Alma Talebi" butonuna tıklayarak talep oluşturabilirsiniz.</p>
+          <span class="empty-icon">🎉</span>
+          <h4 *ngIf="activeTab() === 'inbox'">Onayınızı Bekleyen Herhangi Bir Talep Bulunmuyor!</h4>
+          <h4 *ngIf="activeTab() === 'approved'">Mal kabul bekleyen onaylanmış talep bulunmuyor.</h4>
+          <h4 *ngIf="activeTab() === 'all'">Henüz kayıtlı talep bulunmuyor.</h4>
+          <p>Tüm süreçler güncel ve operasyonlar sorunsuz devam ediyor.</p>
         </div>
       } @else {
         <div class="table-responsive">
@@ -132,26 +166,29 @@
                 <th>Talep No</th>
                 <th>Departman</th>
                 <th>Talep Eden</th>
-                <th class="text-center">Çeşit</th>
+                <th class="text-center">Kalem</th>
                 <th>Aciliyet</th>
-                <th>Durum</th>
+                <th>Onay Kademesi & Durum</th>
                 <th class="text-right">Tahmini Tutar</th>
                 <th>Tarih</th>
                 <th class="text-center">İşlemler</th>
               </tr>
             </thead>
             <tbody>
-              @for (req of requests(); track req.id) {
-                <tr>
+              @for (req of displayedRequests(); track req.id) {
+                <tr [class.highlight-row]="req.status === RequestStatus.PendingApproval">
                   <td>
                     <span class="code-badge">{{ req.requestNumber }}</span>
+                    @if (isHighValue(req.totalEstimatedAmount)) {
+                      <span class="high-value-pill" title="10.000 TL Üstü - Çift Kademeli Onay">💎 >10K</span>
+                    }
                   </td>
                   <td>
                     <strong>{{ req.department }}</strong>
                   </td>
                   <td>{{ req.requesterUserName }}</td>
                   <td class="text-center">
-                    <span class="badge badge-info">{{ req.itemCount }} Kalem</span>
+                    <span class="badge badge-info">{{ req.itemCount }} Çeşit</span>
                   </td>
                   <td>
                     <span class="badge" [ngClass]="{
@@ -165,14 +202,31 @@
                     </span>
                   </td>
                   <td>
-                    <span class="badge" [ngClass]="{
-                      'badge-warning': req.status === RequestStatus.PendingApproval,
-                      'badge-success': req.status === RequestStatus.Approved || req.status === RequestStatus.Completed,
-                      'badge-danger': req.status === RequestStatus.Rejected || req.status === RequestStatus.Cancelled,
-                      'badge-info': req.status === RequestStatus.Draft
-                    }">
-                      {{ req.statusName }}
-                    </span>
+                    <!-- Onay Kademesi & Durum Badge -->
+                    <div class="status-workflow-badge">
+                      <span class="badge" [ngClass]="{
+                        'badge-warning': req.status === RequestStatus.PendingApproval,
+                        'badge-success': req.status === RequestStatus.Approved || req.status === RequestStatus.Completed,
+                        'badge-danger': req.status === RequestStatus.Rejected || req.status === RequestStatus.Cancelled,
+                        'badge-info': req.status === RequestStatus.Draft
+                      }">
+                        {{ req.statusName }}
+                      </span>
+
+                      @if (req.status === RequestStatus.PendingApproval) {
+                        @if (isHighValue(req.totalEstimatedAmount)) {
+                          @if (req.currentApprovalStep === 1) {
+                            <small class="step-indicator text-warning">Aşama 1/2: Şube Müdürü</small>
+                          } @else {
+                            <small class="step-indicator text-danger font-weight-bold">Aşama 2/2: Direktör Onayı</small>
+                          }
+                        } @else {
+                          <small class="step-indicator text-muted">Tek Aşama: Şube Onayı</small>
+                        }
+                      } @else if (req.status === RequestStatus.Approved) {
+                        <small class="step-indicator text-success">Mal Kabul Bekliyor</small>
+                      }
+                    </div>
                   </td>
                   <td class="text-right total-amount">
                     <strong>{{ req.totalEstimatedAmount | number:'1.2-2' }} ₺</strong>
@@ -180,16 +234,38 @@
                   <td>{{ req.createdDate | date:'dd.MM.yyyy' }}</td>
                   <td class="text-center">
                     <div class="action-buttons">
-                      <button class="btn btn-sm btn-secondary" (click)="openDetailModal(req)" title="İncele & Süreç Takip">
+                      <!-- Quick Approval & Reject Actions for Pending Approvals -->
+                      @if (req.status === RequestStatus.PendingApproval) {
+                        <button class="btn btn-sm btn-success" (click)="openApproveModal(req)" title="Talebi Onayla">
+                          <span>✅</span> Onayla
+                        </button>
+                        <button class="btn btn-sm btn-danger" (click)="openRejectModal(req)" title="Talebi Reddet">
+                          <span>❌</span> Reddet
+                        </button>
+                      }
+
+                      <!-- Quick Automation: Convert to Inventory for Approved Requests -->
+                      @if (req.status === RequestStatus.Approved) {
+                        <button class="btn btn-sm btn-primary" (click)="openConvertModal(req)" title="Mal Kabul Yap ve Stoklara Girişini Sağla">
+                          <span>📦</span> Mal Kabul Yap
+                        </button>
+                      }
+
+                      <!-- Detail & Audit Timeline -->
+                      <button class="btn btn-sm btn-secondary" (click)="openDetailModal(req)" title="İncele & Zaman Çizelgesi">
                         <span>👁️</span> Detay
                       </button>
-                      @if (req.status === RequestStatus.Draft || req.status === RequestStatus.PendingApproval) {
+
+                      <!-- Edit if Draft -->
+                      @if (req.status === RequestStatus.Draft) {
                         <button class="btn btn-sm btn-secondary" (click)="openEditModal(req)" title="Düzenle">
                           <span>✏️</span>
                         </button>
                       }
-                      @if (req.status !== RequestStatus.Completed && req.status !== RequestStatus.Cancelled) {
-                        <button class="btn btn-sm btn-danger" (click)="openCancelModal(req)" title="İptal Et">
+
+                      <!-- Cancel button -->
+                      @if (req.status !== RequestStatus.Completed && req.status !== RequestStatus.Cancelled && req.status !== RequestStatus.Rejected) {
+                        <button class="btn btn-sm btn-danger-outline" (click)="openCancelModal(req)" title="İptal Et">
                           <span>✕</span>
                         </button>
                       }
@@ -206,7 +282,412 @@
 </div>
 
 <!-- ========================================================================= -->
-<!-- MODAL: YENİ TALEP OLUŞTURMA & DÜZENLEME (MULTI-LINE FORM) -->
+<!-- MODAL 1: HIZLI ONAY MODALI (QUICK APPROVE MODAL) -->
+<!-- ========================================================================= -->
+@if (isApproveModalOpen() && approvingRequest()) {
+  <div class="modal-overlay" (click)="closeApproveModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>✅ Satın Alma Talebini Onayla</h3>
+        <button class="btn-close" (click)="closeApproveModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="approval-summary-card">
+          <div class="summary-row">
+            <span>Talep Numarası:</span>
+            <strong>{{ approvingRequest()!.requestNumber }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Departman:</span>
+            <strong>{{ approvingRequest()!.department }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Talep Eden:</span>
+            <strong>{{ approvingRequest()!.requesterUserName }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Toplam Tahmini Tutar:</span>
+            <strong class="text-success font-size-lg">{{ approvingRequest()!.totalEstimatedAmount | number:'1.2-2' }} ₺</strong>
+          </div>
+        </div>
+
+        @if (isHighValue(approvingRequest()!.totalEstimatedAmount)) {
+          @if (approvingRequest()!.currentApprovalStep === 1) {
+            <div class="status-alert-box alert-warning mt-3">
+              <strong>ℹ️ Limit Kuralı (10.000 TL Üzeri):</strong>
+              <p>Bu talep 10.000 TL üzerinde olduğu için 1. aşama onayınız sonrasında otomatik olarak <strong>Genel Satın Alma Direktörü</strong> onayına sevk edilecektir.</p>
+            </div>
+          } @else {
+            <div class="status-alert-box alert-success mt-3">
+              <strong>⭐ 2. Aşama (Nihai Direktör Onayı):</strong>
+              <p>Bu onayınız ile talep nihai olarak onaylanacak ve <strong>Mal Kabul / Stok Girişi</strong> aşamasına geçecektir.</p>
+            </div>
+          }
+        } @else {
+          <div class="status-alert-box alert-info mt-3">
+            <strong>ℹ️ Tek Kademe Onay:</strong>
+            <p>10.000 TL altındaki bu talep onayınız ile doğrudan <strong>Onaylandı</strong> durumuna geçecek ve siparişe/depoya sevk edilecektir.</p>
+          </div>
+        }
+
+        <div class="form-group mt-3">
+          <label>Onay Notu / Açıklama (Opsiyonel)</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Örn: Bütçe uygundur, sipariş geçilebilir..."
+            [(ngModel)]="approvalComment"
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeApproveModal()">Vazgeç</button>
+        <button class="btn btn-success" (click)="submitApprove()" [disabled]="isLoading()">
+          <span>✅</span> Talebi Onayla
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL 2: HIZLI RED MODALI (QUICK REJECT MODAL) -->
+<!-- ========================================================================= -->
+@if (isRejectModalOpen() && rejectingRequest()) {
+  <div class="modal-overlay" (click)="closeRejectModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>❌ Satın Alma Talebini Reddet</h3>
+        <button class="btn-close" (click)="closeRejectModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p>
+          <strong>{{ rejectingRequest()!.requestNumber }}</strong> numaralı 
+          (<strong>{{ rejectingRequest()!.totalEstimatedAmount | number:'1.2-2' }} ₺</strong>) satın alma talebini reddetmek üzeresiniz.
+        </p>
+
+        <div class="form-group mt-3">
+          <label>Zorunlu Ret Gerekçesi / Açıklaması <span class="text-danger">*</span></label>
+          <textarea 
+            class="form-control" 
+            rows="3" 
+            placeholder="Talebin neden reddedildiğini detaylıca belirtiniz (Örn: Mevcut bütçe aşımı, depoda benzer muadil ürün mevcudiyeti vb.)..."
+            [(ngModel)]="rejectReason">
+          </textarea>
+          <small class="text-muted">En az 5 karakterlik açıklama gereklidir.</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeRejectModal()">Vazgeç</button>
+        <button class="btn btn-danger" (click)="submitReject()" [disabled]="isLoading() || !rejectReason || rejectReason.trim().length < 5">
+          <span>❌</span> Talebi Reddet
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL 3: MAL KABUL & STOĞA GİRİŞ MODALI (CONVERT TO INVENTORY MODAL) -->
+<!-- ========================================================================= -->
+@if (isConvertModalOpen() && convertingDetail()) {
+  <div class="modal-overlay" (click)="closeConvertModal()">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="detail-header-title">
+          <h3>📦 Mal Kabul & Stoğa Giriş İşlemi</h3>
+          <span class="code-badge">{{ convertingDetail()!.requestNumber }}</span>
+        </div>
+        <button class="btn-close" (click)="closeConvertModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="status-alert-box alert-success mb-3">
+          <strong>✅ Onaylı Talep Mal Kabulü:</strong>
+          <p>Aşağıdaki satın alma kalemleri depoya kabul edilecek ve sistemdeki mevcut stok miktarları otomatik olarak artırılacaktır.</p>
+        </div>
+
+        <!-- Items receiving table -->
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ürün Kodu</th>
+                <th>Ürün Adı</th>
+                <th class="text-center">Mevcut Stok</th>
+                <th class="text-center text-success">Giriş Yapılacak Miktar</th>
+                <th class="text-center">Yeni Stok Seviyesi</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of convertingDetail()!.items; track item.id) {
+                <tr>
+                  <td><span class="code-badge">{{ item.productCode }}</span></td>
+                  <td><strong>{{ item.productName }}</strong></td>
+                  <td class="text-center">{{ item.currentStock }} {{ item.unit }}</td>
+                  <td class="text-center font-weight-bold text-success">+{{ item.requestedQuantity }} {{ item.unit }}</td>
+                  <td class="text-center font-weight-bold">
+                    {{ (item.currentStock + item.requestedQuantity) }} {{ item.unit }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="form-group mt-3">
+          <label>Depo / Mal Kabul Fiş Notu (Opsiyonel)</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Örn: İrsaliye no: IRS-9821, Merkez Depo A-Blok rafına yerleştirildi."
+            [(ngModel)]="convertNote"
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeConvertModal()">Vazgeç</button>
+        <button class="btn btn-primary" (click)="submitConvertToInventory()" [disabled]="isLoading()">
+          <span>📥</span> Mal Kabulü Tamamla ve Stoğa Giriş Yap
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL 4: DETAY & GÖRSEL İŞ AKIŞI ZAMAN ÇİZELGESİ (AUDIT TIMELINE MODAL) -->
+<!-- ========================================================================= -->
+@if (isDetailModalOpen() && selectedRequestDetail()) {
+  <div class="modal-overlay" (click)="closeDetailModal()">
+    <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="detail-header-title">
+          <h3>📑 Talep Detayı & Süreç Zaman Çizelgesi</h3>
+          <span class="code-badge">{{ selectedRequestDetail()!.requestNumber }}</span>
+          @if (isHighValue(selectedRequestDetail()!.totalEstimatedAmount)) {
+            <span class="badge badge-warning">💎 10.000 TL Üstü Çok Kademeli</span>
+          }
+        </div>
+        <button class="btn-close" (click)="closeDetailModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Visual Workflow Stepper -->
+        <div class="workflow-stepper">
+          <!-- Step 1: Request Created -->
+          <div class="step-item active">
+            <div class="step-circle">1</div>
+            <div class="step-label">
+              <strong>Talep Açıldı</strong>
+              <small>{{ selectedRequestDetail()!.createdDate | date:'dd.MM.yyyy' }}</small>
+            </div>
+          </div>
+          <div class="step-line" [class.active]="selectedRequestDetail()!.status !== RequestStatus.Draft"></div>
+
+          <!-- Step 2: Manager Approval -->
+          <div class="step-item" [class.active]="selectedRequestDetail()!.status !== RequestStatus.Draft">
+            <div class="step-circle">2</div>
+            <div class="step-label">
+              <strong>Şube Müdürü Onayı</strong>
+              <small *ngIf="selectedRequestDetail()!.status === RequestStatus.PendingApproval && selectedRequestDetail()!.currentApprovalStep === 1">Beklemede</small>
+              <small *ngIf="selectedRequestDetail()!.status === RequestStatus.PendingApproval && selectedRequestDetail()!.currentApprovalStep === 2">Onaylandı ✓</small>
+              <small *ngIf="selectedRequestDetail()!.status === RequestStatus.Approved || selectedRequestDetail()!.status === RequestStatus.Completed">Onaylandı ✓</small>
+              <small *ngIf="selectedRequestDetail()!.status === RequestStatus.Rejected">Reddedildi ✕</small>
+            </div>
+          </div>
+          
+          <!-- Step 3: Director Approval (if > 10K or general) -->
+          <div class="step-line" [class.active]="(selectedRequestDetail()!.status === RequestStatus.PendingApproval && selectedRequestDetail()!.currentApprovalStep === 2) || selectedRequestDetail()!.status === RequestStatus.Approved || selectedRequestDetail()!.status === RequestStatus.Completed"></div>
+
+          <div class="step-item" [class.active]="selectedRequestDetail()!.status === RequestStatus.Approved || selectedRequestDetail()!.status === RequestStatus.Completed || (selectedRequestDetail()!.status === RequestStatus.PendingApproval && selectedRequestDetail()!.currentApprovalStep === 2)">
+            <div class="step-circle">3</div>
+            <div class="step-label">
+              <strong>Direktör Onayı</strong>
+              <small *ngIf="!isHighValue(selectedRequestDetail()!.totalEstimatedAmount)">Gerekmedi (Limit Altı)</small>
+              <small *ngIf="isHighValue(selectedRequestDetail()!.totalEstimatedAmount) && selectedRequestDetail()!.status === RequestStatus.PendingApproval && selectedRequestDetail()!.currentApprovalStep === 2">Beklemede</small>
+              <small *ngIf="isHighValue(selectedRequestDetail()!.totalEstimatedAmount) && (selectedRequestDetail()!.status === RequestStatus.Approved || selectedRequestDetail()!.status === RequestStatus.Completed)">Onaylandı ✓</small>
+            </div>
+          </div>
+          
+          <div class="step-line" [class.active]="selectedRequestDetail()!.status === RequestStatus.Completed"></div>
+
+          <!-- Step 4: Inventory Receiving -->
+          <div class="step-item" [class.active]="selectedRequestDetail()!.status === RequestStatus.Completed">
+            <div class="step-circle">4</div>
+            <div class="step-label">
+              <strong>Mal Kabul & Stok</strong>
+              <small>{{ selectedRequestDetail()!.status === RequestStatus.Completed ? 'Depoya Alındı' : 'Bekleniyor' }}</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Box if rejected or cancelled -->
+        @if (selectedRequestDetail()!.status === RequestStatus.Rejected || selectedRequestDetail()!.status === RequestStatus.Cancelled) {
+          <div class="status-alert-box alert-danger mt-3">
+            <strong>⚠️ Bu Talep {{ selectedRequestDetail()!.statusName }}:</strong>
+            <p>{{ selectedRequestDetail()!.note || 'Gerekçe onay geçmişinde listelenmiştir.' }}</p>
+          </div>
+        }
+
+        <!-- Details Info Grid -->
+        <div class="detail-info-grid mt-4">
+          <div class="detail-item">
+            <span class="detail-label">Talep Eden:</span>
+            <strong>{{ selectedRequestDetail()!.requesterUserName }}</strong>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Departman:</span>
+            <strong>{{ selectedRequestDetail()!.department }}</strong>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Aciliyet / Öncelik:</span>
+            <span class="badge badge-warning">{{ selectedRequestDetail()!.priorityName }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Hedef Teslim Tarihi:</span>
+            <strong>{{ (selectedRequestDetail()!.requiredDate | date:'dd.MM.yyyy') || 'Belirtilmedi' }}</strong>
+          </div>
+          <div class="detail-item full-width">
+            <span class="detail-label">Açıklama / Bütçe Kodu:</span>
+            <p>{{ selectedRequestDetail()!.note || 'Açıklama girilmedi.' }}</p>
+          </div>
+        </div>
+
+        <!-- Grid with Items Table & Audit Timeline side-by-side -->
+        <div class="detail-content-columns mt-4">
+          <!-- Column 1: Items Table -->
+          <div class="detail-items-column">
+            <h4>📦 Talep Kalemleri ({{ selectedRequestDetail()!.items.length }} Çeşit Ürün)</h4>
+            <div class="table-responsive mt-2">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ürün</th>
+                    <th class="text-center">Mevcut Stok</th>
+                    <th class="text-center">Miktar</th>
+                    <th class="text-right">Birim Fiyat</th>
+                    <th class="text-right">Tutar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of selectedRequestDetail()!.items; track item.id) {
+                    <tr>
+                      <td>
+                        <strong>{{ item.productName }}</strong>
+                        <br><small class="code-badge">{{ item.productCode }}</small>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge" [class.badge-danger]="item.currentStock <= item.minStockLevel" [class.badge-success]="item.currentStock > item.minStockLevel">
+                          {{ item.currentStock }} {{ item.unit }}
+                        </span>
+                      </td>
+                      <td class="text-center font-weight-bold">{{ item.requestedQuantity }} {{ item.unit }}</td>
+                      <td class="text-right">{{ item.estimatedUnitPrice | number:'1.2-2' }} ₺</td>
+                      <td class="text-right text-success font-weight-bold">{{ item.estimatedTotalPrice | number:'1.2-2' }} ₺</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div class="detail-total-box mt-3">
+              <span>TOPLAM TAHMİNİ TUTAR:</span>
+              <strong>{{ selectedRequestDetail()!.totalEstimatedAmount | number:'1.2-2' }} ₺</strong>
+            </div>
+          </div>
+
+          <!-- Column 2: Audit Timeline (Görsel İş Akışı Zaman Çizelgesi) -->
+          <div class="detail-timeline-column">
+            <h4>⏱️ Süreç & Onay Zaman Çizelgesi</h4>
+
+            <div class="audit-timeline mt-2">
+              <!-- Initial Creation Step -->
+              <div class="timeline-event">
+                <div class="timeline-marker bg-primary">📝</div>
+                <div class="timeline-content">
+                  <div class="timeline-header">
+                    <strong>Talep Oluşturuldu</strong>
+                    <span class="timeline-date">{{ selectedRequestDetail()!.createdDate | date:'dd.MM.yyyy HH:mm' }}</span>
+                  </div>
+                  <p class="timeline-user">Talep Eden: <strong>{{ selectedRequestDetail()!.requesterUserName }}</strong></p>
+                  <small class="text-muted" *ngIf="selectedRequestDetail()!.note">{{ selectedRequestDetail()!.note }}</small>
+                </div>
+              </div>
+
+              <!-- Logged Approval History Events -->
+              @for (history of selectedRequestDetail()!.approvalHistories; track history.id) {
+                <div class="timeline-event">
+                  <div class="timeline-marker" [ngClass]="{
+                    'bg-success': history.action === ApprovalAction.Approved,
+                    'bg-danger': history.action === ApprovalAction.Rejected,
+                    'bg-warning': history.action === ApprovalAction.Revised
+                  }">
+                    @if (history.action === ApprovalAction.Approved) { ✓ }
+                    @if (history.action === ApprovalAction.Rejected) { ✕ }
+                    @if (history.action === ApprovalAction.Revised) { ↺ }
+                  </div>
+                  <div class="timeline-content">
+                    <div class="timeline-header">
+                      <strong>{{ history.stepName }}</strong>
+                      <span class="timeline-date">{{ history.actionDate | date:'dd.MM.yyyy HH:mm' }}</span>
+                    </div>
+                    <p class="timeline-user">
+                      İşlem Yapan: <strong>{{ history.approverUserName }}</strong>
+                      <span class="badge ml-2" [ngClass]="{
+                        'badge-success': history.action === ApprovalAction.Approved,
+                        'badge-danger': history.action === ApprovalAction.Rejected,
+                        'badge-warning': history.action === ApprovalAction.Revised
+                      }">
+                        {{ history.actionName }}
+                      </span>
+                    </p>
+                    <p class="timeline-comment" *ngIf="history.comment">
+                      "{{ history.comment }}"
+                    </p>
+                  </div>
+                </div>
+              }
+
+              @if (selectedRequestDetail()!.approvalHistories.length === 0 && selectedRequestDetail()!.status === RequestStatus.PendingApproval) {
+                <div class="timeline-pending-notice">
+                  <span>⏳ Şu anda Şube / Birim Müdürü onayı bekleniyor.</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        @if (selectedRequestDetail()!.status === RequestStatus.PendingApproval) {
+          <button class="btn btn-danger" (click)="openRejectModal(selectedRequestDetail()!)">
+            <span>❌</span> Reddet
+          </button>
+          <button class="btn btn-success" (click)="openApproveModal(selectedRequestDetail()!)">
+            <span>✅</span> Onayla
+          </button>
+        }
+        @if (selectedRequestDetail()!.status === RequestStatus.Approved) {
+          <button class="btn btn-primary" (click)="openConvertModal(selectedRequestDetail()!)">
+            <span>📦</span> Mal Kabulü Yap ve Stoğa Aktar
+          </button>
+        }
+        <button class="btn btn-secondary" (click)="closeDetailModal()">
+          Kapat
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL 5: YENİ TALEP OLUŞTURMA & DÜZENLEME (MULTI-LINE FORM) -->
 <!-- ========================================================================= -->
 @if (isFormModalOpen()) {
   <div class="modal-overlay" (click)="closeFormModal()">
@@ -217,7 +698,6 @@
       </div>
 
       <div class="modal-body">
-        <!-- Form Header Fields -->
         <div class="form-header-grid">
           <div class="form-group">
             <label>Departman <span class="text-danger">*</span></label>
@@ -248,7 +728,7 @@
             <input 
               type="text" 
               class="form-control" 
-              placeholder="Örn: 2026-Q3 Okul Açılış Sezonu A4 ve Defter Sevkiyatı"
+              placeholder="Örn: 2026-Q3 Okul Açılış Sezonu A4 Kağıt ve Defter Sevkiyatı"
               [(ngModel)]="formNote"
             />
           </div>
@@ -261,7 +741,6 @@
           </button>
         </div>
 
-        <!-- Dynamic Items Table -->
         <div class="table-responsive mt-2">
           <table class="data-table items-table">
             <thead>
@@ -321,7 +800,7 @@
                     <input 
                       type="text" 
                       class="form-control" 
-                      placeholder="Özel istek / not..."
+                      placeholder="Özel not..."
                       [(ngModel)]="item.notes"
                     />
                   </td>
@@ -336,7 +815,6 @@
           </table>
         </div>
 
-        <!-- Form Grand Total -->
         <div class="form-total-bar mt-3">
           <div class="total-info">
             <span>Toplam Kalem: <strong>{{ formItems().length }} Çeşit</strong></span>
@@ -364,143 +842,7 @@
 }
 
 <!-- ========================================================================= -->
-<!-- MODAL: TALEP DETAY & ONAY SÜREÇ TAKİP (STEPPER MODAL) -->
-<!-- ========================================================================= -->
-@if (isDetailModalOpen() && selectedRequestDetail()) {
-  <div class="modal-overlay" (click)="closeDetailModal()">
-    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div class="detail-header-title">
-          <h3>📑 Talep Detayı & Onay Süreci</h3>
-          <span class="code-badge">{{ selectedRequestDetail()!.requestNumber }}</span>
-        </div>
-        <button class="btn-close" (click)="closeDetailModal()">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <!-- Visual Workflow Stepper -->
-        <div class="workflow-stepper">
-          <div class="step-item active">
-            <div class="step-circle">1</div>
-            <div class="step-label">
-              <strong>Talep Açıldı</strong>
-              <small>{{ selectedRequestDetail()!.createdDate | date:'dd.MM.yyyy' }}</small>
-            </div>
-          </div>
-          <div class="step-line" [class.active]="selectedRequestDetail()!.status !== RequestStatus.Draft"></div>
-
-          <div class="step-item" [class.active]="selectedRequestDetail()!.status === RequestStatus.PendingApproval || selectedRequestDetail()!.status === RequestStatus.Approved || selectedRequestDetail()!.status === RequestStatus.Completed">
-            <div class="step-circle">2</div>
-            <div class="step-label">
-              <strong>Yönetici Onayı</strong>
-              <small>{{ selectedRequestDetail()!.statusName }}</small>
-            </div>
-          </div>
-          <div class="step-line" [class.active]="selectedRequestDetail()!.status === RequestStatus.Approved || selectedRequestDetail()!.status === RequestStatus.Completed"></div>
-
-          <div class="step-item" [class.active]="selectedRequestDetail()!.status === RequestStatus.Approved || selectedRequestDetail()!.status === RequestStatus.Completed">
-            <div class="step-circle">3</div>
-            <div class="step-label">
-              <strong>Sipariş & Tedarik</strong>
-              <small>Tedarikçiye Sevk</small>
-            </div>
-          </div>
-          <div class="step-line" [class.active]="selectedRequestDetail()!.status === RequestStatus.Completed"></div>
-
-          <div class="step-item" [class.active]="selectedRequestDetail()!.status === RequestStatus.Completed">
-            <div class="step-circle">4</div>
-            <div class="step-label">
-              <strong>Mal Kabul</strong>
-              <small>Stok Girişi</small>
-            </div>
-          </div>
-        </div>
-
-        @if (selectedRequestDetail()!.status === RequestStatus.Rejected || selectedRequestDetail()!.status === RequestStatus.Cancelled) {
-          <div class="status-alert-box alert-danger mt-3">
-            <strong>⚠️ Bu Talep {{ selectedRequestDetail()!.statusName }}:</strong>
-            <p>{{ selectedRequestDetail()!.note || 'Gerekçe belirtilmemiş.' }}</p>
-          </div>
-        }
-
-        <!-- Details Info Grid -->
-        <div class="detail-info-grid mt-4">
-          <div class="detail-item">
-            <span class="detail-label">Talep Eden:</span>
-            <strong>{{ selectedRequestDetail()!.requesterUserName }}</strong>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Departman:</span>
-            <strong>{{ selectedRequestDetail()!.department }}</strong>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Aciliyet:</span>
-            <span class="badge badge-warning">{{ selectedRequestDetail()!.priorityName }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Hedef Teslim Tarihi:</span>
-            <strong>{{ (selectedRequestDetail()!.requiredDate | date:'dd.MM.yyyy') || 'Belirtilmedi' }}</strong>
-          </div>
-          <div class="detail-item full-width">
-            <span class="detail-label">Açıklama / Bütçe Notu:</span>
-            <p>{{ selectedRequestDetail()!.note || 'Açıklama girilmedi.' }}</p>
-          </div>
-        </div>
-
-        <!-- Items Table -->
-        <div class="detail-items-section mt-4">
-          <h4>Talep Edilen Ürünler ({{ selectedRequestDetail()!.items.length }} Kalem)</h4>
-          <div class="table-responsive mt-2">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Kod</th>
-                  <th>Ürün Adı</th>
-                  <th class="text-center">Mevcut Stok</th>
-                  <th class="text-center">Talep Miktarı</th>
-                  <th class="text-right">Birim Fiyat</th>
-                  <th class="text-right">Satır Tutarı</th>
-                  <th>Not</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (item of selectedRequestDetail()!.items; track item.id) {
-                  <tr>
-                    <td><span class="code-badge">{{ item.productCode }}</span></td>
-                    <td><strong>{{ item.productName }}</strong></td>
-                    <td class="text-center">
-                      <span class="badge" [class.badge-danger]="item.currentStock <= item.minStockLevel" [class.badge-success]="item.currentStock > item.minStockLevel">
-                        {{ item.currentStock }} {{ item.unit }}
-                      </span>
-                    </td>
-                    <td class="text-center font-weight-bold">{{ item.requestedQuantity }} {{ item.unit }}</td>
-                    <td class="text-right">{{ item.estimatedUnitPrice | number:'1.2-2' }} ₺</td>
-                    <td class="text-right text-success font-weight-bold">{{ item.estimatedTotalPrice | number:'1.2-2' }} ₺</td>
-                    <td><small class="text-muted">{{ item.notes || '-' }}</small></td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="detail-total-box mt-3">
-          <span>TOPLAM TAHMİNİ TUTAR:</span>
-          <strong>{{ selectedRequestDetail()!.totalEstimatedAmount | number:'1.2-2' }} ₺</strong>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeDetailModal()">
-          Kapat
-        </button>
-      </div>
-    </div>
-  </div>
-}
-
-<!-- ========================================================================= -->
-<!-- MODAL: TALEP İPTAL ETME -->
+<!-- MODAL 6: TALEP İPTAL ETME -->
 <!-- ========================================================================= -->
 @if (isCancelModalOpen()) {
   <div class="modal-overlay" (click)="closeCancelModal()">
@@ -516,7 +858,7 @@
           <textarea 
             class="form-control" 
             rows="3" 
-            placeholder="İptal sebebini açıklayınız (Örn: Bütçe yetersizliği, talep tekrarı vb.)..."
+            placeholder="İptal sebebini açıklayınız..."
             [(ngModel)]="cancelReason">
           </textarea>
         </div>

@@ -1,14 +1,17 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PurchaseRequestService } from '../../core/services/purchase-request.service';
 import { ProductService } from '../../core/services/product.service';
 import { ToastService } from '../../core/services/toast.service';
+import { AuthService } from '../../core/services/auth.service';
 import { 
   PurchaseRequest, 
   PurchaseRequestListItem, 
   RequestPriority, 
   RequestStatus,
+  ApprovalAction,
+  ApprovalHistoryDto,
   CreatePurchaseRequestItemRequest
 } from '../../core/models/purchase-request.model';
 import { Product } from '../../core/models/product.model';
@@ -36,6 +39,10 @@ export class PurchaseRequestsComponent implements OnInit {
   private requestService = inject(PurchaseRequestService);
   private productService = inject(ProductService);
   private toastService = inject(ToastService);
+  public authService = inject(AuthService);
+
+  // Active View Tab: 'all' (Tüm Talepler) | 'inbox' (Onayımı Bekleyenler) | 'approved' (Mal Kabul Bekleyenler)
+  activeTab = signal<'all' | 'inbox' | 'approved'>('inbox');
 
   // Lists & State
   requests = signal<PurchaseRequestListItem[]>([]);
@@ -60,9 +67,25 @@ export class PurchaseRequestsComponent implements OnInit {
   formNote = '';
   formItems = signal<FormItem[]>([]);
 
-  // Detail & Tracking Modal
+  // Detail & Audit Timeline Modal
   isDetailModalOpen = signal<boolean>(false);
   selectedRequestDetail = signal<PurchaseRequest | null>(null);
+
+  // Quick Approval Modal
+  isApproveModalOpen = signal<boolean>(false);
+  approvingRequest = signal<PurchaseRequestListItem | PurchaseRequest | null>(null);
+  approvalComment = '';
+
+  // Quick Reject Modal
+  isRejectModalOpen = signal<boolean>(false);
+  rejectingRequest = signal<PurchaseRequestListItem | PurchaseRequest | null>(null);
+  rejectReason = '';
+
+  // Stock Receiving / Convert to Inventory Modal
+  isConvertModalOpen = signal<boolean>(false);
+  convertingRequest = signal<PurchaseRequestListItem | PurchaseRequest | null>(null);
+  convertingDetail = signal<PurchaseRequest | null>(null);
+  convertNote = '';
 
   // Cancel Modal
   isCancelModalOpen = signal<boolean>(false);
@@ -70,8 +93,12 @@ export class PurchaseRequestsComponent implements OnInit {
   cancelingRequestNumber = '';
   cancelReason = '';
 
+  // Threshold constant for multi-level approval
+  readonly HighAmountThreshold = 10000;
+
   RequestStatus = RequestStatus;
   RequestPriority = RequestPriority;
+  ApprovalAction = ApprovalAction;
 
   departments = [
     'Kırtasiye Mağaza',
@@ -81,9 +108,26 @@ export class PurchaseRequestsComponent implements OnInit {
     'Muhasebe & Finans'
   ];
 
+  // Filtered requests based on active tab
+  displayedRequests = computed(() => {
+    const list = this.requests();
+    const tab = this.activeTab();
+
+    if (tab === 'inbox') {
+      return list.filter(r => r.status === RequestStatus.PendingApproval);
+    } else if (tab === 'approved') {
+      return list.filter(r => r.status === RequestStatus.Approved);
+    }
+    return list;
+  });
+
   ngOnInit(): void {
     this.loadRequests();
     this.loadProducts();
+  }
+
+  setTab(tab: 'all' | 'inbox' | 'approved'): void {
+    this.activeTab.set(tab);
   }
 
   loadRequests(): void {
@@ -120,7 +164,7 @@ export class PurchaseRequestsComponent implements OnInit {
   }
 
   // ----------------------------------------------------
-  // STATS COMPUTATION
+  // STATS & COMPUTATIONS
   // ----------------------------------------------------
   getTotalCount(): number {
     return this.requests().length;
@@ -130,12 +174,169 @@ export class PurchaseRequestsComponent implements OnInit {
     return this.requests().filter(r => r.status === RequestStatus.PendingApproval).length;
   }
 
-  getApprovedCount(): number {
-    return this.requests().filter(r => r.status === RequestStatus.Approved || r.status === RequestStatus.Completed).length;
+  getHighValuePendingCount(): number {
+    return this.requests().filter(r => r.status === RequestStatus.PendingApproval && r.totalEstimatedAmount > this.HighAmountThreshold).length;
+  }
+
+  getApprovedPendingStockCount(): number {
+    return this.requests().filter(r => r.status === RequestStatus.Approved).length;
+  }
+
+  getCompletedCount(): number {
+    return this.requests().filter(r => r.status === RequestStatus.Completed).length;
   }
 
   getTotalBudget(): number {
     return this.requests().reduce((sum, r) => sum + r.totalEstimatedAmount, 0);
+  }
+
+  getPendingTotalBudget(): number {
+    return this.requests()
+      .filter(r => r.status === RequestStatus.PendingApproval)
+      .reduce((sum, r) => sum + r.totalEstimatedAmount, 0);
+  }
+
+  isHighValue(amount: number): boolean {
+    return amount > this.HighAmountThreshold;
+  }
+
+  // ----------------------------------------------------
+  // APPROVAL WORKFLOW ACTIONS
+  // ----------------------------------------------------
+  openApproveModal(reqItem: PurchaseRequestListItem | PurchaseRequest): void {
+    this.approvingRequest.set(reqItem);
+    this.approvalComment = '';
+    this.isApproveModalOpen.set(true);
+  }
+
+  closeApproveModal(): void {
+    this.isApproveModalOpen.set(false);
+    this.approvingRequest.set(null);
+  }
+
+  submitApprove(): void {
+    const item = this.approvingRequest();
+    if (!item) return;
+
+    this.isLoading.set(true);
+    this.requestService.approvePurchaseRequest(item.id, this.approvalComment).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        if (res.isSuccess) {
+          this.toastService.success(res.message || 'Satın alma talebi onaylandı.');
+          this.closeApproveModal();
+          this.loadRequests();
+          if (this.isDetailModalOpen() && this.selectedRequestDetail()?.id === item.id && res.data) {
+            this.selectedRequestDetail.set(res.data);
+          }
+        } else {
+          this.toastService.error(res.message || 'Onaylama işlemi başarısız.');
+        }
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        const msg = err.error?.message || err.error?.title || 'Onaylanırken hata oluştu.';
+        this.toastService.error(msg);
+      }
+    });
+  }
+
+  openRejectModal(reqItem: PurchaseRequestListItem | PurchaseRequest): void {
+    this.rejectingRequest.set(reqItem);
+    this.rejectReason = '';
+    this.isRejectModalOpen.set(true);
+  }
+
+  closeRejectModal(): void {
+    this.isRejectModalOpen.set(false);
+    this.rejectingRequest.set(null);
+  }
+
+  submitReject(): void {
+    const item = this.rejectingRequest();
+    if (!item) return;
+
+    if (!this.rejectReason || this.rejectReason.trim().length < 5) {
+      this.toastService.warning('Lütfen en az 5 karakterden oluşan geçerli bir ret gerekçesi giriniz.');
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.requestService.rejectPurchaseRequest(item.id, this.rejectReason).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        if (res.isSuccess) {
+          this.toastService.success(res.message || 'Talep reddedildi.');
+          this.closeRejectModal();
+          this.loadRequests();
+          if (this.isDetailModalOpen() && this.selectedRequestDetail()?.id === item.id && res.data) {
+            this.selectedRequestDetail.set(res.data);
+          }
+        } else {
+          this.toastService.error(res.message || 'Red işlemi başarısız.');
+        }
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        const msg = err.error?.message || err.error?.title || 'Reddedilirken hata oluştu.';
+        this.toastService.error(msg);
+      }
+    });
+  }
+
+  // ----------------------------------------------------
+  // AUTOMATION / INVENTORY RECEIVING ACTIONS
+  // ----------------------------------------------------
+  openConvertModal(reqItem: PurchaseRequestListItem | PurchaseRequest): void {
+    this.convertingRequest.set(reqItem);
+    this.convertNote = '';
+    this.isLoading.set(true);
+
+    this.requestService.getPurchaseRequestById(reqItem.id).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        if (res.isSuccess && res.data) {
+          this.convertingDetail.set(res.data);
+          this.isConvertModalOpen.set(true);
+        }
+      },
+      error: () => {
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  closeConvertModal(): void {
+    this.isConvertModalOpen.set(false);
+    this.convertingRequest.set(null);
+    this.convertingDetail.set(null);
+  }
+
+  submitConvertToInventory(): void {
+    const item = this.convertingRequest();
+    if (!item) return;
+
+    this.isLoading.set(true);
+    this.requestService.convertToInventory(item.id, this.convertNote).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        if (res.isSuccess) {
+          this.toastService.success(res.message || 'Mal kabul işlemi tamamlandı ve stoklar güncellendi.');
+          this.closeConvertModal();
+          this.loadRequests();
+          if (this.isDetailModalOpen() && this.selectedRequestDetail()?.id === item.id && res.data) {
+            this.selectedRequestDetail.set(res.data);
+          }
+        } else {
+          this.toastService.error(res.message || 'Stok giriş işlemi başarısız.');
+        }
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        const msg = err.error?.message || err.error?.title || 'Stok girişi yapılırken hata oluştu.';
+        this.toastService.error(msg);
+      }
+    });
   }
 
   // ----------------------------------------------------
@@ -345,7 +546,7 @@ export class PurchaseRequestsComponent implements OnInit {
   }
 
   // ----------------------------------------------------
-  // DETAIL & STEPPER TRACKING MODAL
+  // DETAIL & AUDIT TIMELINE MODAL
   // ----------------------------------------------------
   openDetailModal(reqItem: PurchaseRequestListItem): void {
     this.isLoading.set(true);
