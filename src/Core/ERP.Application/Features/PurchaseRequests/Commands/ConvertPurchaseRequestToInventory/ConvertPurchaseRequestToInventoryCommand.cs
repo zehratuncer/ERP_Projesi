@@ -104,9 +104,10 @@ public class ConvertPurchaseRequestToInventoryCommandHandler : IRequestHandler<C
             ActionDate = DateTime.UtcNow
         };
 
-        purchaseRequest.ApprovalHistories.Add(history);
+        _context.ApprovalHistories.Add(history);
 
         await _context.SaveChangesAsync(cancellationToken);
+
 
         var dto = new PurchaseRequestDto
         {

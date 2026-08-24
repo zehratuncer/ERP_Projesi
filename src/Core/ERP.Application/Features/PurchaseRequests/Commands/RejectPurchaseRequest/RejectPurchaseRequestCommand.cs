@@ -75,10 +75,11 @@ public class RejectPurchaseRequestCommandHandler : IRequestHandler<RejectPurchas
             ActionDate = DateTime.UtcNow
         };
 
-        purchaseRequest.ApprovalHistories.Add(history);
+        _context.ApprovalHistories.Add(history);
         purchaseRequest.Status = RequestStatus.Rejected;
 
         await _context.SaveChangesAsync(cancellationToken);
+
 
         var dto = new PurchaseRequestDto
         {

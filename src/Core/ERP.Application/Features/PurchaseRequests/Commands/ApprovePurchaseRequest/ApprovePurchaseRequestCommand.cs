@@ -71,7 +71,7 @@ public class ApprovePurchaseRequestCommandHandler : IRequestHandler<ApprovePurch
                 ActionDate = DateTime.UtcNow
             };
 
-            purchaseRequest.ApprovalHistories.Add(history);
+            _context.ApprovalHistories.Add(history);
             purchaseRequest.CurrentApprovalStep = 2; // Bir sonraki kademeye geçti
             // Status hala PendingApproval
 
@@ -96,7 +96,7 @@ public class ApprovePurchaseRequestCommandHandler : IRequestHandler<ApprovePurch
                 ActionDate = DateTime.UtcNow
             };
 
-            purchaseRequest.ApprovalHistories.Add(history);
+            _context.ApprovalHistories.Add(history);
             purchaseRequest.Status = RequestStatus.Approved;
 
             message = $"Satın alma talebi '{purchaseRequest.RequestNumber}' başarıyla onaylandı.";
