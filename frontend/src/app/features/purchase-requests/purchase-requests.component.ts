@@ -104,16 +104,16 @@ export class PurchaseRequestsComponent implements OnInit {
       },
       error: () => {
         this.isLoading.set(false);
-        this.toastService.error('Satın alma talepleri yüklenemedi.');
       }
     });
   }
 
-  loadProducts(): void {
+  loadProducts(callback?: () => void): void {
     this.productService.getProducts(undefined, true).subscribe({
       next: (res) => {
         if (res.isSuccess && res.data) {
           this.products.set(res.data);
+          if (callback) callback();
         }
       }
     });
@@ -150,9 +150,15 @@ export class PurchaseRequestsComponent implements OnInit {
     this.formNote = '';
     this.formItems.set([]);
 
-    // Add first default item line
-    this.addNewItemRow();
-    this.isFormModalOpen.set(true);
+    if (this.products().length === 0) {
+      this.loadProducts(() => {
+        this.addNewItemRow();
+        this.isFormModalOpen.set(true);
+      });
+    } else {
+      this.addNewItemRow();
+      this.isFormModalOpen.set(true);
+    }
   }
 
   openEditModal(reqItem: PurchaseRequestListItem): void {
@@ -192,7 +198,6 @@ export class PurchaseRequestsComponent implements OnInit {
       },
       error: () => {
         this.isLoading.set(false);
-        this.toastService.error('Talep detayları alınamadı.');
       }
     });
   }
@@ -244,11 +249,11 @@ export class PurchaseRequestsComponent implements OnInit {
   }
 
   getFormEstimatedTotal(): number {
-    return this.formItems().reduce((sum, i) => sum + (i.requestedQuantity * i.estimatedUnitPrice), 0);
+    return this.formItems().reduce((sum, i) => sum + (Number(i.requestedQuantity || 0) * Number(i.estimatedUnitPrice || 0)), 0);
   }
 
   saveRequest(submitForApproval: boolean): void {
-    if (!this.formDepartment.trim()) {
+    if (!this.formDepartment || !this.formDepartment.trim()) {
       this.toastService.warning('Lütfen departman seçiniz.');
       return;
     }
@@ -260,10 +265,10 @@ export class PurchaseRequestsComponent implements OnInit {
 
     for (const item of this.formItems()) {
       if (!item.productId) {
-        this.toastService.warning('Lütfen satırdaki ürünü seçiniz.');
+        this.toastService.warning('Lütfen ürün seçiniz.');
         return;
       }
-      if (!item.requestedQuantity || item.requestedQuantity <= 0) {
+      if (!item.requestedQuantity || Number(item.requestedQuantity) <= 0) {
         this.toastService.warning('Talep miktarı 0\'dan büyük olmalıdır.');
         return;
       }
@@ -273,19 +278,21 @@ export class PurchaseRequestsComponent implements OnInit {
 
     const itemsPayload: CreatePurchaseRequestItemRequest[] = this.formItems().map(i => ({
       productId: i.productId,
-      requestedQuantity: i.requestedQuantity,
-      unit: i.unit,
-      estimatedUnitPrice: i.estimatedUnitPrice,
-      notes: i.notes
+      requestedQuantity: Number(i.requestedQuantity),
+      unit: i.unit || 'Adet',
+      estimatedUnitPrice: Number(i.estimatedUnitPrice || 0),
+      notes: i.notes?.trim() || undefined
     }));
+
+    const parsedDate = this.formRequiredDate ? new Date(this.formRequiredDate).toISOString() : undefined;
 
     if (this.isEditMode() && this.editingRequestId) {
       const updatePayload = {
         id: this.editingRequestId,
-        department: this.formDepartment,
-        priority: this.formPriority,
-        requiredDate: this.formRequiredDate || undefined,
-        note: this.formNote,
+        department: this.formDepartment.trim(),
+        priority: Number(this.formPriority),
+        requiredDate: parsedDate,
+        note: this.formNote?.trim() || undefined,
         items: itemsPayload,
         submitForApproval
       };
@@ -303,15 +310,16 @@ export class PurchaseRequestsComponent implements OnInit {
         },
         error: (err) => {
           this.isLoading.set(false);
-          this.toastService.error(err.error?.message || 'Talep güncellenirken hata oluştu.');
+          const msg = err.error?.message || err.error?.title || 'Talep güncellenirken hata oluştu.';
+          this.toastService.error(msg);
         }
       });
     } else {
       const createPayload = {
-        department: this.formDepartment,
-        priority: this.formPriority,
-        requiredDate: this.formRequiredDate || undefined,
-        note: this.formNote,
+        department: this.formDepartment.trim(),
+        priority: Number(this.formPriority),
+        requiredDate: parsedDate,
+        note: this.formNote?.trim() || undefined,
         items: itemsPayload,
         submitForApproval
       };
@@ -329,7 +337,8 @@ export class PurchaseRequestsComponent implements OnInit {
         },
         error: (err) => {
           this.isLoading.set(false);
-          this.toastService.error(err.error?.message || 'Talep oluşturulurken hata oluştu.');
+          const msg = err.error?.message || err.error?.title || 'Talep oluşturulurken hata oluştu.';
+          this.toastService.error(msg);
         }
       });
     }
@@ -350,7 +359,6 @@ export class PurchaseRequestsComponent implements OnInit {
       },
       error: () => {
         this.isLoading.set(false);
-        this.toastService.error('Talep detayı getirilemedi.');
       }
     });
   }
@@ -397,7 +405,8 @@ export class PurchaseRequestsComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.toastService.error(err.error?.message || 'İptal edilirken hata oluştu.');
+        const msg = err.error?.message || 'İptal edilirken hata oluştu.';
+        this.toastService.error(msg);
       }
     });
   }
