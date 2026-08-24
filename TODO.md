@@ -227,12 +227,12 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
   - `DELETE /api/purchase-requests/{id}/cancel`
 
 ### 8.2. Frontend (Kırtasiye Satın Alma Talep Arayüzü)
-- [ ] **Talep Listesi & Filtreleme:**
+- [x] **Talep Listesi & Filtreleme:**
   - Talep numarası, departman, ürün çeşit sayısı, tahmini tutar, aciliyet (Renkli badge: Okul Sezonu Acil, Rutin Ofis İhtiyacı) ve onay durumu tablosu.
-- [ ] **Dinamik Çok Satırlı Talep Oluşturma Formu:**
+- [x] **Dinamik Çok Satırlı Talep Oluşturma Formu:**
   - Kırtasiye ürün arama (Defter, Kağıt, Kalem Grubu vb.), miktar/paket seçimi, birim fiyat ve canlı genel toplam hesaplama.
   - Hedef teslim tarihi ve departman bütçe kodu seçimi.
-- [ ] **Talep Detay & Süreç Takip Ekranı:**
+- [x] **Talep Detay & Süreç Takip Ekranı:**
   - Talep kalemleri, birim/miktar bilgisi ve anlık onay durum ilerleme çubuğu (Stepper).
 
 ---

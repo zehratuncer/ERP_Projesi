@@ -1,0 +1,532 @@
+<div class="purchase-requests-container">
+  <!-- Header & Actions -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="page-title-badge">
+        <span class="icon">📑</span>
+        <div>
+          <h2>Satın Alma Talepleri</h2>
+          <p>Kırtasiye mağaza, depo ve okul sezonu ürün ihtiyaç talepleri ve süreç takibi</p>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <span>➕</span> Yeni Satın Alma Talebi
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Summary Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card card">
+      <div class="kpi-icon bg-info-light">📋</div>
+      <div class="kpi-content">
+        <span class="kpi-label">Toplam Talep</span>
+        <h3 class="kpi-value">{{ getTotalCount() }}</h3>
+      </div>
+    </div>
+
+    <div class="kpi-card card">
+      <div class="kpi-icon bg-warning-light">⏳</div>
+      <div class="kpi-content">
+        <span class="kpi-label">Onay Bekleyenler</span>
+        <h3 class="kpi-value text-warning">{{ getPendingCount() }}</h3>
+      </div>
+    </div>
+
+    <div class="kpi-card card">
+      <div class="kpi-icon bg-success-light">✅</div>
+      <div class="kpi-content">
+        <span class="kpi-label">Onaylanan / Tamamlanan</span>
+        <h3 class="kpi-value text-success">{{ getApprovedCount() }}</h3>
+      </div>
+    </div>
+
+    <div class="kpi-card card">
+      <div class="kpi-icon bg-primary-light">💰</div>
+      <div class="kpi-content">
+        <span class="kpi-label">Toplam Tahmini Bütçe</span>
+        <h3 class="kpi-value">{{ getTotalBudget() | number:'1.2-2' }} ₺</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Card -->
+  <div class="filter-card card">
+    <div class="filter-grid">
+      <div class="form-group mb-0">
+        <label>Durum</label>
+        <select class="form-control" [(ngModel)]="selectedStatus" (change)="loadRequests()">
+          <option [ngValue]="null">Tümü</option>
+          <option [ngValue]="RequestStatus.Draft">Taslak</option>
+          <option [ngValue]="RequestStatus.PendingApproval">Onay Bekliyor</option>
+          <option [ngValue]="RequestStatus.Approved">Onaylandı</option>
+          <option [ngValue]="RequestStatus.Rejected">Reddedildi</option>
+          <option [ngValue]="RequestStatus.Completed">Tamamlandı</option>
+          <option [ngValue]="RequestStatus.Cancelled">İptal Edildi</option>
+        </select>
+      </div>
+
+      <div class="form-group mb-0">
+        <label>Departman</label>
+        <select class="form-control" [(ngModel)]="selectedDepartment" (change)="loadRequests()">
+          <option value="">Tüm Departmanlar</option>
+          @for (dep of departments; track dep) {
+            <option [value]="dep">{{ dep }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group mb-0">
+        <label>Aciliyet / Öncelik</label>
+        <select class="form-control" [(ngModel)]="selectedPriority" (change)="loadRequests()">
+          <option [ngValue]="null">Tümü</option>
+          <option [ngValue]="RequestPriority.Urgent">⚡ Okul Sezonu Acil</option>
+          <option [ngValue]="RequestPriority.High">🔴 Yüksek</option>
+          <option [ngValue]="RequestPriority.Medium">🟡 Normal</option>
+          <option [ngValue]="RequestPriority.Low">🟢 Düşük</option>
+        </select>
+      </div>
+
+      <div class="form-group mb-0 search-col">
+        <label>Arama</label>
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Talep no, departman veya açıklama ara..."
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="loadRequests()"
+        />
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-primary" (click)="loadRequests()" [disabled]="isLoading()">
+          <span>🔍</span> Filtrele
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Requests Table Card -->
+  <div class="card table-card">
+    <div class="card-header">
+      <div class="header-info">
+        <h3>Talep Listesi</h3>
+        <span class="badge badge-info">{{ requests().length }} Kayıt</span>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      @if (requests().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">📑</span>
+          <h4>Henüz Satın Alma Talebi Bulunmuyor</h4>
+          <p>Departman ihtiyaçları için yukarıdaki "+ Yeni Satın Alma Talebi" butonuna tıklayarak talep oluşturabilirsiniz.</p>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Talep No</th>
+                <th>Departman</th>
+                <th>Talep Eden</th>
+                <th class="text-center">Çeşit</th>
+                <th>Aciliyet</th>
+                <th>Durum</th>
+                <th class="text-right">Tahmini Tutar</th>
+                <th>Tarih</th>
+                <th class="text-center">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of requests(); track req.id) {
+                <tr>
+                  <td>
+                    <span class="code-badge">{{ req.requestNumber }}</span>
+                  </td>
+                  <td>
+                    <strong>{{ req.department }}</strong>
+                  </td>
+                  <td>{{ req.requesterUserName }}</td>
+                  <td class="text-center">
+                    <span class="badge badge-info">{{ req.itemCount }} Kalem</span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'badge-danger': req.priority === RequestPriority.Urgent,
+                      'badge-warning': req.priority === RequestPriority.High,
+                      'badge-info': req.priority === RequestPriority.Medium,
+                      'badge-success': req.priority === RequestPriority.Low
+                    }">
+                      @if (req.priority === RequestPriority.Urgent) { ⚡ }
+                      {{ req.priorityName }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'badge-warning': req.status === RequestStatus.PendingApproval,
+                      'badge-success': req.status === RequestStatus.Approved || req.status === RequestStatus.Completed,
+                      'badge-danger': req.status === RequestStatus.Rejected || req.status === RequestStatus.Cancelled,
+                      'badge-info': req.status === RequestStatus.Draft
+                    }">
+                      {{ req.statusName }}
+                    </span>
+                  </td>
+                  <td class="text-right total-amount">
+                    <strong>{{ req.totalEstimatedAmount | number:'1.2-2' }} ₺</strong>
+                  </td>
+                  <td>{{ req.createdDate | date:'dd.MM.yyyy' }}</td>
+                  <td class="text-center">
+                    <div class="action-buttons">
+                      <button class="btn btn-sm btn-secondary" (click)="openDetailModal(req)" title="İncele & Süreç Takip">
+                        <span>👁️</span> Detay
+                      </button>
+                      @if (req.status === RequestStatus.Draft || req.status === RequestStatus.PendingApproval) {
+                        <button class="btn btn-sm btn-secondary" (click)="openEditModal(req)" title="Düzenle">
+                          <span>✏️</span>
+                        </button>
+                      }
+                      @if (req.status !== RequestStatus.Completed && req.status !== RequestStatus.Cancelled) {
+                        <button class="btn btn-sm btn-danger" (click)="openCancelModal(req)" title="İptal Et">
+                          <span>✕</span>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: YENİ TALEP OLUŞTURMA & DÜZENLEME (MULTI-LINE FORM) -->
+<!-- ========================================================================= -->
+@if (isFormModalOpen()) {
+  <div class="modal-overlay" (click)="closeFormModal()">
+    <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ isEditMode() ? '✏️ Satın Alma Talebini Düzenle' : '➕ Yeni Kırtasiye Satın Alma Talebi' }}</h3>
+        <button class="btn-close" (click)="closeFormModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Form Header Fields -->
+        <div class="form-header-grid">
+          <div class="form-group">
+            <label>Departman <span class="text-danger">*</span></label>
+            <select class="form-control" [(ngModel)]="formDepartment">
+              @for (dep of departments; track dep) {
+                <option [value]="dep">{{ dep }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Aciliyet Derecesi <span class="text-danger">*</span></label>
+            <select class="form-control" [(ngModel)]="formPriority">
+              <option [ngValue]="RequestPriority.Urgent">⚡ Okul Sezonu Acil İhtiyaç</option>
+              <option [ngValue]="RequestPriority.High">🔴 Yüksek Öncelik</option>
+              <option [ngValue]="RequestPriority.Medium">🟡 Normal / Rutin İhtiyaç</option>
+              <option [ngValue]="RequestPriority.Low">🟢 Düşük Öncelik</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Hedef Teslim Tarihi</label>
+            <input type="date" class="form-control" [(ngModel)]="formRequiredDate" />
+          </div>
+
+          <div class="form-group form-note-col">
+            <label>Talep Açıklaması / Bütçe Kodu</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Örn: 2026-Q3 Okul Açılış Sezonu A4 ve Defter Sevkiyatı"
+              [(ngModel)]="formNote"
+            />
+          </div>
+        </div>
+
+        <div class="items-section-header mt-4">
+          <h4>📦 Talep Edilecek Ürün Kalemleri</h4>
+          <button class="btn btn-sm btn-secondary" (click)="addNewItemRow()">
+            <span>➕</span> Kalem Ekle
+          </button>
+        </div>
+
+        <!-- Dynamic Items Table -->
+        <div class="table-responsive mt-2">
+          <table class="data-table items-table">
+            <thead>
+              <tr>
+                <th style="width: 35%;">Ürün Seçimi</th>
+                <th style="width: 120px;">Miktar</th>
+                <th style="width: 90px;">Birim</th>
+                <th style="width: 130px;">Tahmini Birim Fiyat</th>
+                <th class="text-right" style="width: 130px;">Satır Toplamı</th>
+                <th>Satır Notu</th>
+                <th class="text-center" style="width: 50px;">Sil</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of formItems(); track $index; let i = $index) {
+                <tr>
+                  <td>
+                    <select 
+                      class="form-control" 
+                      [ngModel]="item.productId" 
+                      (ngModelChange)="onProductSelected(item, $event)">
+                      @for (p of products(); track p.id) {
+                        <option [value]="p.id">
+                          [{{ p.code }}] {{ p.name }} (Stok: {{ p.currentStock }} {{ p.unit }})
+                        </option>
+                      }
+                    </select>
+                  </td>
+                  <td>
+                    <input 
+                      type="number" 
+                      class="form-control text-center" 
+                      [(ngModel)]="item.requestedQuantity" 
+                      min="1"
+                    />
+                  </td>
+                  <td>
+                    <input 
+                      type="text" 
+                      class="form-control text-center" 
+                      [(ngModel)]="item.unit" 
+                    />
+                  </td>
+                  <td>
+                    <input 
+                      type="number" 
+                      class="form-control text-right" 
+                      [(ngModel)]="item.estimatedUnitPrice" 
+                      min="0"
+                      step="0.01"
+                    />
+                  </td>
+                  <td class="text-right total-cell">
+                    <strong>{{ (item.requestedQuantity * item.estimatedUnitPrice) | number:'1.2-2' }} ₺</strong>
+                  </td>
+                  <td>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      placeholder="Özel istek / not..."
+                      [(ngModel)]="item.notes"
+                    />
+                  </td>
+                  <td class="text-center">
+                    <button class="btn-delete-row" (click)="removeItemRow(i)" title="Satırı Sil">
+                      ❌
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Form Grand Total -->
+        <div class="form-total-bar mt-3">
+          <div class="total-info">
+            <span>Toplam Kalem: <strong>{{ formItems().length }} Çeşit</strong></span>
+          </div>
+          <div class="total-amount-box">
+            <span>TAHMİNİ GENEL TOPLAM:</span>
+            <strong>{{ getFormEstimatedTotal() | number:'1.2-2' }} ₺</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeFormModal()">
+          Vazgeç
+        </button>
+        <button class="btn btn-secondary" (click)="saveRequest(false)" [disabled]="isLoading()">
+          <span>💾</span> Taslak Kaydet
+        </button>
+        <button class="btn btn-primary" (click)="saveRequest(true)" [disabled]="isLoading()">
+          <span>🚀</span> Onaya Gönder
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL: TALEP DETAY & ONAY SÜREÇ TAKİP (STEPPER MODAL) -->
+<!-- ========================================================================= -->
+@if (isDetailModalOpen() && selectedRequestDetail()) {
+  <div class="modal-overlay" (click)="closeDetailModal()">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="detail-header-title">
+          <h3>📑 Talep Detayı & Onay Süreci</h3>
+          <span class="code-badge">{{ selectedRequestDetail()!.requestNumber }}</span>
+        </div>
+        <button class="btn-close" (click)="closeDetailModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Visual Workflow Stepper -->
+        <div class="workflow-stepper">
+          <div class="step-item active">
+            <div class="step-circle">1</div>
+            <div class="step-label">
+              <strong>Talep Açıldı</strong>
+              <small>{{ selectedRequestDetail()!.createdDate | date:'dd.MM.yyyy' }}</small>
+            </div>
+          </div>
+          <div class="step-line" [class.active]="selectedRequestDetail()!.status !== RequestStatus.Draft"></div>
+
+          <div class="step-item" [class.active]="selectedRequestDetail()!.status === RequestStatus.PendingApproval || selectedRequestDetail()!.status === RequestStatus.Approved || selectedRequestDetail()!.status === RequestStatus.Completed">
+            <div class="step-circle">2</div>
+            <div class="step-label">
+              <strong>Yönetici Onayı</strong>
+              <small>{{ selectedRequestDetail()!.statusName }}</small>
+            </div>
+          </div>
+          <div class="step-line" [class.active]="selectedRequestDetail()!.status === RequestStatus.Approved || selectedRequestDetail()!.status === RequestStatus.Completed"></div>
+
+          <div class="step-item" [class.active]="selectedRequestDetail()!.status === RequestStatus.Approved || selectedRequestDetail()!.status === RequestStatus.Completed">
+            <div class="step-circle">3</div>
+            <div class="step-label">
+              <strong>Sipariş & Tedarik</strong>
+              <small>Tedarikçiye Sevk</small>
+            </div>
+          </div>
+          <div class="step-line" [class.active]="selectedRequestDetail()!.status === RequestStatus.Completed"></div>
+
+          <div class="step-item" [class.active]="selectedRequestDetail()!.status === RequestStatus.Completed">
+            <div class="step-circle">4</div>
+            <div class="step-label">
+              <strong>Mal Kabul</strong>
+              <small>Stok Girişi</small>
+            </div>
+          </div>
+        </div>
+
+        @if (selectedRequestDetail()!.status === RequestStatus.Rejected || selectedRequestDetail()!.status === RequestStatus.Cancelled) {
+          <div class="status-alert-box alert-danger mt-3">
+            <strong>⚠️ Bu Talep {{ selectedRequestDetail()!.statusName }}:</strong>
+            <p>{{ selectedRequestDetail()!.note || 'Gerekçe belirtilmemiş.' }}</p>
+          </div>
+        }
+
+        <!-- Details Info Grid -->
+        <div class="detail-info-grid mt-4">
+          <div class="detail-item">
+            <span class="detail-label">Talep Eden:</span>
+            <strong>{{ selectedRequestDetail()!.requesterUserName }}</strong>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Departman:</span>
+            <strong>{{ selectedRequestDetail()!.department }}</strong>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Aciliyet:</span>
+            <span class="badge badge-warning">{{ selectedRequestDetail()!.priorityName }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Hedef Teslim Tarihi:</span>
+            <strong>{{ (selectedRequestDetail()!.requiredDate | date:'dd.MM.yyyy') || 'Belirtilmedi' }}</strong>
+          </div>
+          <div class="detail-item full-width">
+            <span class="detail-label">Açıklama / Bütçe Notu:</span>
+            <p>{{ selectedRequestDetail()!.note || 'Açıklama girilmedi.' }}</p>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="detail-items-section mt-4">
+          <h4>Talep Edilen Ürünler ({{ selectedRequestDetail()!.items.length }} Kalem)</h4>
+          <div class="table-responsive mt-2">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Kod</th>
+                  <th>Ürün Adı</th>
+                  <th class="text-center">Mevcut Stok</th>
+                  <th class="text-center">Talep Miktarı</th>
+                  <th class="text-right">Birim Fiyat</th>
+                  <th class="text-right">Satır Tutarı</th>
+                  <th>Not</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of selectedRequestDetail()!.items; track item.id) {
+                  <tr>
+                    <td><span class="code-badge">{{ item.productCode }}</span></td>
+                    <td><strong>{{ item.productName }}</strong></td>
+                    <td class="text-center">
+                      <span class="badge" [class.badge-danger]="item.currentStock <= item.minStockLevel" [class.badge-success]="item.currentStock > item.minStockLevel">
+                        {{ item.currentStock }} {{ item.unit }}
+                      </span>
+                    </td>
+                    <td class="text-center font-weight-bold">{{ item.requestedQuantity }} {{ item.unit }}</td>
+                    <td class="text-right">{{ item.estimatedUnitPrice | number:'1.2-2' }} ₺</td>
+                    <td class="text-right text-success font-weight-bold">{{ item.estimatedTotalPrice | number:'1.2-2' }} ₺</td>
+                    <td><small class="text-muted">{{ item.notes || '-' }}</small></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="detail-total-box mt-3">
+          <span>TOPLAM TAHMİNİ TUTAR:</span>
+          <strong>{{ selectedRequestDetail()!.totalEstimatedAmount | number:'1.2-2' }} ₺</strong>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDetailModal()">
+          Kapat
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL: TALEP İPTAL ETME -->
+<!-- ========================================================================= -->
+@if (isCancelModalOpen()) {
+  <div class="modal-overlay" (click)="closeCancelModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>⚠️ Satın Alma Talebini İptal Et</h3>
+        <button class="btn-close" (click)="closeCancelModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p><strong>{{ cancelingRequestNumber }}</strong> numaralı satın alma talebini iptal etmek istediğinizden emin misiniz?</p>
+        <div class="form-group mt-3">
+          <label>İptal Gerekçesi</label>
+          <textarea 
+            class="form-control" 
+            rows="3" 
+            placeholder="İptal sebebini açıklayınız (Örn: Bütçe yetersizliği, talep tekrarı vb.)..."
+            [(ngModel)]="cancelReason">
+          </textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeCancelModal()">Vazgeç</button>
+        <button class="btn btn-danger" (click)="submitCancel()" [disabled]="isLoading()">
+          Talebi İptal Et
+        </button>
+      </div>
+    </div>
+  </div>
+}
