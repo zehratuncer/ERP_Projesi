@@ -32,6 +32,9 @@ public class PurchaseRequestDto
     public decimal TotalEstimatedAmount { get; set; }
     public DateTime? RequiredDate { get; set; }
     public string? Note { get; set; }
+    public int CurrentApprovalStep { get; set; } = 1;
     public DateTime CreatedDate { get; set; }
     public List<PurchaseRequestItemDto> Items { get; set; } = new();
+    public List<ApprovalHistoryDto> ApprovalHistories { get; set; } = new();
 }
+

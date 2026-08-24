@@ -29,6 +29,9 @@ public class PurchaseRequestConfiguration : IEntityTypeConfiguration<PurchaseReq
         builder.Property(pr => pr.Note)
             .HasMaxLength(1000);
 
+        builder.Property(pr => pr.CurrentApprovalStep)
+            .HasDefaultValue(1);
+
         builder.HasOne(pr => pr.RequesterUser)
             .WithMany()
             .HasForeignKey(pr => pr.RequesterUserId)
@@ -37,6 +40,11 @@ public class PurchaseRequestConfiguration : IEntityTypeConfiguration<PurchaseReq
         builder.HasMany(pr => pr.Items)
             .WithOne(pri => pri.PurchaseRequest)
             .HasForeignKey(pri => pri.PurchaseRequestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(pr => pr.ApprovalHistories)
+            .WithOne(ah => ah.PurchaseRequest)
+            .HasForeignKey(ah => ah.PurchaseRequestId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

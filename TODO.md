@@ -240,19 +240,20 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
 ## ✅ Faz 9: Çok Kademeli Onay Sistemi & İş Akışı (Multi-Level Approval Workflow)
 
 ### 9.1. Backend (Onay Motoru & Kuralları)
-- [ ] **Domain & Entity Tasarımı:**
+- [x] **Domain & Entity Tasarımı:**
   - `ApprovalWorkflow` & `ApprovalStep` entity'leri (StepNumber, RoleId/UserId, IsRequired, Status).
   - `ApprovalHistory` entity (PurchaseRequestId, ApproverUserId, Action [Approved, Rejected, Revised], Comment, ActionDate).
-- [ ] **Application & CQRS (Onay İşlemleri):**
+- [x] **Application & CQRS (Onay İşlemleri):**
   - `ApprovePurchaseRequestCommand` & `RejectPurchaseRequestCommand`:
     - Limit bazlı onay kuralı (Örn: 10.000 TL altı Şube/Kırtasiye Müdürü onayı, üzeri Genel Satın Alma Direktörü onayı).
     - Reddetme durumunda zorunlu açıklama/gerekçe kontrolü.
   - **Otomasyon / Stok Entegrasyonu:**
-    - Onaylanan satın alma talebinin tek tıkla otomatik olarak Tedarikçi Satın Alma Siparişine (Purchase Order) veya doğrudan Mal Kabul / Stok Giriş Fişine dönüştürülmesi.
-- [ ] **API Endpoint'leri:**
+    - Onaylanan satın alma talebinin tek tıkla otomatik olarak Tedarikçi Satın Alma Siparişine (Purchase Order) veya doğrudan Mal Kabul / Stok Giriş Fişine dönüştürülmesi (`ConvertPurchaseRequestToInventoryCommand`).
+- [x] **API Endpoint'leri:**
   - `POST /api/purchase-requests/{id}/approve`
   - `POST /api/purchase-requests/{id}/reject`
   - `GET /api/purchase-requests/{id}/approval-history`
+  - `POST /api/purchase-requests/{id}/convert-to-inventory`
 
 ### 9.2. Frontend (Yönetici Onay Paneli)
 - [ ] **"Onayımı Bekleyenler" (Pending Approvals) Gelen Kutusu:**

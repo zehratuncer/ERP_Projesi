@@ -17,6 +17,11 @@ public class PurchaseRequest : BaseEntity
     public DateTime? RequiredDate { get; set; }
     public string? Note { get; set; }
 
-    // Navigation property
+    // Çok Kademeli Onay Takibi
+    public int CurrentApprovalStep { get; set; } = 1;
+
+    // Navigation properties
     public virtual ICollection<PurchaseRequestItem> Items { get; set; } = new List<PurchaseRequestItem>();
+    public virtual ICollection<ApprovalHistory> ApprovalHistories { get; set; } = new List<ApprovalHistory>();
 }
+

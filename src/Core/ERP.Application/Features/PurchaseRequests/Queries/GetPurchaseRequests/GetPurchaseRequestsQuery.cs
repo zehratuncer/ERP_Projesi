@@ -88,11 +88,13 @@ public class GetPurchaseRequestsQueryHandler : IRequestHandler<GetPurchaseReques
                 Priority = pr.Priority,
                 Status = pr.Status,
                 TotalEstimatedAmount = pr.TotalEstimatedAmount,
+                CurrentApprovalStep = pr.CurrentApprovalStep,
                 RequiredDate = pr.RequiredDate,
                 CreatedDate = pr.CreatedDate,
                 Note = pr.Note,
                 ItemCount = pr.Items.Count
             })
+
             .ToListAsync(cancellationToken);
 
         return ApiResponse<List<PurchaseRequestListDto>>.Success(list);

@@ -14,6 +14,10 @@ public interface IApplicationDbContext
     DbSet<SaleItem> SaleItems { get; }
     DbSet<PurchaseRequest> PurchaseRequests { get; }
     DbSet<PurchaseRequestItem> PurchaseRequestItems { get; }
+    DbSet<ApprovalWorkflow> ApprovalWorkflows { get; }
+    DbSet<ApprovalStep> ApprovalSteps { get; }
+    DbSet<ApprovalHistory> ApprovalHistories { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
+

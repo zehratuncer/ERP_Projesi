@@ -2,23 +2,42 @@ using ERP.Application.Common.Exceptions;
 using ERP.Application.Common.Interfaces;
 using ERP.Application.Common.Models;
 using ERP.Application.Features.PurchaseRequests.DTOs;
+using ERP.Domain.Entities;
+using ERP.Domain.Enums;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP.Application.Features.PurchaseRequests.Queries.GetPurchaseRequestById;
+namespace ERP.Application.Features.PurchaseRequests.Commands.RejectPurchaseRequest;
 
-public record GetPurchaseRequestByIdQuery(Guid Id) : IRequest<ApiResponse<PurchaseRequestDto>>;
+public record RejectPurchaseRequestCommand(
+    Guid Id,
+    string Reason
+) : IRequest<ApiResponse<PurchaseRequestDto>>;
 
-public class GetPurchaseRequestByIdQueryHandler : IRequestHandler<GetPurchaseRequestByIdQuery, ApiResponse<PurchaseRequestDto>>
+public class RejectPurchaseRequestCommandValidator : AbstractValidator<RejectPurchaseRequestCommand>
+{
+    public RejectPurchaseRequestCommandValidator()
+    {
+        RuleFor(x => x.Reason)
+            .NotEmpty().WithMessage("Talebi reddederken ret gerekçesi/açıklaması belirtilmesi zorunludur.")
+            .MinimumLength(5).WithMessage("Ret açıklaması en az 5 karakter olmalıdır.")
+            .MaximumLength(500).WithMessage("Ret açıklaması en fazla 500 karakter olabilir.");
+    }
+}
+
+public class RejectPurchaseRequestCommandHandler : IRequestHandler<RejectPurchaseRequestCommand, ApiResponse<PurchaseRequestDto>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public GetPurchaseRequestByIdQueryHandler(IApplicationDbContext context)
+    public RejectPurchaseRequestCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
-    public async Task<ApiResponse<PurchaseRequestDto>> Handle(GetPurchaseRequestByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<PurchaseRequestDto>> Handle(RejectPurchaseRequestCommand request, CancellationToken cancellationToken)
     {
         var purchaseRequest = await _context.PurchaseRequests
             .Include(pr => pr.RequesterUser)
@@ -26,13 +45,40 @@ public class GetPurchaseRequestByIdQueryHandler : IRequestHandler<GetPurchaseReq
                 .ThenInclude(pri => pri.Product)
             .Include(pr => pr.ApprovalHistories)
                 .ThenInclude(ah => ah.ApproverUser)
-            .AsNoTracking()
             .FirstOrDefaultAsync(pr => pr.Id == request.Id && !pr.IsDeleted, cancellationToken);
 
         if (purchaseRequest == null)
         {
             throw new NotFoundException("Satın Alma Talebi", request.Id);
         }
+
+        if (purchaseRequest.Status != RequestStatus.PendingApproval)
+        {
+            return ApiResponse<PurchaseRequestDto>.Failure($"Talep '{purchaseRequest.RequestNumber}' onay bekleyen durumda değil. Mevcut durum: {purchaseRequest.Status}");
+        }
+
+        var approverUserId = _currentUserService.UserId;
+        var approverUser = approverUserId.HasValue
+            ? await _context.Users.FirstOrDefaultAsync(u => u.Id == approverUserId.Value, cancellationToken)
+            : null;
+
+        var history = new ApprovalHistory
+        {
+            PurchaseRequestId = purchaseRequest.Id,
+            ApproverUserId = approverUserId,
+            StepNumber = purchaseRequest.CurrentApprovalStep,
+            StepName = purchaseRequest.CurrentApprovalStep == 2 
+                ? "2. Aşama: Genel Satın Alma Direktörü Onayı" 
+                : "Birim / Şube Müdürü Onayı",
+            Action = ApprovalAction.Rejected,
+            Comment = request.Reason.Trim(),
+            ActionDate = DateTime.UtcNow
+        };
+
+        purchaseRequest.ApprovalHistories.Add(history);
+        purchaseRequest.Status = RequestStatus.Rejected;
+
+        await _context.SaveChangesAsync(cancellationToken);
 
         var dto = new PurchaseRequestDto
         {
@@ -69,7 +115,7 @@ public class GetPurchaseRequestByIdQueryHandler : IRequestHandler<GetPurchaseReq
                     Id = ah.Id,
                     PurchaseRequestId = ah.PurchaseRequestId,
                     ApproverUserId = ah.ApproverUserId,
-                    ApproverUserName = ah.ApproverUser?.FullName ?? "Yönetici",
+                    ApproverUserName = ah.ApproverUser?.FullName ?? (ah.ApproverUserId == approverUserId ? approverUser?.FullName ?? "Yönetici" : "Yönetici"),
                     StepNumber = ah.StepNumber,
                     StepName = ah.StepName,
                     Action = ah.Action,
@@ -78,7 +124,6 @@ public class GetPurchaseRequestByIdQueryHandler : IRequestHandler<GetPurchaseReq
                 }).ToList()
         };
 
-
-        return ApiResponse<PurchaseRequestDto>.Success(dto);
+        return ApiResponse<PurchaseRequestDto>.Success(dto, $"Satın alma talebi '{purchaseRequest.RequestNumber}' reddedildi. Ret sebebi: {request.Reason.Trim()}");
     }
 }
