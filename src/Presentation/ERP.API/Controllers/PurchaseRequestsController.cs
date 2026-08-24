@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ERP.API.Controllers;
 
 [Authorize]
+[Route("api/purchase-requests")]
 public class PurchaseRequestsController : BaseApiController
 {
     /// <summary>
