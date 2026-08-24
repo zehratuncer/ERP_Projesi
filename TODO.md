@@ -283,11 +283,11 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
   - `GET /api/reports/category-analytics`
 
 ### 10.2. Frontend (İnteraktif Raporlama Dashboard'u)
-- [ ] **Görsel Veri Grafikleri (Charts):**
+- [x] **Görsel Veri Grafikleri (Charts):**
   - Chart.js / ApexCharts entegrasyonu (Kategori dağılım pasta grafiği, aylık tüketim çizgi grafiği, tedarikçi karşılaştırma sütun grafiği).
-- [ ] **Özelleştirilebilir Filtreleme Çubuğu:**
+- [x] **Özelleştirilebilir Filtreleme Çubuğu:**
   - Tarih aralığı (Son 30 Gün, Sezonluk, Yıllık), Kırtasiye Kategorisi (Kağıt, Yazı Gereçleri, Ofis, Sanatsal), Tedarikçi seçimi.
-- [ ] **Özet KPI Analiz Kartları:**
+- [x] **Özet KPI Analiz Kartları:**
   - En Hızlı Tükenen Ürün, En Maliyetli Kategori, Hareketsiz Stok Maliyeti vb.
 
 ---

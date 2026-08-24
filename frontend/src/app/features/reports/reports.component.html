@@ -1,0 +1,475 @@
+<div class="reports-container">
+  <!-- Header & Export Actions -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="page-title-badge">
+        <span class="icon">📈</span>
+        <div>
+          <h2>Kırtasiye Raporlama & Stok Analitiği</h2>
+          <p>Devir hızı, sezonluk okul/ofis trendleri, atıl stoklar ve kârlılık göstergeleri</p>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="printReport()">
+        <span>🖨️</span> Yazdır / PDF
+      </button>
+      <button class="btn btn-primary" (click)="exportCurrentReport()">
+        <span>📥</span> Excel / CSV İndir
+      </button>
+    </div>
+  </div>
+
+  <!-- Overall Analytics KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card card">
+      <div class="kpi-icon bg-primary-light">💰</div>
+      <div class="kpi-content">
+        <span class="kpi-label">Toplam Satış Cirosu</span>
+        <h3 class="kpi-value text-primary">{{ (categoryData()?.totalRevenue || 0) | number:'1.2-2' }} ₺</h3>
+      </div>
+    </div>
+
+    <div class="kpi-card card">
+      <div class="kpi-icon bg-success-light">📈</div>
+      <div class="kpi-content">
+        <span class="kpi-label">Tahmini Brüt Kâr</span>
+        <h3 class="kpi-value text-success">
+          {{ (categoryData()?.totalGrossProfit || 0) | number:'1.2-2' }} ₺
+          <small class="margin-badge">%{{ categoryData()?.overallProfitMargin || 35 }}</small>
+        </h3>
+      </div>
+    </div>
+
+    <div class="kpi-card card">
+      <div class="kpi-icon bg-danger-light">🛑</div>
+      <div class="kpi-content">
+        <span class="kpi-label">Atıl / Ölü Stok Sermayesi</span>
+        <h3 class="kpi-value text-danger">{{ (deadStockData()?.totalTiedUpCapital || 0) | number:'1.2-2' }} ₺</h3>
+      </div>
+    </div>
+
+    <div class="kpi-card card">
+      <div class="kpi-icon bg-warning-light">🎒</div>
+      <div class="kpi-content">
+        <span class="kpi-label">Zirve Talep Dönemi</span>
+        <h3 class="kpi-value text-warning font-sm">{{ seasonalData()?.peakSeasonName || 'Okul Sezonu' }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Filter Bar -->
+  <div class="filter-card card">
+    <div class="filter-grid">
+      <div class="form-group mb-0">
+        <label>Zaman Aralığı</label>
+        <select class="form-control" [(ngModel)]="selectedTimePreset" (change)="onPresetChange()">
+          <option value="all">Tüm Zamanlar</option>
+          <option value="year">Bu Yıl (2026)</option>
+          <option value="90days">Son 90 Gün</option>
+          <option value="30days">Son 30 Gün</option>
+        </select>
+      </div>
+
+      <div class="form-group mb-0" *ngIf="activeTab() === 'deadstock'">
+        <label>Hareketsizlik Gün Eşiği</label>
+        <select class="form-control" [(ngModel)]="selectedInactiveDays" (change)="onDeadStockFilterChange()">
+          <option [ngValue]="60">60 Gündür Hareketsiz</option>
+          <option [ngValue]="90">90 Gündür Hareketsiz (3 Ay)</option>
+          <option [ngValue]="180">180 Gündür Hareketsiz (6 Ay - Kritik)</option>
+          <option [ngValue]="365">365 Gündür Hareketsiz (1 Yıl+)</option>
+        </select>
+      </div>
+
+      <div class="form-group mb-0" *ngIf="activeTab() === 'seasonal'">
+        <label>Analiz Yılı</label>
+        <select class="form-control" [(ngModel)]="selectedYear" (change)="loadAllReports()">
+          <option [ngValue]="2026">2026</option>
+          <option [ngValue]="2025">2025</option>
+        </select>
+      </div>
+
+      <div class="form-group mb-0 date-col">
+        <label>Başlangıç Tarihi</label>
+        <input type="date" class="form-control" [(ngModel)]="startDate" (change)="loadAllReports()" />
+      </div>
+
+      <div class="form-group mb-0 date-col">
+        <label>Bitiş Tarihi</label>
+        <input type="date" class="form-control" [(ngModel)]="endDate" (change)="loadAllReports()" />
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-primary" (click)="loadAllReports()" [disabled]="isLoading()">
+          <span>🔄</span> Raporları Güncelle
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytical Tabs Switcher -->
+  <div class="panel-tabs">
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'profitability'" 
+      (click)="setTab('profitability')">
+      <span class="tab-icon">💰</span>
+      <span>Kategori Kârlılık & Değerleme</span>
+    </button>
+
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'seasonal'" 
+      (click)="setTab('seasonal')">
+      <span class="tab-icon">🎒</span>
+      <span>Sezonluk Talep Trendleri</span>
+    </button>
+
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'turnover'" 
+      (click)="setTab('turnover')">
+      <span class="tab-icon">🔄</span>
+      <span>Stok Devir Hızı & Tüketim</span>
+    </button>
+
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'deadstock'" 
+      (click)="setTab('deadstock')">
+      <span class="tab-icon">🛑</span>
+      <span>Atıl & Ölü Stoklar</span>
+      <span class="badge badge-danger" *ngIf="(deadStockData()?.totalDeadStockCount || 0) > 0">
+        {{ deadStockData()?.totalDeadStockCount }} Ürün
+      </span>
+    </button>
+
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'suppliers'" 
+      (click)="setTab('suppliers')">
+      <span class="tab-icon">🚚</span>
+      <span>Tedarikçi Performansı</span>
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TAB 1: KATEGORİ KÂRLILIK & DEĞERLEME -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'profitability') {
+    <div class="report-grid">
+      <!-- Chart Card -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>📊 Kategori Ciro & Stok Değer Dağılımı</h3>
+        </div>
+        <div class="card-body chart-wrapper">
+          <canvas #categoryChart></canvas>
+        </div>
+      </div>
+
+      <!-- Table Card -->
+      <div class="card table-card">
+        <div class="card-header">
+          <h3>💰 Kategori Kârlılık Tablosu</h3>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Kategori</th>
+                  <th class="text-center">Çeşit</th>
+                  <th class="text-center">Satılan Adet</th>
+                  <th class="text-right">Toplam Ciro</th>
+                  <th class="text-right">Tahmini Maliyet</th>
+                  <th class="text-right">Brüt Kâr</th>
+                  <th class="text-center">Kâr Marjı</th>
+                  <th class="text-right">Mevcut Stok Değeri</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (cat of categoryData()?.categories; track cat.categoryName) {
+                  <tr>
+                    <td><strong>{{ cat.categoryName }}</strong></td>
+                    <td class="text-center">{{ cat.productCount }}</td>
+                    <td class="text-center">{{ cat.totalUnitsSold }}</td>
+                    <td class="text-right text-primary font-weight-bold">{{ cat.totalRevenue | number:'1.2-2' }} ₺</td>
+                    <td class="text-right text-muted">{{ cat.estimatedCost | number:'1.2-2' }} ₺</td>
+                    <td class="text-right text-success font-weight-bold">{{ cat.grossProfit | number:'1.2-2' }} ₺</td>
+                    <td class="text-center">
+                      <span class="badge badge-success">%{{ cat.profitMarginPercentage }}</span>
+                    </td>
+                    <td class="text-right font-weight-bold">{{ cat.currentStockValue | number:'1.2-2' }} ₺</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- TAB 2: SEZONLUK TALEP TRENDLERİ (OKUL & OFİS) -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'seasonal') {
+    <div class="report-grid">
+      <!-- Line Chart -->
+      <div class="card chart-card full-width">
+        <div class="card-header">
+          <div class="header-info">
+            <h3>📈 {{ selectedYear }} Yılı Aylık Kırtasiye Talep & Çıkış Trendi</h3>
+            <span class="badge badge-warning">Dönemsellik Endeksi: {{ seasonalData()?.seasonalityIndex }}x</span>
+          </div>
+        </div>
+        <div class="card-body chart-wrapper-lg">
+          <canvas #seasonalChart></canvas>
+        </div>
+      </div>
+
+      <!-- Category Season Breakdown -->
+      <div class="card table-card full-width">
+        <div class="card-header">
+          <h3>🎒 Kategori Bazlı Sezonluk Tüketim Dağılımı</h3>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Kategori</th>
+                  <th class="text-center text-warning">Okul Sezonu (Ağu - Eki)</th>
+                  <th class="text-center text-info">Sınav Dönemi (Oca - Mar)</th>
+                  <th class="text-center text-muted">Ofis Rutin (Diğer Aylar)</th>
+                  <th class="text-center">Toplam Çıkış</th>
+                  <th>En Yoğun Dönem</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (cat of seasonalData()?.categorySeasonalBreakdown; track cat.categoryName) {
+                  <tr>
+                    <td><strong>{{ cat.categoryName }}</strong></td>
+                    <td class="text-center font-weight-bold text-warning">{{ cat.schoolSeasonSales }} Adet</td>
+                    <td class="text-center font-weight-bold text-info">{{ cat.examSeasonSales }} Adet</td>
+                    <td class="text-center text-muted">{{ cat.officeRoutineSales }} Adet</td>
+                    <td class="text-center font-weight-bold">{{ cat.totalSales }} Adet</td>
+                    <td>
+                      <span class="badge badge-primary">{{ cat.peakSeason }}</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- TAB 3: STOK DEVİR HIZI & TÜKETİM ANALİZİ -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'turnover') {
+    <div class="report-grid">
+      <!-- Category Turnover Chart -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>🔄 Kategori Bazında Ortalama Devir Hızı</h3>
+        </div>
+        <div class="card-body chart-wrapper">
+          <canvas #turnoverChart></canvas>
+        </div>
+      </div>
+
+      <!-- Fast Moving Products Table -->
+      <div class="card table-card">
+        <div class="card-header">
+          <h3>⚡ En Hızlı Tükenen Ürünler (Top Fast-Moving)</h3>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ürün</th>
+                  <th>Kategori</th>
+                  <th class="text-center">Satılan</th>
+                  <th class="text-center">Mevcut Stok</th>
+                  <th class="text-center">Devir Hızı</th>
+                  <th>Tükenme Süresi</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of turnoverData()?.topFastMovingProducts; track item.productId) {
+                  <tr>
+                    <td>
+                      <strong>{{ item.productName }}</strong>
+                      <br><small class="code-badge">{{ item.productCode }}</small>
+                    </td>
+                    <td><small>{{ item.category }}</small></td>
+                    <td class="text-center font-weight-bold text-success">{{ item.totalSoldQuantity }}</td>
+                    <td class="text-center">{{ item.currentStock }}</td>
+                    <td class="text-center">
+                      <span class="badge badge-success">{{ item.turnoverRate }}x</span>
+                    </td>
+                    <td>
+                      <small class="text-warning">~{{ item.daysToSellOut }} gün</small>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- TAB 4: ATIL & ÖLÜ STOKLAR (DEAD STOCK) -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'deadstock') {
+    <div class="dead-stock-container">
+      <div class="status-alert-box alert-danger mb-3">
+        <strong>⚠️ Hareketsiz Stok Uyarısı:</strong>
+        <p>
+          Seçilen <strong>{{ deadStockData()?.inactiveDaysThreshold }} gün</strong> boyunca hiçbir çıkış hareketi görmeyen 
+          <strong>{{ deadStockData()?.totalDeadStockCount }} çeşit</strong> ürün depolarda beklemektedir. 
+          Bu ürünlerde bağlanan toplam sermaye: <strong>{{ deadStockData()?.totalTiedUpCapital | number:'1.2-2' }} ₺</strong>
+        </p>
+      </div>
+
+      <div class="card table-card">
+        <div class="card-header">
+          <div class="header-info">
+            <h3>🛑 Atıl ve Ölü Stok Listesi</h3>
+            <span class="badge badge-danger">{{ deadStockData()?.totalDeadStockCount }} Kalem</span>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          @if (deadStockData()?.deadStockItems?.length === 0) {
+            <div class="empty-state">
+              <span class="empty-icon">✅</span>
+              <h4>Tebrikler! Belirtilen sürede hareketsiz stok bulunamadı.</h4>
+              <p>Depodaki tüm ürünler aktif olarak satılmakta veya tüketilmektedir.</p>
+            </div>
+          } @else {
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ürün Kodu</th>
+                    <th>Ürün Adı</th>
+                    <th>Kategori</th>
+                    <th class="text-center">Mevcut Stok</th>
+                    <th class="text-right">Birim Fiyat</th>
+                    <th class="text-right">Bağlanan Sermaye</th>
+                    <th class="text-center">Hareketsiz Gün</th>
+                    <th class="text-center">Risk Derecesi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of deadStockData()?.deadStockItems; track item.productId) {
+                    <tr>
+                      <td><span class="code-badge">{{ item.productCode }}</span></td>
+                      <td><strong>{{ item.productName }}</strong></td>
+                      <td><small>{{ item.category }}</small></td>
+                      <td class="text-center font-weight-bold">{{ item.currentStock }} {{ item.unit }}</td>
+                      <td class="text-right">{{ item.unitPrice | number:'1.2-2' }} ₺</td>
+                      <td class="text-right text-danger font-weight-bold">
+                        {{ item.totalTiedUpValue | number:'1.2-2' }} ₺
+                      </td>
+                      <td class="text-center">
+                        <span class="badge badge-warning">{{ item.daysInactive }} Gün</span>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge" [ngClass]="{
+                          'badge-danger': item.riskLevel === 'Kritik',
+                          'badge-warning': item.riskLevel === 'Yüksek Risk',
+                          'badge-info': item.riskLevel === 'Orta Risk'
+                        }">
+                          {{ item.riskLevel }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- TAB 5: TEDARİKÇİ TESLİMAT & KARŞILAMA PERFORMANSI -->
+  <!-- ========================================================================= -->
+  @if (activeTab() === 'suppliers') {
+    <div class="report-grid">
+      <!-- Supplier Chart -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>🏆 Tedarikçi Güvenilirlik & Karşılama Puanı</h3>
+        </div>
+        <div class="card-body chart-wrapper">
+          <canvas #supplierChart></canvas>
+        </div>
+      </div>
+
+      <!-- Supplier Ranking Table -->
+      <div class="card table-card">
+        <div class="card-header">
+          <h3>🚚 Tedarikçi Performans Matrisi</h3>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tedarikçi</th>
+                  <th class="text-center">Çeşit</th>
+                  <th class="text-center">Teslimat Süresi</th>
+                  <th class="text-center">Karşılama %</th>
+                  <th class="text-right">Tedarik Hacmi</th>
+                  <th class="text-center">Güven Puanı</th>
+                  <th class="text-center">Derece</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (sup of supplierData()?.suppliers; track sup.supplierId) {
+                  <tr>
+                    <td>
+                      <strong>{{ sup.supplierName }}</strong>
+                      <br><small class="text-muted">{{ sup.contactPerson || sup.email || '-' }}</small>
+                    </td>
+                    <td class="text-center">{{ sup.suppliedProductCount }}</td>
+                    <td class="text-center">
+                      <span class="badge badge-info">~{{ sup.averageDeliveryDays }} Gün</span>
+                    </td>
+                    <td class="text-center font-weight-bold text-success">%{{ sup.fulfillmentRate }}</td>
+                    <td class="text-right font-weight-bold">{{ sup.totalSuppliedAmount | number:'1.2-2' }} ₺</td>
+                    <td class="text-center">
+                      <span class="score-badge">{{ sup.reliabilityScore }} / 100</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge" [ngClass]="{
+                        'badge-success': sup.performanceGrade.startsWith('A'),
+                        'badge-warning': sup.performanceGrade.startsWith('B'),
+                        'badge-danger': sup.performanceGrade.startsWith('C')
+                      }">
+                        {{ sup.performanceGrade }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

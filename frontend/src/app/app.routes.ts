@@ -6,6 +6,7 @@ import { InventoryListComponent } from './features/inventory/inventory-list.comp
 import { SupplierListComponent } from './features/suppliers/supplier-list.component';
 import { PosComponent } from './features/pos/pos.component';
 import { PurchaseRequestsComponent } from './features/purchase-requests/purchase-requests.component';
+import { ReportsComponent } from './features/reports/reports.component';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -22,10 +23,12 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'pos', component: PosComponent },
       { path: 'purchase-requests', component: PurchaseRequestsComponent },
+      { path: 'reports', component: ReportsComponent },
       { path: 'inventory', component: InventoryListComponent },
       { path: 'suppliers', component: SupplierListComponent }
     ]
   },
+
   {
     path: '**',
     redirectTo: 'dashboard'

@@ -22,11 +22,13 @@ export class MainLayoutComponent {
   currentRouteTitle = computed(() => {
     const url = this.router.url;
     if (url.includes('pos')) return '🛒 Barkodlu Hızlı Kasa (POS)';
-    if (url.includes('purchase-requests')) return '📑 Satın Alma Talepleri';
+    if (url.includes('purchase-requests')) return '📑 Satın Alma Talepleri & Onay Paneli';
+    if (url.includes('reports')) return '📈 Kırtasiye Raporlama & Stok Analitiği';
     if (url.includes('inventory')) return '📦 Stok & Ürün Yönetimi';
     if (url.includes('suppliers')) return '🚚 Tedarikçi Yönetimi';
     return '📊 Yönetici Dashboard';
   });
+
 
   logout() {
     this.authService.logout();
