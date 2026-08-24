@@ -12,6 +12,8 @@ public interface IApplicationDbContext
     DbSet<InventoryTransaction> InventoryTransactions { get; }
     DbSet<Sale> Sales { get; }
     DbSet<SaleItem> SaleItems { get; }
+    DbSet<PurchaseRequest> PurchaseRequests { get; }
+    DbSet<PurchaseRequestItem> PurchaseRequestItems { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

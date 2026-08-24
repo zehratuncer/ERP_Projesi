@@ -209,17 +209,17 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
 ## 📑 Faz 8: Satın Alma Talepleri Modülü (Purchase Request Module)
 
 ### 8.1. Backend (Talep Yönetimi & CQRS)
-- [ ] **Domain & Entity Tasarımı:**
+- [x] **Domain & Entity Tasarımı:**
   - `PurchaseRequest` entity (RequestNumber, Department, RequesterUserId, Priority [Low, Medium, High, Urgent], Status [Draft, PendingApproval, Approved, Rejected, Completed], TotalEstimatedAmount, RequiredDate, Note).
   - `PurchaseRequestItem` entity (PurchaseRequestId, ProductId, RequestedQuantity, Unit, EstimatedUnitPrice, Notes).
   - `RequestPriority` ve `RequestStatus` enum tanımlamaları.
-- [ ] **Application & CQRS:**
+- [x] **Application & CQRS:**
   - `CreatePurchaseRequestCommand` & `CreatePurchaseRequestValidator` (En az bir kalem, pozitif miktar, departman doğrulama).
   - `UpdatePurchaseRequestCommand` (Sadece Taslak/Beklemede durumundaki talepler için).
   - `CancelPurchaseRequestCommand` (Talep sahibi veya yönetici tarafından iptal).
   - `GetPurchaseRequestsQuery` (Durum, departman, tarih aralığı, aciliyet ve talep eden bazlı gelişmiş filtreleme ve sayfalama).
   - `GetPurchaseRequestByIdQuery` (Kalemler, ürün detayları ve onay geçmişi ile birlikte).
-- [ ] **API Endpoint'leri:**
+- [x] **API Endpoint'leri:**
   - `POST /api/purchase-requests`
   - `GET /api/purchase-requests`
   - `GET /api/purchase-requests/{id}`
