@@ -71,4 +71,16 @@ public class ReportsController : BaseApiController
         var result = await Mediator.Send(new GetCategoryProfitabilityQuery());
         return Ok(result);
     }
+
+    /// <summary>
+    /// Belirtilen analitik raporu biçimlendirilmiş Excel (.xlsx) dosyası olarak dışa aktarır.
+    /// </summary>
+    [HttpGet("{reportType}/export-excel")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ExportReportExcel(string reportType)
+    {
+        var result = await Mediator.Send(new ERP.Application.Features.Export.Queries.ExportReportExcel.ExportReportExcelQuery(reportType));
+        return File(result.FileBytes, result.ContentType, result.FileName);
+    }
 }
+

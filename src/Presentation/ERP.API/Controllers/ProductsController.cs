@@ -88,4 +88,16 @@ public class ProductsController : BaseApiController
         var result = await Mediator.Send(new DeleteProductCommand(id));
         return Ok(result);
     }
+
+    /// <summary>
+    /// Ürün listesini biçimlendirilmiş Excel (.xlsx) dosyası olarak dışa aktarır.
+    /// </summary>
+    [HttpGet("export-excel")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ExportProductsExcel([FromQuery] string? search, [FromQuery] bool? isCriticalOnly)
+    {
+        var result = await Mediator.Send(new ERP.Application.Features.Export.Queries.ExportProductsExcel.ExportProductsExcelQuery(search, isCriticalOnly));
+        return File(result.FileBytes, result.ContentType, result.FileName);
+    }
 }
+

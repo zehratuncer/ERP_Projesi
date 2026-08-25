@@ -32,4 +32,32 @@ public class InventoryController : BaseApiController
         var result = await Mediator.Send(new GetStockMovementsQuery(productId, limit));
         return Ok(result);
     }
+
+    /// <summary>
+    /// Stok hareket geçmişini biçimlendirilmiş Excel (.xlsx) dosyası olarak dışa aktarır.
+    /// </summary>
+    [HttpGet("export-excel")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ExportStockMovementsExcel(
+        [FromQuery] Guid? productId, 
+        [FromQuery] ERP.Domain.Enums.TransactionType? transactionType,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
+    {
+        var result = await Mediator.Send(new ERP.Application.Features.Export.Queries.ExportStockMovementsExcel.ExportStockMovementsExcelQuery(productId, transactionType, startDate, endDate));
+        return File(result.FileBytes, result.ContentType, result.FileName);
+    }
+
+    /// <summary>
+    /// Belirli bir stok hareketine ait Mal Kabul / Stok Fişi PDF belgesini üretir ve indirir.
+    /// </summary>
+    [HttpGet("transactions/{id:guid}/export-pdf")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ExportStockReceiptPdf(Guid id)
+    {
+        var result = await Mediator.Send(new ERP.Application.Features.Export.Queries.ExportStockReceiptPdf.ExportStockReceiptPdfQuery(id));
+        return File(result.FileBytes, result.ContentType, result.FileName);
+    }
 }
+

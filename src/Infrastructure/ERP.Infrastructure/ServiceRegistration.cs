@@ -37,6 +37,11 @@ public static class ServiceRegistration
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+        // 3. Excel & PDF Dışa Aktarım Servisleri
+        services.AddScoped<IExcelExportService, Services.Export.ClosedXmlExcelExportService>();
+        services.AddScoped<IPdfReportService, Services.Export.QuestPdfReportService>();
+
+
         // 3. JWT Bearer Kimlik Doğrulama Yapılandırması
         var secretKey = configuration["Jwt:SecretKey"] ?? "SuperSecretKeyForERPProjectThatIsAtLeast32CharactersLong!";
         var issuer = configuration["Jwt:Issuer"] ?? "ERP_Core_API";

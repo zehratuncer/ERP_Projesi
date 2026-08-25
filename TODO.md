@@ -295,14 +295,14 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
 ## 📄 Faz 11: Excel & PDF Dışa Aktarım Motoru (Export Engine)
 
 ### 11.1. Backend (Belge Üretim Servisleri)
-- [ ] **Kütüphane Kurulumu & Altyapı:**
+- [x] **Kütüphane Kurulumu & Altyapı:**
   - `ClosedXML` / `MiniExcel` (Excel üretimi) ve `QuestPDF` (Vektörel & modern PDF tasarımı).
-- [ ] **Application Servisleri:**
+- [x] **Application Servisleri:**
   - `IExcelExportService` & `IPdfReportService` arayüzleri ve implementasyonları.
   - Kurumsal Kırtasiye Antetli **Satın Alma Talep Formu PDF** şablonu.
   - **Mal Kabul & Stok Giriş / Çıkış Fişi PDF** çıktısı.
   - Filtrelenmiş Ürün Listesi, Stok Hareketleri ve Raporların Biçimlendirilmiş **Excel (.xlsx)** çıktısı (Otomatik kolon genişlikleri, başlık stilleri, para birimi formatı).
-- [ ] **API Endpoint'leri:**
+- [x] **API Endpoint'leri:**
   - `GET /api/purchase-requests/{id}/export-pdf`
   - `GET /api/inventory/export-excel`
   - `GET /api/products/export-excel`

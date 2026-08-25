@@ -142,7 +142,20 @@ public class PurchaseRequestsController : BaseApiController
         var result = await Mediator.Send(new ConvertPurchaseRequestToInventoryCommand(id, body?.Note));
         return Ok(result);
     }
+
+    /// <summary>
+    /// Satın alma talep formunun kurumsal antetli PDF çıktısını üretir ve indirir.
+    /// </summary>
+    [HttpGet("{id:guid}/export-pdf")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ExportPurchaseRequestPdf(Guid id)
+    {
+        var result = await Mediator.Send(new ERP.Application.Features.Export.Queries.ExportPurchaseRequestPdf.ExportPurchaseRequestPdfQuery(id));
+        return File(result.FileBytes, result.ContentType, result.FileName);
+    }
 }
+
 
 public record ApprovePurchaseRequestRequest(string? Comment);
 public record RejectPurchaseRequestRequest(string Reason);
