@@ -281,12 +281,14 @@
 .modal-card {
   width: 100%;
   max-width: 540px;
+  max-height: calc(100vh - 2.5rem);
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 14px;
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 
   &.modal-lg {
     max-width: 780px;

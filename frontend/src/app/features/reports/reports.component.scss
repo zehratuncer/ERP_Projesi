@@ -165,17 +165,18 @@
 /* Report Layout Grid */
 .report-grid {
   display: grid;
-  grid-template-columns: 1fr 1.35fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
   gap: 1.25rem;
+  min-width: 0;
 
-  @media (max-width: 1050px) {
+  @media (max-width: 1200px) {
     grid-template-columns: 1fr;
   }
 
   .full-width {
     grid-column: span 2;
 
-    @media (max-width: 1050px) {
+    @media (max-width: 1200px) {
       grid-column: span 1;
     }
   }
