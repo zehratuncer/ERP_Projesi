@@ -309,10 +309,11 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
   - `GET /api/reports/{reportType}/export-excel`
 
 ### 11.2. Frontend (Export Butonları & Önizleme)
-- [ ] **Dışa Aktarma Butonları & Durum Yönetimi:**
+- [x] **Dışa Aktarma Butonları & Durum Yönetimi:**
   - Tablolarda ve raporlarda "Excel İndir" ve "PDF Yazdır" butonları, indirme esnasında yükleme animasyonu (Loading state).
-- [ ] **PDF Önizleme & Yazdırma Modalı:**
+- [x] **PDF Önizleme & Yazdırma Modalı:**
   - Talep formu ve irsaliye çıktısını tarayıcıda önizleme ve doğrudan yazdırma desteği.
+
 
 ---
 

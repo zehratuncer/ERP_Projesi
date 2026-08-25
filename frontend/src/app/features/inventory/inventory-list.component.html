@@ -6,6 +6,9 @@
       <p>Kitap, defter, A4 fotokopi kağıdı ve ofis kırtasiye ürünlerinin stok takibi</p>
     </div>
     <div class="header-actions">
+      <button (click)="exportProductsExcel()" class="btn btn-secondary" [disabled]="isExcelExporting" title="Ürün listesini biçimlendirilmiş Excel olarak indir">
+        <span>📥</span> {{ isExcelExporting ? 'Hazırlanıyor...' : 'Excel İndir' }}
+      </button>
       <button (click)="openMovementsModal()" class="btn btn-secondary">
         <span>🕒 Hareket Geçmişi</span>
       </button>
@@ -389,7 +392,12 @@
     <div class="modal-backdrop" (click)="closeMovementsModal()">
       <div class="modal-card card modal-lg" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h3>🕒 Son Stok Hareketleri Geçmişi</h3>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <h3>🕒 Son Stok Hareketleri Geçmişi</h3>
+            <button (click)="exportMovementsExcel()" class="btn btn-secondary btn-sm" [disabled]="isExcelExporting" title="Stok hareketlerini Excel olarak indir">
+              <span>📥</span> {{ isExcelExporting ? 'Hazırlanıyor...' : 'Excel İndir' }}
+            </button>
+          </div>
           <button (click)="closeMovementsModal()" class="btn-close">✖</button>
         </div>
         <div class="modal-body" style="padding: 0; max-height: 500px; overflow-y: auto;">
@@ -407,6 +415,7 @@
                   <th>Miktar</th>
                   <th>İşlemi Yapan</th>
                   <th>Açıklama</th>
+                  <th class="text-right">Belge</th>
                 </tr>
               </thead>
               <tbody>
@@ -430,6 +439,11 @@
                     </td>
                     <td><small>{{ m.userName }}</small></td>
                     <td><small class="text-secondary">{{ m.description || '-' }}</small></td>
+                    <td class="text-right">
+                      <button (click)="previewStockReceiptPdf(m)" class="btn btn-secondary btn-sm" title="Mal Kabul / Stok Fişi PDF Önizle & Yazdır">
+                        <span>📄</span> Fiş PDF
+                      </button>
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -439,4 +453,15 @@
       </div>
     </div>
   }
+
+  <!-- PDF Önizleme & Yazdırma Modalı -->
+  <app-pdf-preview-modal
+    [isOpen]="isPdfModalOpen"
+    [title]="pdfModalTitle"
+    [fileName]="pdfModalFileName"
+    [pdfBlob]="pdfBlob"
+    [isLoading]="isPdfLoading"
+    (closed)="closePdfModal()"
+  ></app-pdf-preview-modal>
 </div>
+

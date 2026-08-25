@@ -5,6 +5,8 @@ import { ProductService } from '../../core/services/product.service';
 import { InventoryService } from '../../core/services/inventory.service';
 import { SupplierService } from '../../core/services/supplier.service';
 import { ToastService } from '../../core/services/toast.service';
+import { ExportService } from '../../core/services/export.service';
+import { PdfPreviewModalComponent } from '../../shared/components/pdf-preview-modal/pdf-preview-modal.component';
 import { Product, CreateProductRequest, UpdateProductRequest } from '../../core/models/product.model';
 import { StockMovement, CreateStockMovementRequest, TransactionType } from '../../core/models/inventory.model';
 import { Supplier } from '../../core/models/supplier.model';
@@ -12,7 +14,7 @@ import { Supplier } from '../../core/models/supplier.model';
 @Component({
   selector: 'app-inventory-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PdfPreviewModalComponent],
   templateUrl: './inventory-list.component.html',
   styleUrl: './inventory-list.component.scss'
 })
@@ -20,8 +22,10 @@ export class InventoryListComponent implements OnInit {
   private productService = inject(ProductService);
   private inventoryService = inject(InventoryService);
   private supplierService = inject(SupplierService);
+  private exportService = inject(ExportService);
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
+
 
   products: Product[] = [];
   filteredProducts: Product[] = [];
@@ -322,4 +326,76 @@ export class InventoryListComponent implements OnInit {
     this.isHistoryModalOpen = false;
     this.cdr.markForCheck();
   }
+
+  // --- Dışa Aktarma & PDF Önizleme Durumu ---
+  isPdfModalOpen = false;
+  pdfModalTitle = 'Belge Önizleme';
+  pdfModalFileName = 'Belge.pdf';
+  pdfBlob: Blob | null = null;
+  isPdfLoading = false;
+  isExcelExporting = false;
+
+  exportProductsExcel() {
+    this.isExcelExporting = true;
+    const isCritical = this.activeTab === 'critical' ? true : undefined;
+    this.exportService.downloadProductsExcel(this.searchQuery || undefined, isCritical).subscribe({
+      next: (blob) => {
+        this.isExcelExporting = false;
+        this.exportService.saveBlobAsFile(blob, `Kirtasiye_Urun_Listesi_${new Date().toISOString().split('T')[0]}.xlsx`);
+        this.toastService.success('Ürün listesi Excel (.xlsx) olarak indirildi.');
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isExcelExporting = false;
+        this.toastService.error('Excel dosyası indirilirken bir hata oluştu.');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  exportMovementsExcel() {
+    this.isExcelExporting = true;
+    this.exportService.downloadStockMovementsExcel().subscribe({
+      next: (blob) => {
+        this.isExcelExporting = false;
+        this.exportService.saveBlobAsFile(blob, `Stok_Hareketleri_${new Date().toISOString().split('T')[0]}.xlsx`);
+        this.toastService.success('Stok hareketleri Excel (.xlsx) olarak indirildi.');
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isExcelExporting = false;
+        this.toastService.error('Excel dosyası indirilirken bir hata oluştu.');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  previewStockReceiptPdf(movement: StockMovement) {
+    this.pdfModalTitle = `Stok Hareketi / Mal Kabul Fişi (${movement.productCode})`;
+    this.pdfModalFileName = `Stok_Fisi_${movement.productCode}_${new Date().toISOString().split('T')[0]}.pdf`;
+    this.pdfBlob = null;
+    this.isPdfLoading = true;
+    this.isPdfModalOpen = true;
+    this.cdr.markForCheck();
+
+    this.exportService.getStockReceiptPdf(movement.id).subscribe({
+      next: (blob) => {
+        this.pdfBlob = blob;
+        this.isPdfLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isPdfLoading = false;
+        this.toastService.error('PDF fişi üretilirken bir hata oluştu.');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.pdfBlob = null;
+    this.cdr.markForCheck();
+  }
 }
+

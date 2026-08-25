@@ -256,6 +256,12 @@
                         <span>👁️</span> Detay
                       </button>
 
+                      <!-- Antetli PDF Form Çıktısı -->
+                      <button class="btn btn-sm btn-secondary" (click)="previewRequestPdf(req.id, req.requestNumber)" title="Kurumsal Antetli Talep Formu PDF Önizle & Yazdır">
+                        <span>📄</span> PDF
+                      </button>
+
+
                       <!-- Edit if Draft -->
                       @if (req.status === RequestStatus.Draft) {
                         <button class="btn btn-sm btn-secondary" (click)="openEditModal(req)" title="Düzenle">
@@ -872,3 +878,16 @@
     </div>
   </div>
 }
+
+<!-- ========================================================================= -->
+<!-- PDF ÖNİZLEME & YAZDIRMA MODALI -->
+<!-- ========================================================================= -->
+<app-pdf-preview-modal
+  [isOpen]="isPdfModalOpen()"
+  [title]="pdfModalTitle()"
+  [fileName]="pdfModalFileName()"
+  [pdfBlob]="pdfBlob()"
+  [isLoading]="isPdfLoading()"
+  (closed)="closePdfModal()"
+></app-pdf-preview-modal>
+

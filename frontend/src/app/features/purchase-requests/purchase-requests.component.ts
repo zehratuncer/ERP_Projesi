@@ -28,21 +28,26 @@ interface FormItem {
   notes?: string;
 }
 
+import { ExportService } from '../../core/services/export.service';
+import { PdfPreviewModalComponent } from '../../shared/components/pdf-preview-modal/pdf-preview-modal.component';
+
 @Component({
   selector: 'app-purchase-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PdfPreviewModalComponent],
   templateUrl: './purchase-requests.component.html',
   styleUrl: './purchase-requests.component.scss'
 })
 export class PurchaseRequestsComponent implements OnInit {
   private requestService = inject(PurchaseRequestService);
   private productService = inject(ProductService);
+  private exportService = inject(ExportService);
   private toastService = inject(ToastService);
   public authService = inject(AuthService);
 
   // Active View Tab: 'all' (Tüm Talepler) | 'inbox' (Onayımı Bekleyenler) | 'approved' (Mal Kabul Bekleyenler)
   activeTab = signal<'all' | 'inbox' | 'approved'>('inbox');
+
 
   // Lists & State
   requests = signal<PurchaseRequestListItem[]>([]);
@@ -611,4 +616,36 @@ export class PurchaseRequestsComponent implements OnInit {
       }
     });
   }
+
+  // --- PDF Önizleme & Yazdırma Durumu ---
+  isPdfModalOpen = signal<boolean>(false);
+  pdfModalTitle = signal<string>('Satın Alma Talep Formu');
+  pdfModalFileName = signal<string>('Talep_Formu.pdf');
+  pdfBlob = signal<Blob | null>(null);
+  isPdfLoading = signal<boolean>(false);
+
+  previewRequestPdf(requestId: string, requestNumber: string): void {
+    this.pdfModalTitle.set(`Satın Alma Talep Formu (${requestNumber})`);
+    this.pdfModalFileName.set(`Satin_Alma_Talep_Formu_${requestNumber}.pdf`);
+    this.pdfBlob.set(null);
+    this.isPdfLoading.set(true);
+    this.isPdfModalOpen.set(true);
+
+    this.exportService.getPurchaseRequestPdf(requestId).subscribe({
+      next: (blob) => {
+        this.pdfBlob.set(blob);
+        this.isPdfLoading.set(false);
+      },
+      error: () => {
+        this.isPdfLoading.set(false);
+        this.toastService.error('Talep formu PDF belgesi üretilirken bir hata oluştu.');
+      }
+    });
+  }
+
+  closePdfModal(): void {
+    this.isPdfModalOpen.set(false);
+    this.pdfBlob.set(null);
+  }
 }
+

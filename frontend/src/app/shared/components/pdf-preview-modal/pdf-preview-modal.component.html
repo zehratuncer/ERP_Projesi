@@ -1,0 +1,41 @@
+@if (isOpen) {
+  <div class="modal-overlay" (click)="close()">
+    <div class="modal-card pdf-modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="header-title-box">
+          <span class="header-icon">📄</span>
+          <div>
+            <h3>{{ title }}</h3>
+            <span class="file-badge">{{ fileName }}</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-sm" (click)="printPdf()" [disabled]="isLoading || !pdfBlob" title="Doğrudan Yazdır">
+            <span>🖨️</span> Yazdır
+          </button>
+          <button class="btn btn-primary btn-sm" (click)="downloadPdf()" [disabled]="isLoading || !pdfBlob" title="PDF Olarak İndir">
+            <span>📥</span> İndir
+          </button>
+          <button class="close-btn" (click)="close()" title="Kapat">✕</button>
+        </div>
+      </div>
+
+      <div class="modal-body pdf-viewer-body">
+        @if (isLoading) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Vektörel PDF belgesi üretiliyor, lütfen bekleyiniz...</p>
+          </div>
+        } @else if (safePdfUrl()) {
+          <iframe [src]="safePdfUrl()" class="pdf-iframe" title="PDF Önizleme"></iframe>
+        } @else {
+          <div class="empty-state">
+            <span class="empty-icon">⚠️</span>
+            <p>Belge yüklenemedi veya henüz hazır değil.</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

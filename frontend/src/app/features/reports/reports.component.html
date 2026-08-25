@@ -14,8 +14,8 @@
       <button class="btn btn-secondary" (click)="printReport()">
         <span>🖨️</span> Yazdır / PDF
       </button>
-      <button class="btn btn-primary" (click)="exportCurrentReport()">
-        <span>📥</span> Excel / CSV İndir
+      <button class="btn btn-primary" (click)="exportCurrentReport()" [disabled]="isExcelExporting()">
+        <span>📥</span> {{ isExcelExporting() ? 'Hazırlanıyor...' : 'Excel İndir (.xlsx)' }}
       </button>
     </div>
   </div>

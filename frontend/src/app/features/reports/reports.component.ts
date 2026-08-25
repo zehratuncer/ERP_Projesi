@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal, ElementRef, viewChild } f
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReportsService } from '../../core/services/reports.service';
+import { ExportService } from '../../core/services/export.service';
 import { ToastService } from '../../core/services/toast.service';
 import {
   StockTurnoverDto,
@@ -23,7 +24,11 @@ Chart.register(...registerables);
 })
 export class ReportsComponent implements OnInit, OnDestroy {
   private reportsService = inject(ReportsService);
+  private exportService = inject(ExportService);
   private toastService = inject(ToastService);
+
+  isExcelExporting = signal<boolean>(false);
+
 
   // Active Report Tab: 'turnover' | 'seasonal' | 'deadstock' | 'suppliers' | 'profitability'
   activeTab = signal<'turnover' | 'seasonal' | 'deadstock' | 'suppliers' | 'profitability'>('profitability');
@@ -389,61 +394,36 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   // ----------------------------------------------------
-  // EXPORT UTILITIES (CSV / EXCEL & PRINT / PDF)
+  // EXPORT UTILITIES (EXCEL & PRINT / PDF)
   // ----------------------------------------------------
   exportCurrentReport(): void {
     const tab = this.activeTab();
+    const reportTypeMap: Record<string, { type: string; name: string }> = {
+      profitability: { type: 'category-analytics', name: 'Kategori_Karlilik_Raporu' },
+      seasonal: { type: 'seasonal-trends', name: 'Sezonluk_Talep_Trendleri' },
+      deadstock: { type: 'dead-stock', name: 'Atil_Olu_Stok_Raporu' },
+      turnover: { type: 'stock-turnover', name: 'Stok_Devir_Hizi_Raporu' },
+      suppliers: { type: 'supplier-performance', name: 'Tedarikci_Performans_Raporu' }
+    };
 
-    if (tab === 'profitability') {
-      const data = this.categoryData();
-      if (!data) return;
-      const headers = ['Kategori Adı', 'Ürün Çeşidi', 'Satılan Adet', 'Toplam Ciro (TL)', 'Tahmini Maliyet (TL)', 'Brüt Kâr (TL)', 'Kâr Marjı (%)', 'Stok Değeri (TL)'];
-      const rows = data.categories.map(c => [
-        c.categoryName, c.productCount, c.totalUnitsSold, c.totalRevenue, c.estimatedCost, c.grossProfit, `%${c.profitMarginPercentage}`, c.currentStockValue
-      ]);
-      this.reportsService.exportToCsv('Kategori_Karlilik_Raporu', headers, rows);
-      this.toastService.success('Kategori Kârlılık Raporu Excel/CSV formatında indirildi.');
-    } else if (tab === 'seasonal') {
-      const data = this.seasonalData();
-      if (!data) return;
-      const headers = ['Ay', 'Sezon Etiketi', 'Çıkış/Satış Adedi', 'Satış Cirosu (TL)', 'İşlem Sayısı'];
-      const rows = data.monthlyTrends.map(m => [
-        m.monthName, m.seasonTag, m.totalOutboundQuantity, m.totalSalesAmount, m.transactionCount
-      ]);
-      this.reportsService.exportToCsv('Sezonluk_Talep_Trendleri', headers, rows);
-      this.toastService.success('Sezonluk Talep Raporu Excel/CSV formatında indirildi.');
-    }
- else if (tab === 'deadstock') {
-      const data = this.deadStockData();
-      if (!data) return;
-      const headers = ['Ürün Kodu', 'Ürün Adı', 'Kategori', 'Mevcut Stok', 'Birim', 'Birim Fiyat (TL)', 'Bağlanan Sermaye (TL)', 'Hareketsiz Gün', 'Risk Derecesi'];
-      const rows = data.deadStockItems.map(d => [
-        d.productCode, d.productName, d.category, d.currentStock, d.unit, d.unitPrice, d.totalTiedUpValue, d.daysInactive, d.riskLevel
-      ]);
-      this.reportsService.exportToCsv('Atil_Olu_Stok_Raporu', headers, rows);
-      this.toastService.success('Atıl/Ölü Stok Raporu Excel/CSV formatında indirildi.');
-    } else if (tab === 'turnover') {
-      const data = this.turnoverData();
-      if (!data) return;
-      const headers = ['Ürün Kodu', 'Ürün Adı', 'Kategori', 'Mevcut Stok', 'Satılan Miktar', 'Ciro (TL)', 'Devir Hızı', 'Tükenme Süresi (Gün)', 'Hız Sınıfı'];
-      const rows = [...data.topFastMovingProducts, ...data.topSlowMovingProducts].map(p => [
-        p.productCode, p.productName, p.category, p.currentStock, p.totalSoldQuantity, p.totalRevenue, p.turnoverRate, p.daysToSellOut, p.velocityCategory
-      ]);
-      this.reportsService.exportToCsv('Stok_Devir_Hizi_Raporu', headers, rows);
-      this.toastService.success('Stok Devir Hızı Raporu Excel/CSV formatında indirildi.');
-    } else if (tab === 'suppliers') {
-      const data = this.supplierData();
-      if (!data) return;
-      const headers = ['Tedarikçi Adı', 'Ürün Çeşidi', 'Tamamlanan Sipariş', 'Bekleyen Sipariş', 'Tedarik Hacmi (TL)', 'Ortalama Teslimat (Gün)', 'Karşılama (%)', 'Güvenilirlik Puanı', 'Performans Derecesi'];
-      const rows = data.suppliers.map(s => [
-        s.supplierName, s.suppliedProductCount, s.completedRequestCount, s.pendingRequestCount, s.totalSuppliedAmount, s.averageDeliveryDays, `%${s.fulfillmentRate}`, s.reliabilityScore, s.performanceGrade
-      ]);
-      this.reportsService.exportToCsv('Tedarikci_Performans_Raporu', headers, rows);
-      this.toastService.success('Tedarikçi Performans Raporu Excel/CSV formatında indirildi.');
-    }
+    const target = reportTypeMap[tab] || { type: 'category-analytics', name: 'Kirtasiye_Raporu' };
+
+    this.isExcelExporting.set(true);
+    this.exportService.downloadReportExcel(target.type).subscribe({
+      next: (blob) => {
+        this.isExcelExporting.set(false);
+        this.exportService.saveBlobAsFile(blob, `${target.name}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        this.toastService.success('Rapor biçimlendirilmiş Excel (.xlsx) olarak indirildi.');
+      },
+      error: () => {
+        this.isExcelExporting.set(false);
+        this.toastService.error('Excel raporu indirilirken bir hata oluştu.');
+      }
+    });
   }
 
   printReport(): void {
     window.print();
   }
+
 }
