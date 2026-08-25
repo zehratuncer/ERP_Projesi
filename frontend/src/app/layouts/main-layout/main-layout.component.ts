@@ -3,15 +3,19 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
+import { NotificationService } from '../../core/services/notification.service';
+
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificationBellComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss'
 })
 export class MainLayoutComponent {
   authService = inject(AuthService);
+  notificationService = inject(NotificationService);
   private router = inject(Router);
 
   userInitial = computed(() => {
@@ -24,6 +28,7 @@ export class MainLayoutComponent {
     if (url.includes('pos')) return '🛒 Barkodlu Hızlı Kasa (POS)';
     if (url.includes('purchase-requests')) return '📑 Satın Alma Talepleri & Onay Paneli';
     if (url.includes('reports')) return '📈 Kırtasiye Raporlama & Stok Analitiği';
+    if (url.includes('notifications')) return '🔔 Bildirim Merkezi & Sistem Uyarıları';
     if (url.includes('inventory')) return '📦 Stok & Ürün Yönetimi';
     if (url.includes('suppliers')) return '🚚 Tedarikçi Yönetimi';
     return '📊 Yönetici Dashboard';

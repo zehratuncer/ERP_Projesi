@@ -1,0 +1,140 @@
+<div class="notifications-center-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="page-title-badge">
+        <span class="icon">🔔</span>
+        <div>
+          <h2>Bildirim Merkezi</h2>
+          <p>Sistem uyarıları, onay talepleri ve anlık stok alarmları</p>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="refresh()" [disabled]="isLoading()" title="Bildirimleri Yenile">
+        <span>🔄</span> Yenile
+      </button>
+      <button class="btn btn-primary" (click)="markAllAsRead()" [disabled]="notificationService.unreadCount() === 0">
+        <span>✓</span> Tümünü Okundu İşaretle
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter & Tab Toolbar -->
+  <div class="toolbar-card card">
+    <div class="tab-pills">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === 'all'"
+        (click)="activeTab.set('all')"
+      >
+        Tüm Bildirimler
+        <span class="count-badge">{{ notificationService.notifications().length }}</span>
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === 'unread'"
+        (click)="activeTab.set('unread')"
+      >
+        Okunmamış
+        @if (notificationService.unreadCount() > 0) {
+          <span class="count-badge badge-unread">{{ notificationService.unreadCount() }}</span>
+        }
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === 'approvals'"
+        (click)="activeTab.set('approvals')"
+      >
+        📝 Onay Talepleri
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === 'stock'"
+        (click)="activeTab.set('stock')"
+      >
+        ⚠️ Stok Alarmları
+      </button>
+    </div>
+
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        placeholder="Bildirimlerde ara..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+      @if (searchQuery()) {
+        <button class="clear-btn" (click)="searchQuery.set('')">✕</button>
+      }
+    </div>
+  </div>
+
+  <!-- Notifications List Card -->
+  <div class="card list-card">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Bildirimler yükleniyor...</p>
+      </div>
+    } @else if (filteredNotifications().length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📭</span>
+        <h4>Bildirim Bulunamadı</h4>
+        <p>Seçilen kriterlere uygun herhangi bir sistem bildirimi mevcut değil.</p>
+      </div>
+    } @else {
+      <div class="notifications-feed">
+        @for (item of filteredNotifications(); track item.id) {
+          <div
+            class="feed-item"
+            [class.unread]="!item.isRead"
+            (click)="navigateToItem(item)"
+          >
+            <div class="feed-icon-box" [ngClass]="{
+              'type-stock': item.type === NotificationType.StockAlert,
+              'type-approval': item.type === NotificationType.ApprovalNeeded,
+              'type-success': item.type === NotificationType.Success,
+              'type-warning': item.type === NotificationType.Warning,
+              'type-info': item.type === NotificationType.Info
+            }">
+              @if (item.type === NotificationType.StockAlert) { ⚠️ }
+              @else if (item.type === NotificationType.ApprovalNeeded) { 📝 }
+              @else if (item.type === NotificationType.Success) { 🎉 }
+              @else if (item.type === NotificationType.Warning) { ❌ }
+              @else { ℹ️ }
+            </div>
+
+            <div class="feed-content">
+              <div class="feed-header">
+                <div class="title-row">
+                  <h4 class="feed-title">{{ item.title }}</h4>
+                  @if (!item.isRead) {
+                    <span class="new-pill">YENİ</span>
+                  }
+                </div>
+                <span class="feed-date">{{ item.createdDate | date:'dd.MM.yyyy HH:mm' }} ({{ item.timeAgo }})</span>
+              </div>
+
+              <p class="feed-message">{{ item.message }}</p>
+
+              <div class="feed-footer">
+                @if (item.actionUrl) {
+                  <button class="btn btn-sm btn-secondary" (click)="navigateToItem(item)">
+                    İlgili Ekrana Git →
+                  </button>
+                }
+                @if (!item.isRead) {
+                  <button class="btn-text-read" (click)="markAsRead(item, $event)">
+                    ✓ Okundu Olarak İşaretle
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

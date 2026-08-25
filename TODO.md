@@ -338,11 +338,11 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
   - `GET /api/notifications/unread-count`
 
 ### 12.2. Frontend (Bildirim Çanı & Canlı Uyarılar)
-- [ ] **Navbar Bildirim Çanı & Rozeti (`NotificationBellComponent`):**
+- [x] **Navbar Bildirim Çanı & Rozeti (`NotificationBellComponent`):**
   - Okunmamış bildirim sayısı rozeti (Badge) ve son 10 bildirimin yer aldığı şık açılır panel (Dropdown).
-- [ ] **SignalR İstemci Entegrasyonu (`NotificationService`):**
+- [x] **SignalR İstemci Entegrasyonu (`NotificationService`):**
   - Canlı web socket bağlantısı, yeni bildirim geldiğinde masaüstü sesi / Toastr animasyonu.
-- [ ] **Bildirim Merkezi Sayfası:**
+- [x] **Bildirim Merkezi Sayfası:**
   - Tüm geçmiş bildirimlerin filtrelenebileceği, tıklandığında ilgili talebe veya ürüne yönlendiren detay ekranı.
 
 ---

@@ -1,0 +1,83 @@
+<div class="notification-bell-wrapper">
+  <!-- Bell Trigger Button -->
+  <button class="bell-btn" (click)="toggleDropdown()" [class.has-unread]="notificationService.unreadCount() > 0" title="Bildirimler">
+    <span class="bell-icon">🔔</span>
+    @if (notificationService.unreadCount() > 0) {
+      <span class="unread-badge animate-pulse">{{ notificationService.unreadCount() > 99 ? '99+' : notificationService.unreadCount() }}</span>
+    }
+  </button>
+
+  <!-- Dropdown Card -->
+  @if (isOpen()) {
+    <div class="dropdown-menu notification-dropdown" (click)="$event.stopPropagation()">
+      <div class="dropdown-header">
+        <div class="header-title">
+          <h4>Bildirimler</h4>
+          @if (notificationService.unreadCount() > 0) {
+            <span class="count-pill">{{ notificationService.unreadCount() }} yeni</span>
+          }
+        </div>
+        <div class="header-actions">
+          @if (notificationService.unreadCount() > 0) {
+            <button class="btn-text-action" (click)="markAllAsRead($event)" title="Tümünü Okundu İşaretle">
+              ✓ Tümünü Oku
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="notifications-list">
+        @if (notificationService.notifications().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon">🔕</span>
+            <p>Henüz bir bildiriminiz bulunmuyor.</p>
+          </div>
+        } @else {
+          @for (item of notificationService.notifications(); track item.id) {
+            <div
+              class="notification-item"
+              [class.unread]="!item.isRead"
+              (click)="onNotificationClick(item)"
+            >
+              <div class="item-icon-box" [ngClass]="{
+                'type-stock': item.type === NotificationType.StockAlert,
+                'type-approval': item.type === NotificationType.ApprovalNeeded,
+                'type-success': item.type === NotificationType.Success,
+                'type-warning': item.type === NotificationType.Warning,
+                'type-info': item.type === NotificationType.Info
+              }">
+                @if (item.type === NotificationType.StockAlert) { ⚠️ }
+                @else if (item.type === NotificationType.ApprovalNeeded) { 📝 }
+                @else if (item.type === NotificationType.Success) { 🎉 }
+                @else if (item.type === NotificationType.Warning) { ❌ }
+                @else { ℹ️ }
+              </div>
+
+              <div class="item-content">
+                <div class="item-header">
+                  <h5 class="item-title">{{ item.title }}</h5>
+                  @if (!item.isRead) {
+                    <span class="unread-dot"></span>
+                  }
+                </div>
+                <p class="item-msg">{{ item.message }}</p>
+                <div class="item-meta">
+                  <span class="time-ago">🕒 {{ item.timeAgo }}</span>
+                  @if (item.actionUrl) {
+                    <span class="action-hint">Görüntüle →</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <div class="dropdown-footer">
+        <button class="btn-all-notifications" (click)="goToNotificationCenter()">
+          Tüm Bildirimleri Görüntüle →
+        </button>
+      </div>
+    </div>
+  }
+</div>

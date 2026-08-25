@@ -7,6 +7,7 @@ import { SupplierListComponent } from './features/suppliers/supplier-list.compon
 import { PosComponent } from './features/pos/pos.component';
 import { PurchaseRequestsComponent } from './features/purchase-requests/purchase-requests.component';
 import { ReportsComponent } from './features/reports/reports.component';
+import { NotificationsComponent } from './features/notifications/notifications.component';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -24,6 +25,7 @@ export const routes: Routes = [
       { path: 'pos', component: PosComponent },
       { path: 'purchase-requests', component: PurchaseRequestsComponent },
       { path: 'reports', component: ReportsComponent },
+      { path: 'notifications', component: NotificationsComponent },
       { path: 'inventory', component: InventoryListComponent },
       { path: 'suppliers', component: SupplierListComponent }
     ]
