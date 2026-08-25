@@ -17,6 +17,7 @@ public interface IApplicationDbContext
     DbSet<ApprovalWorkflow> ApprovalWorkflows { get; }
     DbSet<ApprovalStep> ApprovalSteps { get; }
     DbSet<ApprovalHistory> ApprovalHistories { get; }
+    DbSet<Notification> Notifications { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -56,11 +56,16 @@ public class CreatePurchaseRequestCommandHandler : IRequestHandler<CreatePurchas
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly INotificationService _notificationService;
 
-    public CreatePurchaseRequestCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public CreatePurchaseRequestCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUserService = currentUserService;
+        _notificationService = notificationService;
     }
 
     public async Task<ApiResponse<PurchaseRequestDto>> Handle(CreatePurchaseRequestCommand request, CancellationToken cancellationToken)
@@ -124,6 +129,19 @@ public class CreatePurchaseRequestCommandHandler : IRequestHandler<CreatePurchas
         var requesterUser = _currentUserService.UserId.HasValue
             ? await _context.Users.FirstOrDefaultAsync(u => u.Id == _currentUserService.UserId.Value, cancellationToken)
             : null;
+
+        // Bildirim Tetikleme (Onaya Gönderildiyse)
+        if (purchaseRequest.Status == RequestStatus.PendingApproval)
+        {
+            await _notificationService.SendNotificationAsync(
+                null,
+                "Manager",
+                "📝 Yeni Satın Alma Talebi Onay Bekliyor",
+                $"{requesterUser?.FullName ?? "Bir personel"} tarafından {purchaseRequest.Department} departmanı için {purchaseRequest.RequestNumber} numaralı talep ({totalAmount:N2} ₺) oluşturuldu.",
+                NotificationType.ApprovalNeeded,
+                "/purchase-requests",
+                cancellationToken);
+        }
 
         var dto = new PurchaseRequestDto
         {

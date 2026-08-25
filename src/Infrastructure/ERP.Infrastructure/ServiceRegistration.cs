@@ -41,8 +41,12 @@ public static class ServiceRegistration
         services.AddScoped<IExcelExportService, Services.Export.ClosedXmlExcelExportService>();
         services.AddScoped<IPdfReportService, Services.Export.QuestPdfReportService>();
 
+        // 4. Bildirim & SignalR & E-Posta Servisleri
+        services.AddScoped<IEmailService, Services.Notifications.EmailService>();
+        services.AddScoped<INotificationService, Services.Notifications.SignalRNotificationService>();
+        services.AddHostedService<BackgroundServices.StockAlertBackgroundService>();
 
-        // 3. JWT Bearer Kimlik Doğrulama Yapılandırması
+        // 5. JWT Bearer Kimlik Doğrulama Yapılandırması
         var secretKey = configuration["Jwt:SecretKey"] ?? "SuperSecretKeyForERPProjectThatIsAtLeast32CharactersLong!";
         var issuer = configuration["Jwt:Issuer"] ?? "ERP_Core_API";
         var audience = configuration["Jwt:Audience"] ?? "ERP_Clients";
@@ -66,6 +70,21 @@ public static class ServiceRegistration
                 ValidAudience = audience,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
+            };
+
+            // SignalR WebSocket token desteği
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notifications"))
+                    {
+                        context.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                }
             };
         });
 

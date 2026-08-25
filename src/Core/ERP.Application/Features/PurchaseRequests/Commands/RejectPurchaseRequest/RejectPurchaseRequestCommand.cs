@@ -30,11 +30,16 @@ public class RejectPurchaseRequestCommandHandler : IRequestHandler<RejectPurchas
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly INotificationService _notificationService;
 
-    public RejectPurchaseRequestCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public RejectPurchaseRequestCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUserService = currentUserService;
+        _notificationService = notificationService;
     }
 
     public async Task<ApiResponse<PurchaseRequestDto>> Handle(RejectPurchaseRequestCommand request, CancellationToken cancellationToken)
@@ -79,6 +84,19 @@ public class RejectPurchaseRequestCommandHandler : IRequestHandler<RejectPurchas
         purchaseRequest.Status = RequestStatus.Rejected;
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        // Talep Sahibine Ret Bildirimi
+        if (purchaseRequest.RequesterUserId.HasValue)
+        {
+            await _notificationService.SendNotificationAsync(
+                purchaseRequest.RequesterUserId.Value,
+                null,
+                "❌ Satın Alma Talebiniz Reddedildi",
+                $"{purchaseRequest.RequestNumber} numaralı talebiniz reddedildi. Ret Gerekçesi: {request.Reason.Trim()}",
+                NotificationType.Warning,
+                "/purchase-requests",
+                cancellationToken);
+        }
 
 
         var dto = new PurchaseRequestDto

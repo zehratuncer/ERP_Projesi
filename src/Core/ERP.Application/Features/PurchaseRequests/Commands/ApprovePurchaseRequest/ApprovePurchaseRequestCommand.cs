@@ -18,13 +18,18 @@ public class ApprovePurchaseRequestCommandHandler : IRequestHandler<ApprovePurch
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly INotificationService _notificationService;
 
     public const decimal HighAmountThreshold = 10000m; // 10.000 TL ve üzeri direktör onayı gerektirir
 
-    public ApprovePurchaseRequestCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public ApprovePurchaseRequestCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUserService = currentUserService;
+        _notificationService = notificationService;
     }
 
     public async Task<ApiResponse<PurchaseRequestDto>> Handle(ApprovePurchaseRequestCommand request, CancellationToken cancellationToken)
@@ -76,6 +81,16 @@ public class ApprovePurchaseRequestCommandHandler : IRequestHandler<ApprovePurch
             // Status hala PendingApproval
 
             message = $"Satın alma talebi 1. seviye (Şube Müdürü) tarafından onaylandı ve tutar limiti gereği Genel Direktör onayına iletildi.";
+
+            // 2. Kademe Onayı için Genel Direktör / Admin'e bildirim
+            await _notificationService.SendNotificationAsync(
+                null,
+                "Admin",
+                "👑 2. Kademe Satın Alma Onayı Bekliyor",
+                $"{purchaseRequest.RequestNumber} numaralı yüksek tutarlı ({purchaseRequest.TotalEstimatedAmount:N2} ₺) talep Şube Onayından geçti, Genel Direktör onayınızı bekliyor.",
+                NotificationType.ApprovalNeeded,
+                "/purchase-requests",
+                cancellationToken);
         }
         else
         {
@@ -100,6 +115,19 @@ public class ApprovePurchaseRequestCommandHandler : IRequestHandler<ApprovePurch
             purchaseRequest.Status = RequestStatus.Approved;
 
             message = $"Satın alma talebi '{purchaseRequest.RequestNumber}' başarıyla onaylandı.";
+
+            // Talep Sahibine Onay Bildirimi
+            if (purchaseRequest.RequesterUserId.HasValue)
+            {
+                await _notificationService.SendNotificationAsync(
+                    purchaseRequest.RequesterUserId.Value,
+                    null,
+                    "🎉 Satın Alma Talebiniz Onaylandı",
+                    $"{purchaseRequest.RequestNumber} numaralı talebiniz tüm onay aşamalarından başarıyla geçti ve mal kabul aşamasına iletildi.",
+                    NotificationType.Success,
+                    "/purchase-requests",
+                    cancellationToken);
+            }
         }
 
         await _context.SaveChangesAsync(cancellationToken);

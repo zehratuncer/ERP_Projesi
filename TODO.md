@@ -320,21 +320,22 @@ Bu faz, kırtasiye işletmesinin kurumsal satın alma süreçlerini, sezonluk st
 ## 🔔 Faz 12: Bildirim & Anlık Uyarı Sistemi (Notification System)
 
 ### 12.1. Backend (SignalR & E-Posta Altyapısı)
-- [ ] **Domain & Entity Tasarımı:**
+- [x] **Domain & Entity Tasarımı:**
   - `Notification` entity (UserId, Title, Message, Type [Info, Warning, StockAlert, ApprovalNeeded], IsRead, ActionUrl, CreatedDate).
-- [ ] **SignalR Real-Time Hub:**
+- [x] **SignalR Real-Time Hub:**
   - `NotificationHub` oluşturulması ve kullanıcı/rol gruplarına anlık socket mesajı gönderimi.
-- [ ] **E-Posta Bildirim Servisi (SMTP / MailKit):**
+- [x] **E-Posta Bildirim Servisi (SMTP / MailKit):**
   - Şablonlu HTML E-postalar:
     - *"Yeni Satın Alma Talebi Onayınızı Bekliyor"* (Yöneticiye).
     - *"Talebiniz Onaylandı / Reddedildi"* (Talep sahibine).
     - *"Kritik Stok Alarmı: [Ürün Adı] tükenmek üzere!"* (Depo sorumlusuna).
-- [ ] **Arka Plan Görevi (Background Worker / Quartz.NET):**
+- [x] **Arka Plan Görevi (Background Worker / Quartz.NET):**
   - Belirli periyotlarla (örneğin her sabah 08:30) kritik eşiğe düşen kırtasiye ürünlerini tarayıp yöneticilere toplu bildirim/e-posta özeti geçmesi.
-- [ ] **API Endpoint'leri:**
+- [x] **API Endpoint'leri:**
   - `GET /api/notifications`
   - `PUT /api/notifications/{id}/read`
   - `PUT /api/notifications/read-all`
+  - `GET /api/notifications/unread-count`
 
 ### 12.2. Frontend (Bildirim Çanı & Canlı Uyarılar)
 - [ ] **Navbar Bildirim Çanı & Rozeti (`NotificationBellComponent`):**
