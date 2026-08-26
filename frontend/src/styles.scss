@@ -262,6 +262,12 @@ p {
     &::placeholder {
       color: var(--text-muted);
     }
+
+    option {
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 6px 10px;
+    }
   }
 
   .form-error {
