@@ -152,16 +152,97 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
 
 ---
 
-## 🧪 Faz 6: Test, İnce Ayar & MVP Sürüm Doğrulaması
+## 🧪 Faz 6: Test, Kalite Güvence & Kapsamlı Sistem Doğrulaması (Testing & QA)
 
-- [ ] **Birim Testleri (Unit Tests):**
-  - Stok çıkışında yetersiz bakiye iş kuralı testi.
-  - Kritik stok hesaplama mantığı testi.
-  - JWT üretim ve rol eşleme doğrulaması.
-- [ ] **Uçtan Uca Doğrulama (E2E Workflow Test):**
-  - Admin ile giriş yap ➔ Tedarikçi oluştur ➔ Ürün tanımla ➔ Stok girişi yap ➔ Stok çıkışı yaparak kritik eşiğe düşür ➔ Dashboard'da uyarının belirdiğini teyit et.
-- [ ] **Veritabanı Migration & Seed:**
-  - Temiz kurulum için `dotnet ef database update` ve test mock verilerinin doğrulanması.
+Bu faz, ERP sisteminin tüm modüllerinin (Kimlik Doğrulama, Stok, POS Kasa, Satın Alma, Çok Kademeli Onay, Analitik Raporlama, Export ve Bildirimler) iş kurallarına, güvenlik standartlarına ve uçtan uca akışlara uygunluğunu doğrulamak için tasarlanmıştır.
+
+### 6.1. Backend Birim & Entegrasyon Testleri (Unit & Integration Tests)
+- [ ] **Kimlik Doğrulama & Yetkilendirme (Auth & IAM):**
+  - [ ] `LoginCommand` BCrypt şifre doğrulama, hatalı şifrede `401 Unauthorized` ve kilitli hesap kontrolü.
+  - [ ] JWT Token Claims doğrulaması (`UserId`, `Email`, `Role`, `Department`, `exp`).
+  - [ ] `[Authorize(Roles = "Admin,Manager")]` attribute testleri ve rol bazlı erişim kısıtlarının doğrulanması.
+- [ ] **Stok & Envanter İş Kuralları:**
+  - [ ] Yetersiz stok durumunda stok çıkışı (`CurrentStock < Quantity`) denemesinde `BusinessRuleException` fırlatılması ve işlemin iptal edilmesi.
+  - [ ] Başarılı stok girişi ve çıkışında `Product.CurrentStock` alanının atomik ve doğru güncellenmesi.
+  - [ ] Stok adedi `MinStockLevel` kritik eşiğin altına indiğinde `IsLowStock = true` bayrağı ve `Notification` tetiklenmesi.
+  - [ ] Eşzamanlı (concurrency) stok hareketlerinde veri bütünlüğünün korunması.
+- [ ] **Barkodlu POS Satış Motoru Testleri:**
+  - [ ] Çoklu ürün sepeti toplam tutar, KDV dökümü, satır bazlı indirim ve genel indirim matematiksel hesaplama doğrulaması.
+  - [ ] Ödeme türleri (Nakit, Kredi Kartı, Parçalı Ödeme, Açık Hesap / Veresiye) ve doğru para üstü hesaplama testi.
+  - [ ] Satış onaylandığında (`CompleteSaleCommand`):
+    - [ ] `Sale` ve `SaleItem` kayıtlarının veritabanına eksiksiz yazılması.
+    - [ ] Sepetteki tüm ürünler için otomatik `InventoryTransaction` (Çıkış) kaydı düşülmesi.
+    - [ ] Ürünlerin mevcut stok adetlerinin eksilmesi.
+    - [ ] Sepetteki herhangi bir üründe hata oluşursa Transaction Rollback yapılması ve hiçbir kaydın bozulmaması.
+- [ ] **Satın Alma & Onay Motoru Testleri:**
+  - [ ] `CreatePurchaseRequestCommand` boş kalem, negatif miktar veya geçersiz departman gönderildiğinde `FluentValidation` hatası üretilmesi.
+  - [ ] Talep durum yaşam döngüsü kuralları (`Draft` ➔ `PendingApproval` ➔ `Approved` / `Rejected` ➔ `Completed`).
+  - [ ] Reddetme (`RejectPurchaseRequestCommand`) işleminde zorunlu gerekçe/açıklama kontrolü.
+  - [ ] **Mal Kabul Dönüştürme Testi (`ConvertPurchaseRequestToInventoryCommand`):**
+    - [ ] Sadece `Approved` durumundaki taleplerin depoya kabul edilebilmesi.
+    - [ ] Mal kabul işlemiyle birlikte talep edilen ürünlerin stok adetlerinin depoya otomatik eklenmesi ve durumun `Completed` olması.
+- [ ] **Analitik & Raporlama Hesaplama Testleri:**
+  - [ ] Kategori Brüt Kâr Marjı hesaplama algoritması: `((Toplam Satış Cirosu - Toplam Maliyet) / Toplam Satış Cirosu) * 100`.
+  - [ ] Stok Devir Hızı (Turnover Rate) ve Tüketim İndeksi formüllerinin doğrulanması.
+  - [ ] Atıl / Hareketsiz Stok (Dead Stock) filtrelerinin (60, 90, 180, 365 gün) hareketsiz ürünleri doğru filtrelemesi.
+- [ ] **Dışa Aktarma (Export Engine) Testleri:**
+  - [ ] QuestPDF ile kurumsal antetli Satın Alma Talep Formu ve İrsaliye PDF dosyalarının bozulmadan üretilmesi.
+  - [ ] ClosedXML ile ürün, stok ve rapor listelerinin doğru başlıklar, para birimi formatı ve sayısal tiplerle `.xlsx` formatında üretilmesi.
+
+---
+
+### 6.2. Frontend UI/UX & Fonksiyonel Doğrulama Testleri
+- [ ] **Sayfa Korumaları (Route Guards) & Oturum Yönetimi:**
+  - [ ] Giriş yapmamış kullanıcının doğrudan `/inventory`, `/pos`, `/reports` veya `/purchase-requests` adreslerine girmesinin `AuthGuard` ile engellenmesi ve `/login`'e yönlendirilmesi.
+  - [ ] `Employee` rolündeki kullanıcının yönetici onay ve analitik sayfalarına girmesinin `RoleGuard` ile engellenmesi.
+  - [ ] JWT süresi bittiğinde `ErrorInterceptor`'ın `401 Unauthorized` yakalayarak kullanıcıyı bilgilendirip oturumu sonlandırması.
+- [ ] **Hızlı Kasa / POS Arayüz Testleri:**
+  - [ ] Barkod giriş kutusunun daima odakta (autofocus) kalması ve barkod okutulduğunda ürünün sepete anında `+1` eklenmesi.
+  - [ ] Aynı barkod tekrar okutulduğunda sepet satırındaki adedin otomatik `x2`, `x3` artması.
+  - [ ] Klavye kısayollarının (`F2` Ödeme, `F4` Temizle, `+ / -` Adet Değiştir, `Delete` Satır Sil) sorunsuz çalışması.
+  - [ ] Tahsilat modalında girilen nakit tutara göre para üstünün canlı hesaplanması ve termal fiş yazdırma penceresinin tetiklenmesi.
+- [ ] **Satın Alma Talepleri & Onay Paneli Arayüz Testleri:**
+  - [ ] Filtreleme çubuğundaki (Durum, Departman, Öncelik, Arama) inputlar ile `🔍 Filtrele` butonunun hizasının ve filtreleme sonuçlarının doğrulanması.
+  - [ ] Yeni Talep Modalı: Dinamik `➕ Ürün / Satır Ekle` butonu, satır silme (`❌`), ürün seçimi, birim fiyat girişi ve genel toplamın canlı güncellenmesi.
+  - [ ] Yönetici Onay Modalları (`Hızlı Onayla`, `Gerekçeli Reddet`, `Depoya Mal Kabul Et`) ve Audit Timeline zaman çizelgesi görsel doğrulaması.
+- [ ] **Tedarikçi & Stok Yönetimi UI Testleri:**
+  - [ ] Tedarikçi ürün ilişkilendirme modalının (`1200px`) geniş ekran uyumu, koyu tema dropdown okunabilirliği ve `+ Ürünü Bağla` aksiyonunun çalışması.
+  - [ ] Kritik stok seviyesindeki ürünlerin kırmızı renkli rozet ve uyarılarla öne çıkması.
+- [ ] **Raporlama & Analitik UI Testleri:**
+  - [ ] `🔄 Raporları Güncelle` butonunun zaman aralığı ve tarih filtreleri ile tam hizalı çalışması.
+  - [ ] Kategori kârlılık grafikleri, sezonluk trend grafikleri ve atıl stok listelerinin filtrelere göre anlık güncellenmesi.
+  - [ ] `🖨️ Yazdır / PDF` ve `📥 Excel İndir (.xlsx)` butonlarının loading durumları ve dosya indirme aksiyonlarının testi.
+- [ ] **Canlı Bildirimler & SignalR Testleri:**
+  - [ ] Yeni bir talep oluşturulduğunda veya stok kritik eşiğe düştüğünde navbar bildirim çanında kırmızı bildirim rozetinin (Badge) anında belirmesi ve Toast bildiriminin açılması.
+  - [ ] Bildirime tıklandığında ilgili detay modalına veya sayfaya otomatik yönlendirme yapılması.
+
+---
+
+### 6.3. Uçtan Uca Senaryo & İş Akışı Testleri (E2E Workflow Scenarios)
+- [ ] **Senaryo 1: Tam Kasa Satış & Otomatik Stok Düşümü Akışı:**
+  - `Kasiyer (Employee)` ile giriş yap ➔ `/pos` sayfasına git ➔ Barkod okutarak 3 farklı kırtasiye ürününü sepete ekle ➔ `F2` ile tahsilat panelini aç ➔ Nakit ödeme tutarını gir ➔ Satışı onayla ➔ Fiş çıktısını al ➔ `/inventory` sayfasına git ve satılan ürünlerin stok miktarlarının tam olarak satılan adet kadar düştüğünü teyit et.
+- [ ] **Senaryo 2: Kritik Stok Alarmı & Satın Alma Talep Oluşturma Akışı:**
+  - Depodaki bir ürünün stoğunu kritik eşiğin (`MinStockLevel`) altına düşür ➔ Dashboard'da ve Bildirim Çanında kırmızı kritik stok uyarısının belirdiğini doğrula ➔ `/purchase-requests` sayfasına git ➔ `+ Yeni Talep Oluştur` modalını aç ➔ Kritik ürünü seçerek satın alma talebini onaya gönder (`PendingApproval`).
+- [ ] **Senaryo 3: Yönetici Onayı & Depoya Mal Kabul / Stok Artış Akışı:**
+  - `Yönetici (Manager/Admin)` ile giriş yap ➔ Satın Alma Talepleri `Onayımı Bekleyenler` sekmesine git ➔ Talebi incele ve onay notu girerek `Onayla` ➔ Talebin durumu `Approved` olsun ➔ `Depoya Mal Kabul Et` butonuna bas ➔ Mal kabul fişini onayla ➔ Ürünün mevcut stoğunun depoda otomatik olarak arttığını ve talebin `Completed` durumuna geçtiğini doğrula.
+- [ ] **Senaryo 4: Excel & PDF Kurumsal Belge Dışa Aktarım Akışı:**
+  - Satın alma talebinin detayına git ➔ `Antetli PDF İndir` butonuna bas ➔ PDF belgesinin tarayıcıda önizlendiğini ve Türkçe karakterlerin düzgün basıldığını doğrula ➔ Raporlar sayfasına git ➔ `Excel İndir` butonuna bas ➔ İndirilen `.xlsx` dosyasında sayıların ve tarihlerin doğru hücre formatında açıldığını teyit et.
+
+---
+
+### 6.4. Veritabanı Bütünlüğü, Güvenlik & Performans Doğrulaması
+- [ ] **Veritabanı Bütünlüğü & Migration Doğrulaması:**
+  - [ ] Sıfır veritabanında `dotnet ef database update` komutunun hatasız çalışması.
+  - [ ] Seed Data (Başlangıç rolleri, admin kullanıcısı, temel kırtasiye kategorileri ve mock ürünler) verilerinin eksiksiz yüklenmesi.
+  - [ ] Foreign Key ilişkileri ve Soft-Delete (`IsDeleted = true`) filtrelerinin EF Core seviyesinde veri sızdırmazlığı.
+- [ ] **Güvenlik & OWASP Uyumluluk Testleri:**
+  - [ ] SQL Injection koruması (Tüm sorguların EF Core LINQ / Parametrik çalışması).
+  - [ ] XSS (Cross-Site Scripting) koruması (HTML input sanitization).
+  - [ ] Güvenli Şifreleme (Şifrelerin düz metin yerine BCrypt hash ile saklanması).
+  - [ ] CORS Politikası (Sadece frontend origin'ine izin verilmesi).
+- [ ] **Docker Konteynır & Dağıtım Doğrulaması:**
+  - [ ] `docker compose up -d --build` komutuyla `erp-sqlserver`, `erp-api` ve `erp-frontend` konteynırlarının sağlıklı (healthy) kalkması.
+  - [ ] Nginx Reverse-Proxy yönlendirmesinin (`/api` ve `/hubs` trafiğinin backend'e sorunsuz aktarılması) doğrulanması.
 
 ---
 
