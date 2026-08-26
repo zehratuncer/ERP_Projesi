@@ -410,7 +410,7 @@
 
   &.modal-sm { max-width: 440px; }
   &.modal-lg { max-width: 760px; }
-  &.modal-xl { max-width: 1050px; width: 95vw; }
+  &.modal-xl { max-width: 1200px; width: 95vw; }
 }
 
 @keyframes modalIn {
@@ -480,6 +480,10 @@
 
   &.justify-center {
     justify-content: center;
+  }
+
+  .btn {
+    min-width: 100px;
   }
 }
 
@@ -554,28 +558,32 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
+  background: var(--bg-surface-elevated);
   padding: 1rem 1.25rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
   border-radius: 10px;
+  border: 1px solid var(--border-color);
   margin-bottom: 1.25rem;
 
   .summary-col {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.2rem;
 
     .summary-label {
       font-size: 0.725rem;
       font-weight: 600;
+      color: var(--text-secondary);
       text-transform: uppercase;
-      color: var(--text-muted);
+      letter-spacing: 0.05em;
     }
 
     .summary-val {
-      font-size: 0.875rem;
+      font-size: 0.9rem;
       font-weight: 600;
       color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }
@@ -585,17 +593,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.25rem;
+  gap: 1.5rem;
   background: rgba(59, 130, 246, 0.08);
   border: 1px dashed rgba(59, 130, 246, 0.35);
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  flex-wrap: wrap;
 
   .assign-bar-title {
-    font-size: 0.9rem;
+    font-size: 0.925rem;
     font-weight: 600;
     color: #93c5fd;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
   }
 
   .assign-inputs {
@@ -603,10 +615,11 @@
     align-items: center;
     gap: 0.875rem;
     flex: 1;
-    max-width: 650px;
+    min-width: 0;
 
     .select-product {
       flex: 1;
+      min-width: 250px;
       height: 42px;
       font-size: 0.875rem;
       background: #1e293b;
@@ -630,8 +643,14 @@
 
     .btn {
       height: 42px;
-      padding: 0 1.25rem;
+      padding: 0 1.5rem;
       white-space: nowrap;
+      flex-shrink: 0;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
   }
 }
