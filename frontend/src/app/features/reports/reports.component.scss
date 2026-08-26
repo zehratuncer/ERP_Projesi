@@ -93,23 +93,61 @@
 
 /* Filter Card */
 .filter-card {
-  padding: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
 
   .filter-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) 160px;
-    gap: 1rem;
+    display: flex;
     align-items: flex-end;
+    gap: 1.25rem;
+    flex-wrap: wrap;
 
-    @media (max-width: 900px) {
-      grid-template-columns: 1fr;
+    .form-group {
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+      min-width: 170px;
+
+      label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 0;
+      }
+
+      .form-control {
+        height: 42px;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.875rem;
+        background: var(--bg-surface-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+      }
+    }
+
+    .date-col {
+      min-width: 170px;
     }
 
     .filter-actions {
       display: flex;
+      align-items: flex-end;
+      margin-bottom: 0;
 
       .btn {
-        width: 100%;
+        height: 42px;
+        padding: 0 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: 8px;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
       }
     }
   }
