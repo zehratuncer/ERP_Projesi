@@ -42,6 +42,8 @@
         iconBg="rgba(59, 130, 246, 0.15)"
         subtitle="Sistemde kayıtlı aktif ürünler"
         subtitleClass="text-secondary"
+        [clickable]="true"
+        (cardClick)="openStatModal('products')"
       ></app-stat-card>
 
       <app-stat-card
@@ -51,6 +53,8 @@
         iconBg="rgba(239, 68, 68, 0.15)"
         [subtitle]="summary.criticalStockCount > 0 ? 'Acil sipariş gerekiyor!' : 'Tüm stoklar yeterli'"
         [subtitleClass]="summary.criticalStockCount > 0 ? 'badge badge-danger' : 'badge badge-success'"
+        [clickable]="true"
+        (cardClick)="openStatModal('critical-stock')"
       ></app-stat-card>
 
       <app-stat-card
@@ -60,6 +64,8 @@
         iconBg="rgba(16, 185, 129, 0.15)"
         subtitle="Aktif çalışan iş ortakları"
         subtitleClass="text-secondary"
+        [clickable]="true"
+        (cardClick)="openStatModal('suppliers')"
       ></app-stat-card>
 
       <app-stat-card
@@ -69,6 +75,8 @@
         iconBg="rgba(168, 85, 247, 0.15)"
         subtitle="Depolardaki fiziki toplam adet"
         subtitleClass="text-secondary"
+        [clickable]="true"
+        (cardClick)="openStatModal('inventory-qty')"
       ></app-stat-card>
 
       <app-stat-card
@@ -78,6 +86,8 @@
         iconBg="rgba(245, 158, 11, 0.15)"
         subtitle="Mevcut stokların maliyet tutarı"
         subtitleClass="text-secondary"
+        [clickable]="true"
+        (cardClick)="openStatModal('inventory-val')"
       ></app-stat-card>
     </div>
 
@@ -87,15 +97,15 @@
         <span>⚡ Hızlı Erişim:</span>
       </div>
       <div class="shortcuts-actions">
-        <a routerLink="/inventory" class="shortcut-chip">
+        <button type="button" (click)="openCreateProductModal()" class="shortcut-chip">
           <span>➕ Yeni Ürün Ekle</span>
-        </a>
+        </button>
         <a routerLink="/inventory" class="shortcut-chip">
           <span>⚡ Stok Giriş / Çıkış Hareketi</span>
         </a>
-        <a routerLink="/suppliers" class="shortcut-chip">
+        <button type="button" (click)="openCreateSupplierModal()" class="shortcut-chip">
           <span>🚚 Yeni Tedarikçi Tanımla</span>
-        </a>
+        </button>
         <a routerLink="/suppliers" class="shortcut-chip">
           <span>🔗 Tedarikçi Ürün Eşleştirmeleri</span>
         </a>
@@ -115,57 +125,45 @@
               <span class="badge badge-success">Güvenli Düzeyde</span>
             }
           </div>
-          <a routerLink="/inventory" class="btn btn-secondary btn-sm">Envantere Git →</a>
+          <button (click)="openStatModal('critical-stock')" class="btn-link">Tümünü İncele ➔</button>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body">
           @if (summary.criticalStockAlerts.length === 0) {
-            <div class="empty-state-card py-4">
-              <span class="empty-icon">🎉</span>
-              <h4>Kritik Seviyede Ürün Yok</h4>
-              <p>Harika! Depolardaki tüm ürünlerin stok miktarları belirlenen minimum eşiğin üzerindedir.</p>
+            <div class="empty-mini-state">
+              <span class="empty-icon">✅</span>
+              <p>Harika! Tüm ürünlerin stoğu kritik seviyenin üzerinde.</p>
             </div>
           } @else {
             <div class="table-responsive">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Ürün</th>
-                    <th>Tedarikçi</th>
-                    <th>Birim Fiyat</th>
-                    <th class="text-center">Mevcut Stok</th>
-                    <th class="text-center">Kritik Eşik</th>
-                    <th class="text-right">Aksiyon</th>
+                    <th>Ürün Kodu</th>
+                    <th>Ürün Adı</th>
+                    <th>Mevcut Stok</th>
+                    <th>Kritik Eşik</th>
+                    <th>Durum</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (item of summary.criticalStockAlerts; track item.id) {
-                    <tr class="row-critical">
+                  @for (prod of summary.criticalStockAlerts; track prod.id) {
+                    <tr>
                       <td>
-                        <div class="product-info-cell">
-                          <span class="product-code-pill">{{ item.code }}</span>
-                          <strong class="product-title">{{ item.name }}</strong>
-                        </div>
+                        <span class="product-code-tag">{{ prod.code }}</span>
+                      </td>
+                      <td class="font-medium text-primary">{{ prod.name }}</td>
+                      <td>
+                        <strong class="text-danger">{{ prod.currentStock }} {{ prod.unit }}</strong>
                       </td>
                       <td>
-                        @if (item.supplierName) {
-                          <span class="supplier-tag">🚚 {{ item.supplierName }}</span>
+                        <span class="text-muted">{{ prod.minStockLevel }} {{ prod.unit }}</span>
+                      </td>
+                      <td>
+                        @if (prod.currentStock === 0) {
+                          <span class="badge badge-danger">TÜKENDİ</span>
                         } @else {
-                          <span class="text-muted text-sm">—</span>
+                          <span class="badge badge-warning">KRİTİK</span>
                         }
-                      </td>
-                      <td class="font-mono">{{ item.unitPrice | number:'1.2-2' }} ₺</td>
-                      <td class="text-center">
-                        <span class="stock-badge stock-danger font-bold">
-                          {{ item.currentStock }} {{ item.unit }}
-                        </span>
-                      </td>
-                      <td class="text-center text-muted font-bold">
-                        {{ item.minStockLevel }} {{ item.unit }}
-                      </td>
-                      <td class="text-right">
-                        <a routerLink="/inventory" class="btn-quick-action" title="Stok girişi yap veya detayları gör">
-                          İncele ➔
-                        </a>
                       </td>
                     </tr>
                   }
@@ -180,20 +178,19 @@
       <div class="card card-hover recent-movements-card">
         <div class="card-header">
           <div class="header-title">
-            <h3>🕒 Son Stok Hareketleri</h3>
-            <span class="badge badge-info">Canlı Hareket Akışı</span>
+            <h3>🕒 Son Depo Hareketleri</h3>
+            <span class="badge badge-info">Son İşlemler</span>
           </div>
-          <a routerLink="/inventory" class="btn btn-secondary btn-sm">Tüm Hareketler</a>
+          <a routerLink="/inventory" class="btn-link">Geçmişi Gör ➔</a>
         </div>
         <div class="card-body">
           @if (summary.recentStockMovements.length === 0) {
-            <div class="empty-state-card py-4">
-              <span class="empty-icon">📭</span>
-              <h4>Henüz Hareket Kaydı Yok</h4>
-              <p>Sistemde henüz bir stok giriş veya çıkış işlemi gerçekleştirilmedi.</p>
+            <div class="empty-mini-state">
+              <span class="empty-icon">📦</span>
+              <p>Henüz kayıtlı bir stok hareketi bulunmuyor.</p>
             </div>
           } @else {
-            <div class="activity-timeline">
+            <div class="movement-timeline">
               @for (move of summary.recentStockMovements; track move.id) {
                 <div class="timeline-item">
                   <div
@@ -246,3 +243,396 @@
     </div>
   }
 </div>
+
+<!-- ============================================================ -->
+<!-- 1. STAT DETAY POPUP MODAL                                    -->
+<!-- ============================================================ -->
+@if (activeDetailModal) {
+  <div class="modal-backdrop" (click)="closeDetailModal()">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          @if (activeDetailModal === 'products') {
+            <h3>📦 Toplam Ürün Çeşitleri</h3>
+            <p class="modal-subtitle">Sistemde kayıtlı tüm kırtasiye ürünlerinin listesi ({{ modalProducts.length }} Çeşit)</p>
+          } @else if (activeDetailModal === 'critical-stock') {
+            <h3>🚨 Kritik Stok Eşiğindeki Ürünler</h3>
+            <p class="modal-subtitle">Mevcut stoğu kritik seviyede olan veya tükenen ürünler</p>
+          } @else if (activeDetailModal === 'suppliers') {
+            <h3>🏢 Tedarikçi Firmalar</h3>
+            <p class="modal-subtitle">Kayıtlı aktif tedarikçi ve dağıtıcı iş ortakları ({{ modalSuppliers.length }} Firma)</p>
+          } @else if (activeDetailModal === 'inventory-qty') {
+            <h3>📊 Fiziki Envanter & Adet Dağılımı</h3>
+            <p class="modal-subtitle">Depo ve raflardaki ürünlerin fiziki stok adetleri (Toplam {{ summary?.totalInventoryQuantity }} Adet)</p>
+          } @else if (activeDetailModal === 'inventory-val') {
+            <h3>💰 Envanter Maliyet Değeri Dağılımı</h3>
+            <p class="modal-subtitle">Ürünlerin birim fiyat x stok miktarı bazında toplam portföy tutarı</p>
+          }
+        </div>
+        <button (click)="closeDetailModal()" class="btn-close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Search Toolbar in Modal -->
+        <div class="modal-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              [(ngModel)]="detailSearchQuery"
+              placeholder="Ürün adı, kod veya tedarikçi ile filtrele..."
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        @if (isDetailLoading) {
+          <div class="loading-state py-4">
+            <div class="spinner"></div>
+            <p>Detaylar yükleniyor...</p>
+          </div>
+        } @else {
+          <!-- Suppliers List View -->
+          @if (activeDetailModal === 'suppliers') {
+            @if (filteredModalSuppliers.length === 0) {
+              <div class="empty-mini-state py-4">
+                <p>Kayıtlı tedarikçi bulunamadı.</p>
+              </div>
+            } @else {
+              <div class="table-responsive modal-table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Firma Adı</th>
+                      <th>Yetkili</th>
+                      <th>Telefon</th>
+                      <th>E-Posta</th>
+                      <th>Vergi No</th>
+                      <th>Bağlı Ürün</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (s of filteredModalSuppliers; track s.id) {
+                      <tr>
+                        <td class="font-semibold text-primary">{{ s.name }}</td>
+                        <td>{{ s.contactPerson || '—' }}</td>
+                        <td>{{ s.phone || '—' }}</td>
+                        <td>{{ s.email || '—' }}</td>
+                        <td><code>{{ s.taxNumber || '—' }}</code></td>
+                        <td><span class="badge badge-primary">{{ s.productCount || 0 }} Ürün</span></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          } @else {
+            <!-- Products / Stock / Value Table View -->
+            @if (filteredModalProducts.length === 0) {
+              <div class="empty-mini-state py-4">
+                <p>Aramaya uygun ürün kaydı bulunamadı.</p>
+              </div>
+            } @else {
+              <div class="table-responsive modal-table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Kod</th>
+                      <th>Ürün Adı</th>
+                      <th>Tedarikçi</th>
+                      <th>Birim Fiyat</th>
+                      <th>Mevcut Stok</th>
+                      @if (activeDetailModal === 'critical-stock') {
+                        <th>Kritik Eşik</th>
+                        <th>Durum</th>
+                      } @else if (activeDetailModal === 'inventory-val') {
+                        <th>Toplam Tutar</th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (p of filteredModalProducts; track p.id) {
+                      <tr>
+                        <td><span class="product-code-tag">{{ p.code }}</span></td>
+                        <td class="font-medium">{{ p.name }}</td>
+                        <td class="text-secondary">{{ p.supplierName || 'Bağımsız' }}</td>
+                        <td class="font-mono">{{ p.unitPrice | currency:'TRY':'symbol-narrow':'1.2-2' }}</td>
+                        <td>
+                          <span [class.text-danger]="p.currentStock <= p.minStockLevel" [class.font-bold]="p.currentStock <= p.minStockLevel">
+                            {{ p.currentStock }} {{ p.unit }}
+                          </span>
+                        </td>
+                        @if (activeDetailModal === 'critical-stock') {
+                          <td>{{ p.minStockLevel }} {{ p.unit }}</td>
+                          <td>
+                            @if (p.currentStock === 0) {
+                              <span class="badge badge-danger">TÜKENDİ</span>
+                            } @else {
+                              <span class="badge badge-warning">KRİTİK EŞİK</span>
+                            }
+                          </td>
+                        } @else if (activeDetailModal === 'inventory-val') {
+                          <td class="font-bold text-success font-mono">
+                            {{ (p.currentStock * p.unitPrice) | currency:'TRY':'symbol-narrow':'1.2-2' }}
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" (click)="closeDetailModal()" class="btn btn-secondary">Kapat</button>
+        @if (activeDetailModal === 'suppliers') {
+          <a routerLink="/suppliers" (click)="closeDetailModal()" class="btn btn-primary">Tüm Tedarikçileri Yönet ➔</a>
+        } @else {
+          <a routerLink="/inventory" (click)="closeDetailModal()" class="btn btn-primary">Tüm Stokları Yönet ➔</a>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ============================================================ -->
+<!-- 2. HIZLI ERİŞİM: YENİ ÜRÜN EKLE MODALI                       -->
+<!-- ============================================================ -->
+@if (isCreateProductModalOpen) {
+  <div class="modal-backdrop" (click)="closeCreateProductModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>📦 Yeni Kırtasiye / Ofis Ürünü Ekle</h3>
+          <p class="modal-subtitle">Yeni ürün tanımı, barkod ve başlangıç stok bilgileri</p>
+        </div>
+        <button (click)="closeCreateProductModal()" class="btn-close">✕</button>
+      </div>
+
+      <form (ngSubmit)="saveProduct()" class="modal-body">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="pCode">Ürün Kodu / Barkod <span class="required">*</span></label>
+            <input
+              id="pCode"
+              type="text"
+              [(ngModel)]="productForm.code"
+              name="code"
+              class="form-control"
+              placeholder="Örn: KRT-1001"
+              required
+            />
+          </div>
+          <div class="form-group flex-2">
+            <label for="pName">Ürün Adı <span class="required">*</span></label>
+            <input
+              id="pName"
+              type="text"
+              [(ngModel)]="productForm.name"
+              name="name"
+              class="form-control"
+              placeholder="Örn: Faber-Castell 0.7 Versatil Kalem"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="pDesc">Açıklama</label>
+          <input
+            id="pDesc"
+            type="text"
+            [(ngModel)]="productForm.description"
+            name="description"
+            class="form-control"
+            placeholder="Ürün teknik özellikleri, rengi veya boyutu..."
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="pUnit">Birim <span class="required">*</span></label>
+            <select id="pUnit" [(ngModel)]="productForm.unit" name="unit" class="form-control">
+              <option value="Adet">Adet</option>
+              <option value="Paket">Paket</option>
+              <option value="Koli">Koli</option>
+              <option value="Kutu">Kutu</option>
+              <option value="Stand">Stand</option>
+              <option value="Deste">Deste</option>
+              <option value="Rulo">Rulo</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label for="pPrice">Birim Fiyat (₺) <span class="required">*</span></label>
+            <input
+              id="pPrice"
+              type="number"
+              step="0.01"
+              min="0"
+              [(ngModel)]="productForm.unitPrice"
+              name="unitPrice"
+              class="form-control"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="pInitial">Başlangıç Stoğu</label>
+            <input
+              id="pInitial"
+              type="number"
+              min="0"
+              [(ngModel)]="productForm.initialStock"
+              name="initialStock"
+              class="form-control"
+            />
+          </div>
+          <div class="form-group flex-1">
+            <label for="pMin">Kritik Stok Eşiği <span class="required">*</span></label>
+            <input
+              id="pMin"
+              type="number"
+              min="0"
+              [(ngModel)]="productForm.minStockLevel"
+              name="minStockLevel"
+              class="form-control"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="pSupplier">Tedarikçi Firma</label>
+          <select id="pSupplier" [(ngModel)]="productForm.supplierId" name="supplierId" class="form-control">
+            <option [ngValue]="undefined">-- Tedarikçi Seçilmedi (Bağımsız / Dahili) --</option>
+            @for (s of modalSuppliers; track s.id) {
+              <option [value]="s.id">{{ s.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" (click)="closeCreateProductModal()" class="btn btn-secondary">İptal</button>
+          <button type="submit" [disabled]="isProductSubmitting" class="btn btn-primary">
+            @if (isProductSubmitting) {
+              <span>Kaydediliyor...</span>
+            } @else {
+              <span>Ürünü Kaydet</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ============================================================ -->
+<!-- 3. HIZLI ERİŞİM: YENİ TEDARİKÇİ TANIMLA MODALI               -->
+<!-- ============================================================ -->
+@if (isCreateSupplierModalOpen) {
+  <div class="modal-backdrop" (click)="closeCreateSupplierModal()">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>🚚 Yeni Tedarikçi Tanımla</h3>
+          <p class="modal-subtitle">Firma profili, yetkili iletişim bilgileri ve vergi detayları</p>
+        </div>
+        <button (click)="closeCreateSupplierModal()" class="btn-close">✕</button>
+      </div>
+
+      <form (ngSubmit)="saveSupplier()" class="modal-body">
+        <div class="form-group">
+          <label for="sName">Firma / Tedarikçi Tam Ünvanı <span class="required">*</span></label>
+          <input
+            id="sName"
+            type="text"
+            [(ngModel)]="supplierForm.name"
+            name="name"
+            placeholder="Örn: Adel Kırtasiye San. ve Tic. A.Ş."
+            class="form-control"
+            required
+            autofocus
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="sContact">İletişim Yetkilisi</label>
+            <input
+              id="sContact"
+              type="text"
+              [(ngModel)]="supplierForm.contactPerson"
+              name="contactPerson"
+              placeholder="Örn: Ahmet Yılmaz (Satış Müdürü)"
+              class="form-control"
+            />
+          </div>
+          <div class="form-group flex-1">
+            <label for="sEmail">E-Posta Adresi</label>
+            <input
+              id="sEmail"
+              type="email"
+              [(ngModel)]="supplierForm.email"
+              name="email"
+              placeholder="Örn: siparis@adel.com.tr"
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="sPhone">Telefon Numarası</label>
+            <input
+              id="sPhone"
+              type="text"
+              [(ngModel)]="supplierForm.phone"
+              name="phone"
+              placeholder="Örn: 0212 555 44 33"
+              class="form-control"
+            />
+          </div>
+          <div class="form-group flex-1">
+            <label for="sTax">Vergi Numarası (VKN / TCKN)</label>
+            <input
+              id="sTax"
+              type="text"
+              [(ngModel)]="supplierForm.taxNumber"
+              name="taxNumber"
+              placeholder="Örn: 1234567890"
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="sAddress">Adres Bilgisi</label>
+          <textarea
+            id="sAddress"
+            [(ngModel)]="supplierForm.address"
+            name="address"
+            placeholder="Depo veya şirket merkez adresi..."
+            class="form-control"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" (click)="closeCreateSupplierModal()" class="btn btn-secondary">İptal</button>
+          <button type="submit" [disabled]="isSupplierSubmitting" class="btn btn-primary">
+            @if (isSupplierSubmitting) {
+              <span>Kaydediliyor...</span>
+            } @else {
+              <span>Tedarikçiyi Kaydet</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

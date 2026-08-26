@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -6,7 +6,12 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="stat-card card card-hover">
+    <div
+      class="stat-card card card-hover"
+      [class.clickable]="clickable"
+      (click)="onClick()"
+      [attr.title]="clickable ? 'Detayları görmek için tıklayın' : null"
+    >
       <div class="stat-content">
         <div class="stat-info">
           <span class="stat-title">{{ title }}</span>
@@ -19,6 +24,11 @@ import { CommonModule } from '@angular/common';
           <span class="stat-icon">{{ icon }}</span>
         </div>
       </div>
+      @if (clickable) {
+        <div class="click-hint">
+          <span>Detayı Gör ↗</span>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -78,6 +88,36 @@ import { CommonModule } from '@angular/common';
       font-size: 1.5rem;
       box-shadow: var(--shadow-sm);
     }
+
+    .stat-card.clickable {
+      cursor: pointer;
+      transition: all var(--transition-normal);
+
+      &:hover {
+        transform: translateY(-3px);
+        border-color: var(--primary);
+        box-shadow: var(--shadow-md), 0 0 15px var(--primary-light);
+
+        .click-hint {
+          opacity: 1;
+          color: var(--primary);
+        }
+      }
+    }
+
+    .click-hint {
+      position: absolute;
+      bottom: 6px;
+      right: 12px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      opacity: 0.7;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
   `]
 })
 export class StatCardComponent {
@@ -87,4 +127,12 @@ export class StatCardComponent {
   @Input() iconBg: string = 'rgba(59, 130, 246, 0.15)';
   @Input() subtitle?: string;
   @Input() subtitleClass?: string;
+  @Input() clickable: boolean = false;
+  @Output() cardClick = new EventEmitter<void>();
+
+  onClick() {
+    if (this.clickable) {
+      this.cardClick.emit();
+    }
+  }
 }
