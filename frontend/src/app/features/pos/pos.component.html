@@ -321,18 +321,21 @@
     <div class="summary-tab-container">
       <div class="filter-card card mb-4">
         <div class="filter-row">
-          <div class="form-group mb-0">
-            <label>Rapor Tarihi</label>
+          <div class="form-group mb-0 date-input-group">
+            <label for="posReportDate">Rapor Tarihi</label>
             <input 
+              id="posReportDate"
               type="date" 
               class="form-control" 
               [(ngModel)]="selectedSummaryDate" 
               (change)="loadDailySummary()"
             />
           </div>
-          <button class="btn btn-primary" (click)="loadDailySummary()" [disabled]="isLoading()">
-            <span>🔄</span> Raporu Yenile
-          </button>
+          <div class="form-group mb-0 button-group">
+            <button class="btn btn-primary" (click)="loadDailySummary()" [disabled]="isLoading()">
+              <span>🔄</span> Raporu Yenile
+            </button>
+          </div>
         </div>
       </div>
 
@@ -478,9 +481,11 @@
             <label>Fiş No / Müşteri Ara</label>
             <input type="text" class="form-control" placeholder="Fiş no veya müşteri adı..." [(ngModel)]="historySearch" />
           </div>
-          <button class="btn btn-primary" (click)="loadSalesHistory()" [disabled]="isLoading()">
-            <span>🔍</span> Filtrele
-          </button>
+          <div class="form-group mb-0 button-group">
+            <button class="btn btn-primary" (click)="loadSalesHistory()" [disabled]="isLoading()">
+              <span>🔍</span> Filtrele
+            </button>
+          </div>
         </div>
       </div>
 
