@@ -125,7 +125,10 @@
               <span class="badge badge-success">Güvenli Düzeyde</span>
             }
           </div>
-          <button (click)="openStatModal('critical-stock')" class="btn-link">Tümünü İncele ➔</button>
+          <button type="button" (click)="openStatModal('critical-stock')" class="btn btn-outline-primary btn-sm">
+            <span>Tümünü İncele</span>
+            <span>➔</span>
+          </button>
         </div>
         <div class="card-body">
           @if (summary.criticalStockAlerts.length === 0) {
@@ -181,7 +184,10 @@
             <h3>🕒 Son Depo Hareketleri</h3>
             <span class="badge badge-info">Son İşlemler</span>
           </div>
-          <a routerLink="/inventory" class="btn-link">Geçmişi Gör ➔</a>
+          <a routerLink="/inventory" class="btn btn-outline-primary btn-sm">
+            <span>Geçmişi Gör</span>
+            <span>➔</span>
+          </a>
         </div>
         <div class="card-body">
           @if (summary.recentStockMovements.length === 0) {
