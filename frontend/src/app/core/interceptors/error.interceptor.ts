@@ -15,8 +15,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.error && error.error.message) {
         errorMessage = error.error.message;
       } else if (error.status === 401) {
-        errorMessage = 'Oturum süreniz doldu veya yetkisiz erişim.';
-        authService.logout();
+        if (!req.url.includes('/api/auth/login')) {
+          errorMessage = 'Oturum süreniz doldu veya yetkisiz erişim.';
+          authService.logout();
+        } else {
+          errorMessage = 'E-posta veya şifre hatalı.';
+        }
       } else if (error.status === 403) {
         errorMessage = 'Bu işlem için yetkiniz bulunmamaktadır.';
       } else if (error.status === 0) {

@@ -192,29 +192,29 @@ Bu faz, ERP sisteminin tüm modüllerinin (Kimlik Doğrulama, Stok, POS Kasa, Sa
 ---
 
 ### 6.2. Frontend UI/UX & Fonksiyonel Doğrulama Testleri
-- [ ] **Sayfa Korumaları (Route Guards) & Oturum Yönetimi:**
-  - [ ] Giriş yapmamış kullanıcının doğrudan `/inventory`, `/pos`, `/reports` veya `/purchase-requests` adreslerine girmesinin `AuthGuard` ile engellenmesi ve `/login`'e yönlendirilmesi.
-  - [ ] `Employee` rolündeki kullanıcının yönetici onay ve analitik sayfalarına girmesinin `RoleGuard` ile engellenmesi.
-  - [ ] JWT süresi bittiğinde `ErrorInterceptor`'ın `401 Unauthorized` yakalayarak kullanıcıyı bilgilendirip oturumu sonlandırması.
-- [ ] **Hızlı Kasa / POS Arayüz Testleri:**
-  - [ ] Barkod giriş kutusunun daima odakta (autofocus) kalması ve barkod okutulduğunda ürünün sepete anında `+1` eklenmesi.
-  - [ ] Aynı barkod tekrar okutulduğunda sepet satırındaki adedin otomatik `x2`, `x3` artması.
-  - [ ] Klavye kısayollarının (`F2` Ödeme, `F4` Temizle, `+ / -` Adet Değiştir, `Delete` Satır Sil) sorunsuz çalışması.
-  - [ ] Tahsilat modalında girilen nakit tutara göre para üstünün canlı hesaplanması ve termal fiş yazdırma penceresinin tetiklenmesi.
-- [ ] **Satın Alma Talepleri & Onay Paneli Arayüz Testleri:**
-  - [ ] Filtreleme çubuğundaki (Durum, Departman, Öncelik, Arama) inputlar ile `🔍 Filtrele` butonunun hizasının ve filtreleme sonuçlarının doğrulanması.
-  - [ ] Yeni Talep Modalı: Dinamik `➕ Ürün / Satır Ekle` butonu, satır silme (`❌`), ürün seçimi, birim fiyat girişi ve genel toplamın canlı güncellenmesi.
-  - [ ] Yönetici Onay Modalları (`Hızlı Onayla`, `Gerekçeli Reddet`, `Depoya Mal Kabul Et`) ve Audit Timeline zaman çizelgesi görsel doğrulaması.
-- [ ] **Tedarikçi & Stok Yönetimi UI Testleri:**
-  - [ ] Tedarikçi ürün ilişkilendirme modalının (`1200px`) geniş ekran uyumu, koyu tema dropdown okunabilirliği ve `+ Ürünü Bağla` aksiyonunun çalışması.
-  - [ ] Kritik stok seviyesindeki ürünlerin kırmızı renkli rozet ve uyarılarla öne çıkması.
-- [ ] **Raporlama & Analitik UI Testleri:**
-  - [ ] `🔄 Raporları Güncelle` butonunun zaman aralığı ve tarih filtreleri ile tam hizalı çalışması.
-  - [ ] Kategori kârlılık grafikleri, sezonluk trend grafikleri ve atıl stok listelerinin filtrelere göre anlık güncellenmesi.
-  - [ ] `🖨️ Yazdır / PDF` ve `📥 Excel İndir (.xlsx)` butonlarının loading durumları ve dosya indirme aksiyonlarının testi.
-- [ ] **Canlı Bildirimler & SignalR Testleri:**
-  - [ ] Yeni bir talep oluşturulduğunda veya stok kritik eşiğe düştüğünde navbar bildirim çanında kırmızı bildirim rozetinin (Badge) anında belirmesi ve Toast bildiriminin açılması.
-  - [ ] Bildirime tıklandığında ilgili detay modalına veya sayfaya otomatik yönlendirme yapılması.
+- [x] **Sayfa Korumaları (Route Guards) & Oturum Yönetimi:**
+  - [x] Giriş yapmamış kullanıcının doğrudan `/inventory`, `/pos`, `/reports` veya `/purchase-requests` adreslerine girmesinin `AuthGuard` ile engellenmesi ve `/login`'e yönlendirilmesi.
+  - [x] `Employee` rolündeki kullanıcının yönetici onay ve analitik sayfalarına girmesinin `RoleGuard` ile engellenmesi.
+  - [x] JWT süresi bittiğinde `ErrorInterceptor`'ın `401 Unauthorized` yakalayarak kullanıcıyı bilgilendirip oturumu sonlandırması.
+- [x] **Hızlı Kasa / POS Arayüz Testleri:**
+  - [x] Barkod giriş kutusunun daima odakta (autofocus) kalması ve barkod okutulduğunda ürünün sepete anında `+1` eklenmesi.
+  - [x] Aynı barkod tekrar okutulduğunda sepet satırındaki adedin otomatik `x2`, `x3` artması.
+  - [x] Klavye kısayollarının (`F2` Ödeme, `F4` Temizle, `+ / -` Adet Değiştir, `Delete` Satır Sil) sorunsuz çalışması.
+  - [x] Tahsilat modalında girilen nakit tutara göre para üstünün canlı hesaplanması ve termal fiş yazdırma penceresinin tetiklenmesi.
+- [x] **Satın Alma Talepleri & Onay Paneli Arayüz Testleri:**
+  - [x] Filtreleme çubuğundaki (Durum, Departman, Öncelik, Arama) inputlar ile `🔍 Filtrele` butonunun hizasının ve filtreleme sonuçlarının doğrulanması.
+  - [x] Yeni Talep Modalı: Dinamik `➕ Ürün / Satır Ekle` butonu, satır silme (`❌`), ürün seçimi, birim fiyat girişi ve genel toplamın canlı güncellenmesi.
+  - [x] Yönetici Onay Modalları (`Hızlı Onayla`, `Gerekçeli Reddet`, `Depoya Mal Kabul Et`) ve Audit Timeline zaman çizelgesi görsel doğrulaması.
+- [x] **Tedarikçi & Stok Yönetimi UI Testleri:**
+  - [x] Tedarikçi ürün ilişkilendirme modalının (`1200px`) geniş ekran uyumu, koyu tema dropdown okunabilirliği ve `+ Ürünü Bağla` aksiyonunun çalışması.
+  - [x] Kritik stok seviyesindeki ürünlerin kırmızı renkli rozet ve uyarılarla öne çıkması.
+- [x] **Raporlama & Analitik UI Testleri:**
+  - [x] `🔄 Raporları Güncelle` butonunun zaman aralığı ve tarih filtreleri ile tam hizalı çalışması.
+  - [x] Kategori kârlılık grafikleri, sezonluk trend grafikleri ve atıl stok listelerinin filtrelere göre anlık güncellenmesi.
+  - [x] `🖨️ Yazdır / PDF` ve `📥 Excel İndir (.xlsx)` butonlarının loading durumları ve dosya indirme aksiyonlarının testi.
+- [x] **Canlı Bildirimler & SignalR Testleri:**
+  - [x] Yeni bir talep oluşturulduğunda veya stok kritik eşiğe düştüğünde navbar bildirim çanında kırmızı bildirim rozetinin (Badge) anında belirmesi ve Toast bildiriminin açılması.
+  - [x] Bildirime tıklandığında ilgili detay modalına veya sayfaya otomatik yönlendirme yapılması.
 
 ---
 

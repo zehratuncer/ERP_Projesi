@@ -22,7 +22,7 @@ export class AuthService {
   isManager = computed(() => this.currentUser()?.role === 'Manager' || this.currentUser()?.role === 'Admin');
 
   constructor(private http: HttpClient, private router: Router) {
-    // Sayfa ilk yüklendiğinde token varsa backend'den profil doğrulaması yap
+    // Sayfa ilk yüklendiğinde token varsa arka planda profil güncelle
     if (this.token()) {
       this.fetchCurrentUser().subscribe();
     }
@@ -43,13 +43,15 @@ export class AuthService {
       tap(response => {
         if (response.isSuccess && response.data) {
           this.currentUser.set(response.data);
-          const storage = this.getStorage();
-          storage.setItem(this.userKey, JSON.stringify(response.data));
+          localStorage.setItem(this.userKey, JSON.stringify(response.data));
+          sessionStorage.setItem(this.userKey, JSON.stringify(response.data));
         }
       }),
-      catchError(() => {
-        // Token geçersizse oturumu temizle
-        this.logout();
+      catchError((error) => {
+        // Sadece backend açıkça 401 (token süresi doldu / geçersiz) döndüğünde oturumu kapat
+        if (error?.status === 401) {
+          this.logout();
+        }
         return of(null);
       })
     );
@@ -68,11 +70,11 @@ export class AuthService {
   }
 
   setSession(token: string, user: User, rememberMe: boolean = true) {
-    const storage = rememberMe ? localStorage : sessionStorage;
-
     localStorage.setItem(this.rememberMeKey, rememberMe ? 'true' : 'false');
-    storage.setItem(this.tokenKey, token);
-    storage.setItem(this.userKey, JSON.stringify(user));
+    localStorage.setItem(this.tokenKey, token);
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+    sessionStorage.setItem(this.tokenKey, token);
+    sessionStorage.setItem(this.userKey, JSON.stringify(user));
 
     this.token.set(token);
     this.currentUser.set(user);
@@ -80,11 +82,6 @@ export class AuthService {
 
   getToken(): string | null {
     return this.token() || this.getStoredToken();
-  }
-
-  private getStorage(): Storage {
-    const remember = localStorage.getItem(this.rememberMeKey) === 'true';
-    return remember ? localStorage : sessionStorage;
   }
 
   private getStoredToken(): string | null {
