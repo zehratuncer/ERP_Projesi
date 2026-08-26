@@ -157,37 +157,37 @@ Kullanıcı girişi, rol bazlı yetkilendirme, ürün/stok hareketleri, tedarik�
 Bu faz, ERP sisteminin tüm modüllerinin (Kimlik Doğrulama, Stok, POS Kasa, Satın Alma, Çok Kademeli Onay, Analitik Raporlama, Export ve Bildirimler) iş kurallarına, güvenlik standartlarına ve uçtan uca akışlara uygunluğunu doğrulamak için tasarlanmıştır.
 
 ### 6.1. Backend Birim & Entegrasyon Testleri (Unit & Integration Tests)
-- [ ] **Kimlik Doğrulama & Yetkilendirme (Auth & IAM):**
-  - [ ] `LoginCommand` BCrypt şifre doğrulama, hatalı şifrede `401 Unauthorized` ve kilitli hesap kontrolü.
-  - [ ] JWT Token Claims doğrulaması (`UserId`, `Email`, `Role`, `Department`, `exp`).
-  - [ ] `[Authorize(Roles = "Admin,Manager")]` attribute testleri ve rol bazlı erişim kısıtlarının doğrulanması.
-- [ ] **Stok & Envanter İş Kuralları:**
-  - [ ] Yetersiz stok durumunda stok çıkışı (`CurrentStock < Quantity`) denemesinde `BusinessRuleException` fırlatılması ve işlemin iptal edilmesi.
-  - [ ] Başarılı stok girişi ve çıkışında `Product.CurrentStock` alanının atomik ve doğru güncellenmesi.
-  - [ ] Stok adedi `MinStockLevel` kritik eşiğin altına indiğinde `IsLowStock = true` bayrağı ve `Notification` tetiklenmesi.
-  - [ ] Eşzamanlı (concurrency) stok hareketlerinde veri bütünlüğünün korunması.
-- [ ] **Barkodlu POS Satış Motoru Testleri:**
-  - [ ] Çoklu ürün sepeti toplam tutar, KDV dökümü, satır bazlı indirim ve genel indirim matematiksel hesaplama doğrulaması.
-  - [ ] Ödeme türleri (Nakit, Kredi Kartı, Parçalı Ödeme, Açık Hesap / Veresiye) ve doğru para üstü hesaplama testi.
-  - [ ] Satış onaylandığında (`CompleteSaleCommand`):
-    - [ ] `Sale` ve `SaleItem` kayıtlarının veritabanına eksiksiz yazılması.
-    - [ ] Sepetteki tüm ürünler için otomatik `InventoryTransaction` (Çıkış) kaydı düşülmesi.
-    - [ ] Ürünlerin mevcut stok adetlerinin eksilmesi.
-    - [ ] Sepetteki herhangi bir üründe hata oluşursa Transaction Rollback yapılması ve hiçbir kaydın bozulmaması.
-- [ ] **Satın Alma & Onay Motoru Testleri:**
-  - [ ] `CreatePurchaseRequestCommand` boş kalem, negatif miktar veya geçersiz departman gönderildiğinde `FluentValidation` hatası üretilmesi.
-  - [ ] Talep durum yaşam döngüsü kuralları (`Draft` ➔ `PendingApproval` ➔ `Approved` / `Rejected` ➔ `Completed`).
-  - [ ] Reddetme (`RejectPurchaseRequestCommand`) işleminde zorunlu gerekçe/açıklama kontrolü.
-  - [ ] **Mal Kabul Dönüştürme Testi (`ConvertPurchaseRequestToInventoryCommand`):**
-    - [ ] Sadece `Approved` durumundaki taleplerin depoya kabul edilebilmesi.
-    - [ ] Mal kabul işlemiyle birlikte talep edilen ürünlerin stok adetlerinin depoya otomatik eklenmesi ve durumun `Completed` olması.
-- [ ] **Analitik & Raporlama Hesaplama Testleri:**
-  - [ ] Kategori Brüt Kâr Marjı hesaplama algoritması: `((Toplam Satış Cirosu - Toplam Maliyet) / Toplam Satış Cirosu) * 100`.
-  - [ ] Stok Devir Hızı (Turnover Rate) ve Tüketim İndeksi formüllerinin doğrulanması.
-  - [ ] Atıl / Hareketsiz Stok (Dead Stock) filtrelerinin (60, 90, 180, 365 gün) hareketsiz ürünleri doğru filtrelemesi.
-- [ ] **Dışa Aktarma (Export Engine) Testleri:**
-  - [ ] QuestPDF ile kurumsal antetli Satın Alma Talep Formu ve İrsaliye PDF dosyalarının bozulmadan üretilmesi.
-  - [ ] ClosedXML ile ürün, stok ve rapor listelerinin doğru başlıklar, para birimi formatı ve sayısal tiplerle `.xlsx` formatında üretilmesi.
+- [x] **Kimlik Doğrulama & Yetkilendirme (Auth & IAM):**
+  - [x] `LoginCommand` BCrypt şifre doğrulama, hatalı şifrede `401 Unauthorized` ve kilitli hesap kontrolü.
+  - [x] JWT Token Claims doğrulaması (`UserId`, `Email`, `Role`, `Department`, `exp`).
+  - [x] `[Authorize(Roles = "Admin,Manager")]` attribute testleri ve rol bazlı erişim kısıtlarının doğrulanması.
+- [x] **Stok & Envanter İş Kuralları:**
+  - [x] Yetersiz stok durumunda stok çıkışı (`CurrentStock < Quantity`) denemesinde `BusinessRuleException` fırlatılması ve işlemin iptal edilmesi.
+  - [x] Başarılı stok girişi ve çıkışında `Product.CurrentStock` alanının atomik ve doğru güncellenmesi.
+  - [x] Stok adedi `MinStockLevel` kritik eşiğin altına indiğinde `IsLowStock = true` bayrağı ve `Notification` tetiklenmesi.
+  - [x] Eşzamanlı (concurrency) stok hareketlerinde veri bütünlüğünün korunması.
+- [x] **Barkodlu POS Satış Motoru Testleri:**
+  - [x] Çoklu ürün sepeti toplam tutar, KDV dökümü, satır bazlı indirim ve genel indirim matematiksel hesaplama doğrulaması.
+  - [x] Ödeme türleri (Nakit, Kredi Kartı, Parçalı Ödeme, Açık Hesap / Veresiye) ve doğru para üstü hesaplama testi.
+  - [x] Satış onaylandığında (`CompleteSaleCommand`):
+    - [x] `Sale` ve `SaleItem` kayıtlarının veritabanına eksiksiz yazılması.
+    - [x] Sepetteki tüm ürünler için otomatik `InventoryTransaction` (Çıkış) kaydı düşülmesi.
+    - [x] Ürünlerin mevcut stok adetlerinin eksilmesi.
+    - [x] Sepetteki herhangi bir üründe hata oluşursa Transaction Rollback yapılması ve hiçbir kaydın bozulmaması.
+- [x] **Satın Alma & Onay Motoru Testleri:**
+  - [x] `CreatePurchaseRequestCommand` boş kalem, negatif miktar veya geçersiz departman gönderildiğinde `FluentValidation` hatası üretilmesi.
+  - [x] Talep durum yaşam döngüsü kuralları (`Draft` ➔ `PendingApproval` ➔ `Approved` / `Rejected` ➔ `Completed`).
+  - [x] Reddetme (`RejectPurchaseRequestCommand`) işleminde zorunlu gerekçe/açıklama kontrolü.
+  - [x] **Mal Kabul Dönüştürme Testi (`ConvertPurchaseRequestToInventoryCommand`):**
+    - [x] Sadece `Approved` durumundaki taleplerin depoya kabul edilebilmesi.
+    - [x] Mal kabul işlemiyle birlikte talep edilen ürünlerin stok adetlerinin depoya otomatik eklenmesi ve durumun `Completed` olması.
+- [x] **Analitik & Raporlama Hesaplama Testleri:**
+  - [x] Kategori Brüt Kâr Marjı hesaplama algoritması: `((Toplam Satış Cirosu - Toplam Maliyet) / Toplam Satış Cirosu) * 100`.
+  - [x] Stok Devir Hızı (Turnover Rate) ve Tüketim İndeksi formüllerinin doğrulanması.
+  - [x] Atıl / Hareketsiz Stok (Dead Stock) filtrelerinin (60, 90, 180, 365 gün) hareketsiz ürünleri doğru filtrelemesi.
+- [x] **Dışa Aktarma (Export Engine) Testleri:**
+  - [x] QuestPDF ile kurumsal antetli Satın Alma Talep Formu ve İrsaliye PDF dosyalarının bozulmadan üretilmesi.
+  - [x] ClosedXML ile ürün, stok ve rapor listelerinin doğru başlıklar, para birimi formatı ve sayısal tiplerle `.xlsx` formatında üretilmesi.
 
 ---
 
