@@ -10,4 +10,7 @@
   <Folder Name="/src/Presentation/">
     <Project Path="src/Presentation/ERP.API/ERP.API.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ERP.UnitTests/ERP.UnitTests.csproj" />
+  </Folder>
 </Solution>
