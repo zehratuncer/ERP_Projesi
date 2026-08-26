@@ -447,7 +447,7 @@ export class PurchaseRequestsComponent implements OnInit {
   removeItemRow(index: number): void {
     const current = [...this.formItems()];
     if (current.length === 1) {
-      this.toastService.warning('Talebin en az 1 ürün kalemi olmalıdır.');
+      this.toastService.warning('Talebin en az 1 ürün satırı olmalıdır.');
       return;
     }
     current.splice(index, 1);
@@ -465,7 +465,7 @@ export class PurchaseRequestsComponent implements OnInit {
     }
 
     if (this.formItems().length === 0) {
-      this.toastService.warning('Lütfen en az bir ürün kalemi ekleyiniz.');
+      this.toastService.warning('Lütfen en az bir ürün satırı ekleyiniz.');
       return;
     }
 

@@ -166,7 +166,7 @@
                 <th>Talep No</th>
                 <th>Departman</th>
                 <th>Talep Eden</th>
-                <th class="text-center">Kalem</th>
+                <th class="text-center">Ürün Çeşidi</th>
                 <th>Aciliyet</th>
                 <th>Onay Kademesi & Durum</th>
                 <th class="text-right">Tahmini Tutar</th>
@@ -414,7 +414,7 @@
       <div class="modal-body">
         <div class="status-alert-box alert-success mb-3">
           <strong>✅ Onaylı Talep Mal Kabulü:</strong>
-          <p>Aşağıdaki satın alma kalemleri depoya kabul edilecek ve sistemdeki mevcut stok miktarları otomatik olarak artırılacaktır.</p>
+          <p>Aşağıdaki satın alma ürünleri depoya kabul edilecek ve sistemdeki mevcut stok miktarları otomatik olarak artırılacaktır.</p>
         </div>
 
         <!-- Items receiving table -->
@@ -569,7 +569,7 @@
         <div class="detail-content-columns mt-4">
           <!-- Column 1: Items Table -->
           <div class="detail-items-column">
-            <h4>📦 Talep Kalemleri ({{ selectedRequestDetail()!.items.length }} Çeşit Ürün)</h4>
+            <h4>📦 Talep Edilen Ürünler ({{ selectedRequestDetail()!.items.length }} Çeşit)</h4>
             <div class="table-responsive mt-2">
               <table class="data-table">
                 <thead>
@@ -741,9 +741,9 @@
         </div>
 
         <div class="items-section-header mt-4">
-          <h4>📦 Talep Edilecek Ürün Kalemleri</h4>
+          <h4>📦 Talep Edilecek Ürünler</h4>
           <button class="btn btn-sm btn-secondary" (click)="addNewItemRow()">
-            <span>➕</span> Kalem Ekle
+            <span>➕</span> Ürün / Satır Ekle
           </button>
         </div>
 
@@ -768,6 +768,7 @@
                       class="form-control" 
                       [ngModel]="item.productId" 
                       (ngModelChange)="onProductSelected(item, $event)">
+                      <option value="" disabled>Lütfen bir ürün seçin...</option>
                       @for (p of products(); track p.id) {
                         <option [value]="p.id">
                           [{{ p.code }}] {{ p.name }} (Stok: {{ p.currentStock }} {{ p.unit }})
@@ -786,27 +787,32 @@
                   <td>
                     <input 
                       type="text" 
-                      class="form-control text-center" 
-                      [(ngModel)]="item.unit" 
+                      class="form-control text-muted" 
+                      [value]="item.unit || '-'" 
+                      readonly 
+                      tabindex="-1"
                     />
                   </td>
                   <td>
-                    <input 
-                      type="number" 
-                      class="form-control text-right" 
-                      [(ngModel)]="item.estimatedUnitPrice" 
-                      min="0"
-                      step="0.01"
-                    />
+                    <div class="price-input-group">
+                      <input 
+                        type="number" 
+                        class="form-control" 
+                        [(ngModel)]="item.estimatedUnitPrice" 
+                        min="0" 
+                        step="0.01"
+                      />
+                      <span class="currency-tag">₺</span>
+                    </div>
                   </td>
-                  <td class="text-right total-cell">
-                    <strong>{{ (item.requestedQuantity * item.estimatedUnitPrice) | number:'1.2-2' }} ₺</strong>
+                  <td class="text-right font-mono font-bold">
+                    {{ (item.requestedQuantity * item.estimatedUnitPrice) | number:'1.2-2' }} ₺
                   </td>
                   <td>
                     <input 
                       type="text" 
                       class="form-control" 
-                      placeholder="Özel not..."
+                      placeholder="Örn: 80gr 1. Hamur"
                       [(ngModel)]="item.notes"
                     />
                   </td>
