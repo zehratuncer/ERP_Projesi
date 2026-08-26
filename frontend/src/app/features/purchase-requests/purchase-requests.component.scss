@@ -315,7 +315,8 @@
   }
 
   &.modal-xl {
-    max-width: 1100px;
+    max-width: 1250px;
+    width: 95vw;
   }
 
   .modal-header {
@@ -415,17 +416,78 @@
 }
 
 .items-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding: 0.75rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-surface-elevated);
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  td {
+    padding: 0.6rem 0.5rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+
+    .form-control {
+      height: 38px;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.875rem;
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+
+      option {
+        background: #1e293b;
+        color: #f8fafc;
+      }
+
+      &:focus {
+        border-color: var(--primary);
+        color: #f8fafc;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+      }
+    }
+  }
+
+  .price-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .form-control {
+      padding-right: 1.5rem;
+      text-align: right;
+    }
+
+    .currency-tag {
+      position: absolute;
+      right: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+      pointer-events: none;
+    }
+  }
+
   .btn-delete-row {
     background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 1rem;
     opacity: 0.6;
-    transition: opacity var(--transition-fast);
+    padding: 4px;
+    border-radius: 4px;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
 
     &:hover {
       opacity: 1;
-      transform: scale(1.1);
+      transform: scale(1.15);
     }
   }
 
