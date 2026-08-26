@@ -207,31 +207,31 @@
                     [title]="move.transactionTypeName"
                   >
                     @if (move.transactionType === TransactionType.In) {
-                      ↓
+                      <span>📥</span>
                     } @else if (move.transactionType === TransactionType.Out) {
-                      ↑
+                      <span>📤</span>
                     } @else {
-                      ⇄
+                      <span>🔄</span>
                     }
                   </div>
                   <div class="timeline-content">
                     <div class="timeline-header">
                       <div class="movement-product-group">
                         <span class="product-code-tag">{{ move.productCode }}</span>
-                        <span class="product-name">{{ move.productName }}</span>
+                        <strong class="product-name">{{ move.productName }}</strong>
                       </div>
                       <span
-                        class="movement-amount font-bold font-mono"
-                        [class.text-success]="move.transactionType === TransactionType.In"
-                        [class.text-danger]="move.transactionType === TransactionType.Out"
-                        [class.text-warning]="move.transactionType === TransactionType.Adjustment"
+                        class="movement-amount"
+                        [class.amount-in]="move.transactionType === TransactionType.In"
+                        [class.amount-out]="move.transactionType === TransactionType.Out"
+                        [class.amount-adj]="move.transactionType === TransactionType.Adjustment"
                       >
                         {{ move.transactionType === TransactionType.In ? '+' : (move.transactionType === TransactionType.Out ? '-' : '±') }}{{ move.quantity }} {{ move.unit }}
                       </span>
                     </div>
                     @if (move.description) {
                       <div class="movement-desc">
-                        "{{ move.description }}"
+                        {{ move.description }}
                       </div>
                     }
                     <div class="timeline-meta">
