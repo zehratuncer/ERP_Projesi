@@ -118,34 +118,3 @@
   }
 }
 
-.demo-credentials {
-  margin-top: 1.75rem;
-  padding: 0.875rem 1rem;
-  background: var(--bg-surface-elevated);
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-
-  &:hover {
-    border-color: var(--primary);
-    background: var(--bg-surface-hover);
-  }
-
-  .demo-title {
-    color: var(--text-muted);
-    font-weight: 600;
-  }
-
-  code {
-    color: var(--primary);
-    font-weight: 700;
-    font-size: 0.8125rem;
-    letter-spacing: 0.02em;
-  }
-}

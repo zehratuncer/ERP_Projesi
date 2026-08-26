@@ -18,8 +18,8 @@ export class LoginComponent {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  email = 'admin@erp.com';
-  password = 'Admin123!';
+  email = '';
+  password = '';
   rememberMe = true;
   isLoading = false;
   errorMessage = '';
@@ -58,11 +58,5 @@ export class LoginComponent {
         this.errorMessage = err.error?.message || 'Giriş yapılamadı. Bilgilerinizi kontrol ediniz.';
       }
     });
-  }
-
-  fillAdminCredentials() {
-    this.email = 'admin@erp.com';
-    this.password = 'Admin123!';
-    this.toastService.info('Yönetici bilgileri forma dolduruldu.');
   }
 }
