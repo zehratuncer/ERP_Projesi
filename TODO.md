@@ -231,18 +231,18 @@ Bu faz, ERP sisteminin tüm modüllerinin (Kimlik Doğrulama, Stok, POS Kasa, Sa
 ---
 
 ### 6.4. Veritabanı Bütünlüğü, Güvenlik & Performans Doğrulaması
-- [ ] **Veritabanı Bütünlüğü & Migration Doğrulaması:**
-  - [ ] Sıfır veritabanında `dotnet ef database update` komutunun hatasız çalışması.
-  - [ ] Seed Data (Başlangıç rolleri, admin kullanıcısı, temel kırtasiye kategorileri ve mock ürünler) verilerinin eksiksiz yüklenmesi.
-  - [ ] Foreign Key ilişkileri ve Soft-Delete (`IsDeleted = true`) filtrelerinin EF Core seviyesinde veri sızdırmazlığı.
-- [ ] **Güvenlik & OWASP Uyumluluk Testleri:**
-  - [ ] SQL Injection koruması (Tüm sorguların EF Core LINQ / Parametrik çalışması).
-  - [ ] XSS (Cross-Site Scripting) koruması (HTML input sanitization).
-  - [ ] Güvenli Şifreleme (Şifrelerin düz metin yerine BCrypt hash ile saklanması).
-  - [ ] CORS Politikası (Sadece frontend origin'ine izin verilmesi).
-- [ ] **Docker Konteynır & Dağıtım Doğrulaması:**
-  - [ ] `docker compose up -d --build` komutuyla `erp-sqlserver`, `erp-api` ve `erp-frontend` konteynırlarının sağlıklı (healthy) kalkması.
-  - [ ] Nginx Reverse-Proxy yönlendirmesinin (`/api` ve `/hubs` trafiğinin backend'e sorunsuz aktarılması) doğrulanması.
+- [x] **Veritabanı Bütünlüğü & Migration Doğrulaması:**
+  - [x] Sıfır veritabanında `dotnet ef database update` komutunun hatasız çalışması.
+  - [x] Seed Data (Başlangıç rolleri, admin kullanıcısı, temel kırtasiye kategorileri ve mock ürünler) verilerinin eksiksiz yüklenmesi.
+  - [x] Foreign Key ilişkileri ve Soft-Delete (`IsDeleted = true`) filtrelerinin EF Core seviyesinde veri sızdırmazlığı.
+- [x] **Güvenlik & OWASP Uyumluluk Testleri:**
+  - [x] SQL Injection koruması (Tüm sorguların EF Core LINQ / Parametrik çalışması).
+  - [x] XSS (Cross-Site Scripting) koruması (HTML input sanitization).
+  - [x] Güvenli Şifreleme (Şifrelerin düz metin yerine BCrypt hash ile saklanması).
+  - [x] CORS Politikası (Sadece frontend origin'ine izin verilmesi).
+- [x] **Docker Konteynır & Dağıtım Doğrulaması:**
+  - [x] `docker compose up -d --build` komutuyla `erp-sqlserver`, `erp-api` ve `erp-frontend` konteynırlarının sağlıklı (healthy) kalkması.
+  - [x] Nginx Reverse-Proxy yönlendirmesinin (`/api` ve `/hubs` trafiğinin backend'e sorunsuz aktarılması) doğrulanması.
 
 ---
 
