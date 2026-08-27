@@ -27,38 +27,6 @@ public static class TestDbContextFactory
 
     private static void SeedTestMockData(ApplicationDbContext context)
     {
-        var adminRole = new Role
-        {
-            Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            Name = Roles.Admin,
-            Description = "Tam yetkili sistem yöneticisi"
-        };
-        var managerRole = new Role
-        {
-            Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-            Name = Roles.Manager,
-            Description = "Departman yöneticisi"
-        };
-        var employeeRole = new Role
-        {
-            Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-            Name = Roles.Employee,
-            Description = "Standart personel"
-        };
-
-        context.Roles.AddRange(adminRole, managerRole, employeeRole);
-
-        var adminUser = new User
-        {
-            Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-            Email = "admin@erp.com",
-            FullName = "Zehra Tuncer (Sistem Yöneticisi)",
-            PasswordHash = "$2a$11$q9o94O6k3Jb9vG6M2dYVn.6F1Z5x6i0q3pQ8nF5g8y8J6m5g8rK2W",
-            RoleId = adminRole.Id,
-            IsActive = true
-        };
-        context.Users.Add(adminUser);
-
         var supplier1 = new Supplier
         {
             Id = Guid.Parse("dddddddd-1111-1111-1111-111111111111"),

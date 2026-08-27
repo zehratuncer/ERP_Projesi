@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERP.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260824174531_AddApprovalWorkflowAndHistory")]
-    partial class AddApprovalWorkflowAndHistory
+    [Migration("20260827064810_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -125,33 +125,6 @@ namespace ERP.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ApprovalSteps", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("99999999-9999-9999-9999-999999999992"),
-                            ApprovalWorkflowId = new Guid("99999999-9999-9999-9999-999999999991"),
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsDeleted = false,
-                            IsRequired = true,
-                            MaxAmount = 10000m,
-                            MinAmount = 0m,
-                            RoleId = new Guid("22222222-2222-2222-2222-222222222222"),
-                            StepName = "Birim / Şube Müdürü Onayı",
-                            StepNumber = 1
-                        },
-                        new
-                        {
-                            Id = new Guid("99999999-9999-9999-9999-999999999993"),
-                            ApprovalWorkflowId = new Guid("99999999-9999-9999-9999-999999999991"),
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsDeleted = false,
-                            IsRequired = true,
-                            MinAmount = 10000.01m,
-                            RoleId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            StepName = "Genel Satın Alma Direktörü Onayı",
-                            StepNumber = 2
-                        });
                 });
 
             modelBuilder.Entity("ERP.Domain.Entities.ApprovalWorkflow", b =>
@@ -192,18 +165,6 @@ namespace ERP.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ApprovalWorkflows", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("99999999-9999-9999-9999-999999999991"),
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Limit bazlı kademeli kırtasiye satın alma onay iş akışı (10.000 TL altı Şube Müdürü, üzeri Genel Müdür/Direktör).",
-                            IsActive = true,
-                            IsDeleted = false,
-                            MinAmount = 0m,
-                            Name = "Standart Kırtasiye Onay Akışı"
-                        });
                 });
 
             modelBuilder.Entity("ERP.Domain.Entities.InventoryTransaction", b =>
@@ -247,56 +208,61 @@ namespace ERP.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("InventoryTransactions", (string)null);
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("cccccccc-1111-1111-1111-111111111111"),
-                            CreatedDate = new DateTime(2026, 1, 2, 10, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Okul açılış sezonu toptan A4 kağıt girişi",
-                            IsDeleted = false,
-                            ProductId = new Guid("bbbbbbbb-1111-1111-1111-111111111111"),
-                            Quantity = 100,
-                            TransactionDate = new DateTime(2026, 1, 2, 10, 0, 0, 0, DateTimeKind.Utc),
-                            TransactionType = 1,
-                            UserId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-                        },
-                        new
-                        {
-                            Id = new Guid("cccccccc-2222-2222-2222-222222222222"),
-                            CreatedDate = new DateTime(2026, 1, 3, 14, 30, 0, 0, DateTimeKind.Utc),
-                            Description = "Atatürk Anadolu Lisesi kurumsal dönem başı sipariş sevkiyatı",
-                            IsDeleted = false,
-                            ProductId = new Guid("bbbbbbbb-1111-1111-1111-111111111111"),
-                            Quantity = 50,
-                            TransactionDate = new DateTime(2026, 1, 3, 14, 30, 0, 0, DateTimeKind.Utc),
-                            TransactionType = 2,
-                            UserId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-                        },
-                        new
-                        {
-                            Id = new Guid("cccccccc-3333-3333-3333-333333333333"),
-                            CreatedDate = new DateTime(2026, 1, 4, 11, 15, 0, 0, DateTimeKind.Utc),
-                            Description = "Kurumsal ofis sınav & test kalemi teslimatı",
-                            IsDeleted = false,
-                            ProductId = new Guid("bbbbbbbb-2222-2222-2222-222222222222"),
-                            Quantity = 15,
-                            TransactionDate = new DateTime(2026, 1, 4, 11, 15, 0, 0, DateTimeKind.Utc),
-                            TransactionType = 2,
-                            UserId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-                        },
-                        new
-                        {
-                            Id = new Guid("cccccccc-4444-4444-4444-444444444444"),
-                            CreatedDate = new DateTime(2026, 1, 5, 16, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Depoda ambalajı hasar gören defter paketi düzeltmesi",
-                            IsDeleted = false,
-                            ProductId = new Guid("bbbbbbbb-3333-3333-3333-333333333333"),
-                            Quantity = 2,
-                            TransactionDate = new DateTime(2026, 1, 5, 16, 0, 0, 0, DateTimeKind.Utc),
-                            TransactionType = 3,
-                            UserId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-                        });
+            modelBuilder.Entity("ERP.Domain.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ActionUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("RoleName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedDate");
+
+                    b.HasIndex("IsRead");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("ERP.Domain.Entities.Product", b =>
@@ -357,83 +323,6 @@ namespace ERP.Infrastructure.Migrations
                     b.HasIndex("SupplierId");
 
                     b.ToTable("Products", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("bbbbbbbb-1111-1111-1111-111111111111"),
-                            Code = "KRT-001",
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CurrentStock = 8,
-                            Description = "Yüksek beyazlıkta 80gr 2500 yaprak lazer/inkjet fotokopi kağıdı",
-                            IsActive = true,
-                            IsDeleted = false,
-                            MinStockLevel = 25,
-                            Name = "Copier Bond A4 80gr Fotokopi Kağıdı (5'li Koli)",
-                            SupplierId = new Guid("dddddddd-2222-2222-2222-222222222222"),
-                            Unit = "Koli",
-                            UnitPrice = 780.00m
-                        },
-                        new
-                        {
-                            Id = new Guid("bbbbbbbb-2222-2222-2222-222222222222"),
-                            Code = "KRT-042",
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CurrentStock = 5,
-                            Description = "Özel SV yapıştırma kırılmaya dirençli sınav ve çizim kalemi",
-                            IsActive = true,
-                            IsDeleted = false,
-                            MinStockLevel = 20,
-                            Name = "Faber-Castell 2B Sınav Kurşun Kalem (72'li Kutu)",
-                            SupplierId = new Guid("dddddddd-1111-1111-1111-111111111111"),
-                            Unit = "Kutu",
-                            UnitPrice = 360.00m
-                        },
-                        new
-                        {
-                            Id = new Guid("bbbbbbbb-3333-3333-3333-333333333333"),
-                            Code = "KRT-089",
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CurrentStock = 12,
-                            Description = "Sert kapak, mikroperforeli kaliteli 1. hamur kağıt okul ve ofis defteri",
-                            IsActive = true,
-                            IsDeleted = false,
-                            MinStockLevel = 30,
-                            Name = "Gıpta Spiralli A4 Çizgili Defter 96 Yaprak (10'lu Paket)",
-                            SupplierId = new Guid("dddddddd-3333-3333-3333-333333333333"),
-                            Unit = "Paket",
-                            UnitPrice = 290.00m
-                        },
-                        new
-                        {
-                            Id = new Guid("bbbbbbbb-4444-4444-4444-444444444444"),
-                            Code = "KRT-114",
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CurrentStock = 18,
-                            Description = "Solventsiz, yıkanabilir ve kokusuz güçlü kırtasiye yapıştırıcı standı",
-                            IsActive = true,
-                            IsDeleted = false,
-                            MinStockLevel = 10,
-                            Name = "Pritt Stick Kuru Yapıştırıcı 43gr (24'lü Stand)",
-                            SupplierId = new Guid("dddddddd-1111-1111-1111-111111111111"),
-                            Unit = "Stand",
-                            UnitPrice = 950.00m
-                        },
-                        new
-                        {
-                            Id = new Guid("bbbbbbbb-5555-5555-5555-555555555555"),
-                            Code = "KRT-205",
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CurrentStock = 35,
-                            Description = "Maksimum 25 sayfa kapasiteli metal iç mekanizmalı masaüstü zımba",
-                            IsActive = true,
-                            IsDeleted = false,
-                            MinStockLevel = 10,
-                            Name = "Maped Ağır Büro Zımba Makinesi No:24/6",
-                            SupplierId = new Guid("dddddddd-1111-1111-1111-111111111111"),
-                            Unit = "Adet",
-                            UnitPrice = 175.00m
-                        });
                 });
 
             modelBuilder.Entity("ERP.Domain.Entities.PurchaseRequest", b =>
@@ -748,47 +637,6 @@ namespace ERP.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Suppliers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("dddddddd-1111-1111-1111-111111111111"),
-                            Address = "Saray Mah. Site Yolu Cad. No:5, Ümraniye/İstanbul",
-                            ContactPerson = "Mehmet Yılmaz",
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "siparis@adel.com.tr",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Adel Kalemcilik & Kırtasiye A.Ş.",
-                            Phone = "+90 (216) 555 20 20",
-                            TaxNumber = "0080012345"
-                        },
-                        new
-                        {
-                            Id = new Guid("dddddddd-2222-2222-2222-222222222222"),
-                            Address = "İkitelli OSB, Kağıtçılar Sanayi Sitesi 3. Cadde No:14, Başakşehir/İstanbul",
-                            ContactPerson = "Ayşe Demir",
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "satis@kopierkagit.com",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Kopier A4 Kağıt & Ambalaj Sanayi Ltd.",
-                            Phone = "+90 (212) 641 10 30",
-                            TaxNumber = "5840987654"
-                        },
-                        new
-                        {
-                            Id = new Guid("dddddddd-3333-3333-3333-333333333333"),
-                            Address = "1. Organize Sanayi Bölgesi Dağıstan Cad. No:7, Sincan/Ankara",
-                            ContactPerson = "Kemal Kaya",
-                            CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "info@gipta.com.tr",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Gıpta Ofis & Okul Kırtasiye Ürünleri A.Ş.",
-                            Phone = "+90 (312) 888 40 50",
-                            TaxNumber = "4110456789"
-                        });
                 });
 
             modelBuilder.Entity("ERP.Domain.Entities.User", b =>
@@ -906,6 +754,16 @@ namespace ERP.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ERP.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("ERP.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
                 });
