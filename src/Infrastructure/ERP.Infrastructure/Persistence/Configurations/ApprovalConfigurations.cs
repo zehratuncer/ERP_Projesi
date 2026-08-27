@@ -31,21 +31,6 @@ public class ApprovalWorkflowConfiguration : IEntityTypeConfiguration<ApprovalWo
             .WithOne(s => s.ApprovalWorkflow)
             .HasForeignKey(s => s.ApprovalWorkflowId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // Seed Default Workflow
-        builder.HasData(
-            new ApprovalWorkflow
-            {
-                Id = DefaultWorkflowId,
-                Name = "Standart Kırtasiye Onay Akışı",
-                Description = "Limit bazlı kademeli kırtasiye satın alma onay iş akışı (10.000 TL altı Şube Müdürü, üzeri Genel Müdür/Direktör).",
-                MinAmount = 0m,
-                MaxAmount = null,
-                IsActive = true,
-                CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                IsDeleted = false
-            }
-        );
     }
 }
 
@@ -79,36 +64,6 @@ public class ApprovalStepConfiguration : IEntityTypeConfiguration<ApprovalStep>
             .WithMany()
             .HasForeignKey(s => s.UserId)
             .OnDelete(DeleteBehavior.SetNull);
-
-        // Seed Steps
-        builder.HasData(
-            new ApprovalStep
-            {
-                Id = Step1Id,
-                ApprovalWorkflowId = ApprovalWorkflowConfiguration.DefaultWorkflowId,
-                StepNumber = 1,
-                StepName = "Birim / Şube Müdürü Onayı",
-                RoleId = RoleConfiguration.ManagerRoleId,
-                IsRequired = true,
-                MinAmount = 0m,
-                MaxAmount = 10000m,
-                CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                IsDeleted = false
-            },
-            new ApprovalStep
-            {
-                Id = Step2Id,
-                ApprovalWorkflowId = ApprovalWorkflowConfiguration.DefaultWorkflowId,
-                StepNumber = 2,
-                StepName = "Genel Satın Alma Direktörü Onayı",
-                RoleId = RoleConfiguration.AdminRoleId,
-                IsRequired = true,
-                MinAmount = 10000.01m,
-                MaxAmount = null,
-                CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                IsDeleted = false
-            }
-        );
     }
 }
 

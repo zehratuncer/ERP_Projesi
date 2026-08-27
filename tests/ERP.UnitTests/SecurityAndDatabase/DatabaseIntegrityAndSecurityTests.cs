@@ -16,29 +16,18 @@ namespace ERP.UnitTests.SecurityAndDatabase;
 public class DatabaseIntegrityAndSecurityTests
 {
     [Fact]
-    public void DatabaseSeedData_ShouldContainEssentialRolesAdminUserAndStationeryProducts()
+    public void DatabaseSchema_WithoutSeedData_ShouldBeCompletelyEmptyByDefault()
     {
-        // Arrange & Act
-        using var context = TestDbContextFactory.CreateInMemoryDbContext();
+        // Arrange & Act - Create clean database with no seed mock data
+        using var cleanContext = TestDbContextFactory.CreateInMemoryDbContext(seedMockData: false);
 
-        // Assert Roles
-        var roles = context.Roles.ToList();
-        roles.Should().Contain(r => r.Name == Roles.Admin);
-        roles.Should().Contain(r => r.Name == Roles.Manager);
-        roles.Should().Contain(r => r.Name == Roles.Employee);
-
-        // Assert Admin User
-        var adminUser = context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == "admin@erp.com");
-        adminUser.Should().NotBeNull();
-        adminUser!.Role.Should().NotBeNull();
-        adminUser.Role!.Name.Should().Be(Roles.Admin);
-        adminUser.PasswordHash.Should().StartWith("$2a$"); // BCrypt format
-
-        // Assert Stationery Products & Suppliers
-        var products = context.Products.Include(p => p.Supplier).ToList();
-        products.Should().NotBeEmpty();
-        products.Should().Contain(p => p.Code == "KRT-001");
-        products.All(p => !string.IsNullOrWhiteSpace(p.Unit)).Should().BeTrue();
+        // Assert - Tables are completely empty
+        cleanContext.Products.Should().BeEmpty();
+        cleanContext.Suppliers.Should().BeEmpty();
+        cleanContext.InventoryTransactions.Should().BeEmpty();
+        cleanContext.Sales.Should().BeEmpty();
+        cleanContext.PurchaseRequests.Should().BeEmpty();
+        cleanContext.ApprovalWorkflows.Should().BeEmpty();
     }
 
     [Fact]

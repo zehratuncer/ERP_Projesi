@@ -23,34 +23,6 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
 
         builder.Property(r => r.Description)
             .HasMaxLength(250);
-
-        // Seed Roles
-        builder.HasData(
-            new Role
-            {
-                Id = AdminRoleId,
-                Name = Roles.Admin,
-                Description = "Tam yetkili sistem yöneticisi",
-                CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                IsDeleted = false
-            },
-            new Role
-            {
-                Id = ManagerRoleId,
-                Name = Roles.Manager,
-                Description = "Departman ve süreç yöneticisi",
-                CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                IsDeleted = false
-            },
-            new Role
-            {
-                Id = EmployeeRoleId,
-                Name = Roles.Employee,
-                Description = "Standart sistem personeli",
-                CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                IsDeleted = false
-            }
-        );
     }
 }
 
@@ -82,22 +54,5 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithMany(r => r.Users)
             .HasForeignKey(u => u.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        // Seed Admin User (Password: Admin123! hashed with BCrypt)
-        // $2a$11$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi is BCrypt for 'password' or we use pre-hashed Admin123!
-        builder.HasData(
-            new User
-            {
-                Id = AdminUserId,
-                Email = "admin@erp.com",
-                FullName = "Zehra Tuncer (Sistem Yöneticisi)",
-                // BCrypt hash for "Admin123!"
-                PasswordHash = "$2a$11$q9o94O6k3Jb9vG6M2dYVn.6F1Z5x6i0q3pQ8nF5g8y8J6m5g8rK2W",
-                RoleId = RoleConfiguration.AdminRoleId,
-                IsActive = true,
-                CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                IsDeleted = false
-            }
-        );
     }
 }
