@@ -57,6 +57,8 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public static readonly Guid AdminUserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+    public static readonly Guid ManagerUserId = Guid.Parse("aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    public static readonly Guid CashierUserId = Guid.Parse("aaaaaaaa-cccc-cccc-cccc-cccccccccccc");
 
     public void Configure(EntityTypeBuilder<User> builder)
     {
@@ -83,15 +85,37 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasForeignKey(u => u.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // System Admin User Seed (Password: Admin123!)
+        // Seed Users
         builder.HasData(
             new User
             {
                 Id = AdminUserId,
                 Email = "admin@erp.com",
                 FullName = "Zehra Tuncer (Sistem Yöneticisi)",
-                PasswordHash = "$2a$11$q9o94O6k3Jb9vG6M2dYVn.6F1Z5x6i0q3pQ8nF5g8y8J6m5g8rK2W",
+                PasswordHash = "$2a$11$q9o94O6k3Jb9vG6M2dYVn.6F1Z5x6i0q3pQ8nF5g8y8J6m5g8rK2W", // Admin123!
                 RoleId = RoleConfiguration.AdminRoleId,
+                IsActive = true,
+                CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                IsDeleted = false
+            },
+            new User
+            {
+                Id = ManagerUserId,
+                Email = "manager@erp.com",
+                FullName = "Ahmet Yılmaz (Kırtasiye & Şube Müdürü)",
+                PasswordHash = "$2a$11$q9o94O6k3Jb9vG6M2dYVn.6F1Z5x6i0q3pQ8nF5g8y8J6m5g8rK2W", // Manager123! or Admin123!
+                RoleId = RoleConfiguration.ManagerRoleId,
+                IsActive = true,
+                CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                IsDeleted = false
+            },
+            new User
+            {
+                Id = CashierUserId,
+                Email = "kasiyer@erp.com",
+                FullName = "Elif Kaya (Kasa & Satış Personeli)",
+                PasswordHash = "$2a$11$q9o94O6k3Jb9vG6M2dYVn.6F1Z5x6i0q3pQ8nF5g8y8J6m5g8rK2W", // Kasiyer123! or Admin123!
+                RoleId = RoleConfiguration.EmployeeRoleId,
                 IsActive = true,
                 CreatedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IsDeleted = false
@@ -99,3 +123,4 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         );
     }
 }
+

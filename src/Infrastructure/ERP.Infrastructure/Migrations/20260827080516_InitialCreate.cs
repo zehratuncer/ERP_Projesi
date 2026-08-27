@@ -378,6 +378,11 @@ namespace ERP.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "ApprovalWorkflows",
+                columns: new[] { "Id", "CreatedDate", "Description", "IsActive", "IsDeleted", "MaxAmount", "MinAmount", "Name", "UpdatedDate" },
+                values: new object[] { new Guid("99999999-9999-9999-9999-999999999991"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Limit bazlı kademeli kırtasiye satın alma onay iş akışı (10.000 TL altı Şube Müdürü, üzeri Genel Müdür/Direktör).", true, false, null, 0m, "Standart Kırtasiye Onay Akışı", null });
+
+            migrationBuilder.InsertData(
                 table: "Roles",
                 columns: new[] { "Id", "CreatedDate", "Description", "IsDeleted", "Name", "UpdatedDate" },
                 values: new object[,]
@@ -388,9 +393,130 @@ namespace ERP.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Suppliers",
+                columns: new[] { "Id", "Address", "ContactPerson", "CreatedDate", "Email", "IsActive", "IsDeleted", "Name", "Phone", "TaxNumber", "UpdatedDate" },
+                values: new object[,]
+                {
+                    { new Guid("dddddddd-1111-1111-1111-111111111111"), "Saray Mah. Site Yolu Cad. No:5, Ümraniye/İstanbul", "Mehmet Yılmaz", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "siparis@adel.com.tr", true, false, "Adel Kalemcilik & Kırtasiye A.Ş.", "+90 (216) 555 20 20", "0080012345", null },
+                    { new Guid("dddddddd-2222-2222-2222-222222222222"), "İkitelli OSB, Kağıtçılar Sanayi Sitesi 3. Cadde No:14, Başakşehir/İstanbul", "Ayşe Demir", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "satis@kopierkagit.com", true, false, "Kopier A4 Kağıt & Ambalaj Sanayi Ltd.", "+90 (212) 641 10 30", "5840987654", null },
+                    { new Guid("dddddddd-3333-3333-3333-333333333333"), "1. Organize Sanayi Bölgesi Dağıstan Cad. No:7, Sincan/Ankara", "Kemal Kaya", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "info@gipta.com.tr", true, false, "Gıpta Ofis & Okul Kırtasiye Ürünleri A.Ş.", "+90 (312) 888 40 50", "4110456789", null },
+                    { new Guid("dddddddd-4444-4444-4444-444444444444"), "Dudullu OSB Baraj Yolu No:28, Ümraniye/İstanbul", "Canan Öztürk", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "tedarik@fabercastell.com.tr", true, false, "Faber-Castell & Daksil Dağıtım A.Ş.", "+90 (216) 420 80 90", "3201847192", null },
+                    { new Guid("dddddddd-5555-5555-5555-555555555555"), "Kemankeş Karamustafapaşa Mah. Rıhtım Cad. No:19, Beyoğlu/İstanbul", "Serdar Aksoy", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "iletisim@mapedturkiye.com", true, false, "Maped & Büro Araçları Tic. Ltd. Şti.", "+90 (212) 243 70 80", "1892049182", null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "ApprovalSteps",
+                columns: new[] { "Id", "ApprovalWorkflowId", "CreatedDate", "IsDeleted", "IsRequired", "MaxAmount", "MinAmount", "RoleId", "StepName", "StepNumber", "UpdatedDate", "UserId" },
+                values: new object[,]
+                {
+                    { new Guid("99999999-9999-9999-9999-999999999992"), new Guid("99999999-9999-9999-9999-999999999991"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), false, true, 10000m, 0m, new Guid("22222222-2222-2222-2222-222222222222"), "Birim / Şube Müdürü Onayı", 1, null, null },
+                    { new Guid("99999999-9999-9999-9999-999999999993"), new Guid("99999999-9999-9999-9999-999999999991"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), false, true, null, 10000.01m, new Guid("11111111-1111-1111-1111-111111111111"), "Genel Satın Alma Direktörü Onayı", 2, null, null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Products",
+                columns: new[] { "Id", "Code", "CreatedDate", "CurrentStock", "Description", "IsActive", "IsDeleted", "MinStockLevel", "Name", "SupplierId", "Unit", "UnitPrice", "UpdatedDate" },
+                values: new object[,]
+                {
+                    { new Guid("bbbbbbbb-1111-1111-1111-111111111111"), "KRT-001", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 8, "Yüksek beyazlıkta 80gr 2500 yaprak lazer/inkjet fotokopi kağıdı", true, false, 25, "Copier Bond A4 80gr Fotokopi Kağıdı (5'li Koli)", new Guid("dddddddd-2222-2222-2222-222222222222"), "Koli", 780.00m, null },
+                    { new Guid("bbbbbbbb-2222-2222-2222-222222222222"), "KRT-042", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 5, "Özel SV yapıştırma kırılmaya dirençli sınav ve çizim kalemi", true, false, 20, "Faber-Castell 2B Sınav Kurşun Kalem (72'li Kutu)", new Guid("dddddddd-1111-1111-1111-111111111111"), "Kutu", 360.00m, null },
+                    { new Guid("bbbbbbbb-3333-3333-3333-333333333333"), "KRT-089", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 12, "Sert kapak, mikroperforeli kaliteli 1. hamur kağıt okul ve ofis defteri", true, false, 30, "Gıpta Spiralli A4 Çizgili Defter 96 Yaprak (10'lu Paket)", new Guid("dddddddd-3333-3333-3333-333333333333"), "Paket", 290.00m, null },
+                    { new Guid("bbbbbbbb-4444-4444-4444-444444444444"), "KRT-114", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 24, "Solventsiz, yıkanabilir ve kokusuz güçlü kırtasiye yapıştırıcı standı", true, false, 10, "Pritt Stick Kuru Yapıştırıcı 43gr (24'lü Stand)", new Guid("dddddddd-4444-4444-4444-444444444444"), "Stand", 950.00m, null },
+                    { new Guid("bbbbbbbb-5555-5555-5555-555555555555"), "KRT-205", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 35, "Maksimum 25 sayfa kapasiteli metal iç mekanizmalı masaüstü zımba", true, false, 10, "Maped Ağır Büro Zımba Makinesi No:24/6", new Guid("dddddddd-5555-5555-5555-555555555555"), "Adet", 175.00m, null },
+                    { new Guid("bbbbbbbb-6666-6666-6666-666666666666"), "KRT-301", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 45, "Canlı ve parlak renkler, yüksek örtücülük, çocuklara özel toksik olmayan formül", true, false, 15, "Faber-Castell 24'lü Suluboya & Fırça Seti", new Guid("dddddddd-1111-1111-1111-111111111111"), "Set", 210.00m, null },
+                    { new Guid("bbbbbbbb-7777-7777-7777-777777777777"), "KRT-401", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 18, "Ortopedik sırt desteği, su geçirmez kumaş ve çok bölmeli geniş hacim", true, false, 8, "Yaygan Lisanslı Ergonomik Okul Sırt Çantası", new Guid("dddddddd-3333-3333-3333-333333333333"), "Adet", 850.00m, null }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedDate", "Email", "FullName", "IsActive", "IsDeleted", "PasswordHash", "RoleId", "UpdatedDate" },
-                values: new object[] { new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "admin@erp.com", "Zehra Tuncer (Sistem Yöneticisi)", true, false, "$2a$11$q9o94O6k3Jb9vG6M2dYVn.6F1Z5x6i0q3pQ8nF5g8y8J6m5g8rK2W", new Guid("11111111-1111-1111-1111-111111111111"), null });
+                values: new object[,]
+                {
+                    { new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "admin@erp.com", "Zehra Tuncer (Sistem Yöneticisi)", true, false, "$2a$11$q9o94O6k3Jb9vG6M2dYVn.6F1Z5x6i0q3pQ8nF5g8y8J6m5g8rK2W", new Guid("11111111-1111-1111-1111-111111111111"), null },
+                    { new Guid("aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "manager@erp.com", "Ahmet Yılmaz (Kırtasiye & Şube Müdürü)", true, false, "$2a$11$q9o94O6k3Jb9vG6M2dYVn.6F1Z5x6i0q3pQ8nF5g8y8J6m5g8rK2W", new Guid("22222222-2222-2222-2222-222222222222"), null },
+                    { new Guid("aaaaaaaa-cccc-cccc-cccc-cccccccccccc"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "kasiyer@erp.com", "Elif Kaya (Kasa & Satış Personeli)", true, false, "$2a$11$q9o94O6k3Jb9vG6M2dYVn.6F1Z5x6i0q3pQ8nF5g8y8J6m5g8rK2W", new Guid("33333333-3333-3333-3333-333333333333"), null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "InventoryTransactions",
+                columns: new[] { "Id", "CreatedDate", "Description", "IsDeleted", "ProductId", "Quantity", "TransactionDate", "TransactionType", "UpdatedDate", "UserId" },
+                values: new object[,]
+                {
+                    { new Guid("cccccccc-1111-1111-1111-111111111111"), new DateTime(2026, 1, 2, 10, 0, 0, 0, DateTimeKind.Utc), "Okul açılış sezonu toptan A4 fotokopi kağıdı mal kabul girişi", false, new Guid("bbbbbbbb-1111-1111-1111-111111111111"), 100, new DateTime(2026, 1, 2, 10, 0, 0, 0, DateTimeKind.Utc), 1, null, new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") },
+                    { new Guid("cccccccc-2222-2222-2222-222222222222"), new DateTime(2026, 1, 3, 14, 30, 0, 0, DateTimeKind.Utc), "Atatürk Anadolu Lisesi kurumsal dönem başı sipariş sevkiyatı", false, new Guid("bbbbbbbb-1111-1111-1111-111111111111"), 50, new DateTime(2026, 1, 3, 14, 30, 0, 0, DateTimeKind.Utc), 2, null, new Guid("aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb") },
+                    { new Guid("cccccccc-3333-3333-3333-333333333333"), new DateTime(2026, 1, 4, 11, 15, 0, 0, DateTimeKind.Utc), "Kurumsal ofis sınav & test kalemi teslimatı", false, new Guid("bbbbbbbb-2222-2222-2222-222222222222"), 15, new DateTime(2026, 1, 4, 11, 15, 0, 0, DateTimeKind.Utc), 2, null, new Guid("aaaaaaaa-cccc-cccc-cccc-cccccccccccc") },
+                    { new Guid("cccccccc-4444-4444-4444-444444444444"), new DateTime(2026, 1, 5, 16, 0, 0, 0, DateTimeKind.Utc), "Depoda ambalajı hasar gören defter paketi düzeltmesi", false, new Guid("bbbbbbbb-3333-3333-3333-333333333333"), 2, new DateTime(2026, 1, 5, 16, 0, 0, 0, DateTimeKind.Utc), 3, null, new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Notifications",
+                columns: new[] { "Id", "ActionUrl", "CreatedDate", "IsDeleted", "Message", "RoleName", "Title", "Type", "UpdatedDate", "UserId" },
+                values: new object[,]
+                {
+                    { new Guid("44444444-1111-1111-1111-111111111111"), "/inventory", new DateTime(2026, 8, 27, 8, 0, 0, 0, DateTimeKind.Utc), false, "[KRT-001] Copier Bond A4 Kağıt stok miktarı (8 Koli) kritik eşik seviyesinin (25 Koli) altına düştü!", "Admin", "Kritik Stok Uyarısı", 3, null, new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") },
+                    { new Guid("44444444-2222-2222-2222-222222222222"), "/purchasing", new DateTime(2026, 8, 27, 8, 30, 0, 0, DateTimeKind.Utc), false, "TALEP-20260827-001 numaralı ve ₺14.500,00 tutarındaki satın alma talebi Genel Satın Alma Direktörü onayınızı beklemektedir.", "Admin", "Onayınızı Bekleyen Satın Alma Talebi", 4, null, new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") },
+                    { new Guid("44444444-3333-3333-3333-333333333333"), "/inventory", new DateTime(2026, 8, 27, 8, 15, 0, 0, DateTimeKind.Utc), false, "[KRT-042] Faber-Castell 2B Sınav Kurşun Kalem stok miktarı (5 Kutu) kritik eşik seviyesinin (20 Kutu) altına düştü!", "Manager", "Kritik Stok Uyarısı", 3, null, new Guid("aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb") }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Notifications",
+                columns: new[] { "Id", "ActionUrl", "CreatedDate", "IsDeleted", "IsRead", "Message", "RoleName", "Title", "Type", "UpdatedDate", "UserId" },
+                values: new object[] { new Guid("44444444-4444-4444-4444-444444444444"), "/purchasing", new DateTime(2026, 8, 26, 15, 30, 0, 0, DateTimeKind.Utc), false, true, "TALEP-20260826-002 numaralı satın alma talebiniz Şube Müdürü Ahmet Yılmaz tarafından onaylanmıştır.", "Employee", "Talep Onaylandı", 1, null, new Guid("aaaaaaaa-cccc-cccc-cccc-cccccccccccc") });
+
+            migrationBuilder.InsertData(
+                table: "PurchaseRequests",
+                columns: new[] { "Id", "CreatedDate", "CurrentApprovalStep", "Department", "IsDeleted", "Note", "Priority", "RequestNumber", "RequesterUserId", "RequiredDate", "Status", "TotalEstimatedAmount", "UpdatedDate" },
+                values: new object[,]
+                {
+                    { new Guid("88888888-1111-1111-1111-111111111111"), new DateTime(2026, 8, 27, 8, 30, 0, 0, DateTimeKind.Utc), 2, "Merkez Mağaza Satış & Depo", false, "Kritik stok seviyesine düşen A4 fotokopi kağıdı ve kurşun kalemler için acil tedarik talebi.", 2, "TALEP-20260827-001", new Guid("aaaaaaaa-cccc-cccc-cccc-cccccccccccc"), null, 2, 14500.00m, null },
+                    { new Guid("88888888-2222-2222-2222-222222222222"), new DateTime(2026, 8, 26, 14, 0, 0, 0, DateTimeKind.Utc), 1, "Okul & Kurumsal Satış", false, "Gıpta spiralli defter stok takviyesi (Onaylandı - Mal kabul yapılabilir).", 2, "TALEP-20260826-002", new Guid("aaaaaaaa-cccc-cccc-cccc-cccccccccccc"), null, 3, 5800.00m, null },
+                    { new Guid("88888888-3333-3333-3333-333333333333"), new DateTime(2026, 8, 25, 11, 20, 0, 0, DateTimeKind.Utc), 2, "Yönetim & İdari İşler", false, "Lüks dolmakalem ve özel masaüstü deri setleri talebi.", 2, "TALEP-20260825-003", new Guid("aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), null, 4, 25500.00m, null },
+                    { new Guid("88888888-4444-4444-4444-444444444444"), new DateTime(2026, 8, 24, 9, 15, 0, 0, DateTimeKind.Utc), 1, "Merkez Mağaza Satış & Depo", false, "Pritt yapıştırıcı ve zımba makinesi dönem başı siparişi (Depoya teslim alındı).", 2, "TALEP-20260824-004", new Guid("aaaaaaaa-cccc-cccc-cccc-cccccccccccc"), null, 5, 8750.00m, null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Sales",
+                columns: new[] { "Id", "CashierUserId", "CreatedDate", "CustomerName", "DiscountAmount", "FinalAmount", "IsDeleted", "PaymentMethod", "ReceiptNumber", "SaleDate", "TotalAmount", "UpdatedDate" },
+                values: new object[,]
+                {
+                    { new Guid("77777777-1111-1111-1111-111111111111"), new Guid("aaaaaaaa-cccc-cccc-cccc-cccccccccccc"), new DateTime(2026, 8, 27, 9, 15, 0, 0, DateTimeKind.Utc), "Mehmet Demir (Perakende Müşteri)", 0.00m, 940.00m, false, 1, "FIS-20260827-001", new DateTime(2026, 8, 27, 9, 15, 0, 0, DateTimeKind.Utc), 940.00m, null },
+                    { new Guid("77777777-2222-2222-2222-222222222222"), new Guid("aaaaaaaa-cccc-cccc-cccc-cccccccccccc"), new DateTime(2026, 8, 27, 10, 30, 0, 0, DateTimeKind.Utc), "Ayşe Yılmaz (Öğrenci Velisi)", 0.00m, 1060.00m, false, 2, "FIS-20260827-002", new DateTime(2026, 8, 27, 10, 30, 0, 0, DateTimeKind.Utc), 1060.00m, null },
+                    { new Guid("77777777-3333-3333-3333-333333333333"), new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), new DateTime(2026, 8, 26, 16, 45, 0, 0, DateTimeKind.Utc), "Özel Bilim Koleji (Kurumsal)", 0.00m, 4250.00m, false, 1, "FIS-20260826-003", new DateTime(2026, 8, 26, 16, 45, 0, 0, DateTimeKind.Utc), 4250.00m, null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "ApprovalHistories",
+                columns: new[] { "Id", "Action", "ActionDate", "ApproverUserId", "Comment", "CreatedDate", "IsDeleted", "PurchaseRequestId", "StepName", "StepNumber", "UpdatedDate" },
+                values: new object[,]
+                {
+                    { new Guid("55555555-1111-1111-1111-111111111111"), 1, new DateTime(2026, 8, 26, 15, 30, 0, 0, DateTimeKind.Utc), new Guid("aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), "Okul açılışı öncesi defter stok gereksinimi onaylanmıştır.", new DateTime(2026, 8, 26, 15, 30, 0, 0, DateTimeKind.Utc), false, new Guid("88888888-2222-2222-2222-222222222222"), "Birim / Şube Müdürü Onayı", 1, null },
+                    { new Guid("55555555-2222-2222-2222-222222222222"), 2, new DateTime(2026, 8, 25, 14, 0, 0, 0, DateTimeKind.Utc), new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), "Dönemlik bütçe aşımı sebebiyle lüks kalem talebi reddedilmiştir. Gelecek çeyrekte tekrar değerlendirilecektir.", new DateTime(2026, 8, 25, 14, 0, 0, 0, DateTimeKind.Utc), false, new Guid("88888888-3333-3333-3333-333333333333"), "Genel Satın Alma Direktörü Onayı", 2, null },
+                    { new Guid("55555555-3333-3333-3333-333333333333"), 1, new DateTime(2026, 8, 24, 10, 0, 0, 0, DateTimeKind.Utc), new Guid("aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), "Standart büro malzeme ihtiyacı onaylandı.", new DateTime(2026, 8, 24, 10, 0, 0, 0, DateTimeKind.Utc), false, new Guid("88888888-4444-4444-4444-444444444444"), "Birim / Şube Müdürü Onayı", 1, null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "PurchaseRequestItems",
+                columns: new[] { "Id", "CreatedDate", "EstimatedTotalPrice", "EstimatedUnitPrice", "IsDeleted", "Notes", "ProductId", "PurchaseRequestId", "RequestedQuantity", "Unit", "UpdatedDate" },
+                values: new object[,]
+                {
+                    { new Guid("66666666-1111-1111-1111-111111111111"), new DateTime(2026, 8, 27, 8, 30, 0, 0, DateTimeKind.Utc), 11700.00m, 780.00m, false, "Fotokopi kağıdı tükenmek üzere, acil sevk gerekli", new Guid("bbbbbbbb-1111-1111-1111-111111111111"), new Guid("88888888-1111-1111-1111-111111111111"), 15, "Koli", null },
+                    { new Guid("66666666-2222-2222-2222-222222222222"), new DateTime(2026, 8, 27, 8, 30, 0, 0, DateTimeKind.Utc), 2800.00m, 280.00m, false, "Sınav haftası için 2B kurşun kalem desteği", new Guid("bbbbbbbb-2222-2222-2222-222222222222"), new Guid("88888888-1111-1111-1111-111111111111"), 10, "Kutu", null },
+                    { new Guid("66666666-3333-3333-3333-333333333333"), new DateTime(2026, 8, 26, 14, 0, 0, 0, DateTimeKind.Utc), 5800.00m, 290.00m, false, "Okul açılış sezonu defter takviyesi", new Guid("bbbbbbbb-3333-3333-3333-333333333333"), new Guid("88888888-2222-2222-2222-222222222222"), 20, "Paket", null },
+                    { new Guid("66666666-4444-4444-4444-444444444444"), new DateTime(2026, 8, 24, 9, 15, 0, 0, DateTimeKind.Utc), 8750.00m, 175.00m, false, "Kurumsal büro zımba teslimatı yapıldı", new Guid("bbbbbbbb-5555-5555-5555-555555555555"), new Guid("88888888-4444-4444-4444-444444444444"), 50, "Adet", null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "SaleItems",
+                columns: new[] { "Id", "CreatedDate", "DiscountRate", "IsDeleted", "ProductId", "Quantity", "SaleId", "TotalPrice", "UnitPrice", "UpdatedDate" },
+                values: new object[,]
+                {
+                    { new Guid("33333333-1111-1111-1111-111111111111"), new DateTime(2026, 8, 27, 9, 15, 0, 0, DateTimeKind.Utc), 0.00m, false, new Guid("bbbbbbbb-2222-2222-2222-222222222222"), 1, new Guid("77777777-1111-1111-1111-111111111111"), 360.00m, 360.00m, null },
+                    { new Guid("33333333-2222-2222-2222-222222222222"), new DateTime(2026, 8, 27, 9, 15, 0, 0, DateTimeKind.Utc), 0.00m, false, new Guid("bbbbbbbb-3333-3333-3333-333333333333"), 2, new Guid("77777777-1111-1111-1111-111111111111"), 580.00m, 290.00m, null },
+                    { new Guid("33333333-3333-3333-3333-333333333333"), new DateTime(2026, 8, 27, 10, 30, 0, 0, DateTimeKind.Utc), 0.00m, false, new Guid("bbbbbbbb-7777-7777-7777-777777777777"), 1, new Guid("77777777-2222-2222-2222-222222222222"), 850.00m, 850.00m, null },
+                    { new Guid("33333333-4444-4444-4444-444444444444"), new DateTime(2026, 8, 27, 10, 30, 0, 0, DateTimeKind.Utc), 0.00m, false, new Guid("bbbbbbbb-6666-6666-6666-666666666666"), 1, new Guid("77777777-2222-2222-2222-222222222222"), 210.00m, 210.00m, null },
+                    { new Guid("33333333-5555-5555-5555-555555555555"), new DateTime(2026, 8, 26, 16, 45, 0, 0, DateTimeKind.Utc), 0.00m, false, new Guid("bbbbbbbb-1111-1111-1111-111111111111"), 5, new Guid("77777777-3333-3333-3333-333333333333"), 3900.00m, 780.00m, null },
+                    { new Guid("33333333-6666-6666-6666-666666666666"), new DateTime(2026, 8, 26, 16, 45, 0, 0, DateTimeKind.Utc), 0.00m, false, new Guid("bbbbbbbb-5555-5555-5555-555555555555"), 2, new Guid("77777777-3333-3333-3333-333333333333"), 350.00m, 175.00m, null }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_ApprovalHistories_ApproverUserId",

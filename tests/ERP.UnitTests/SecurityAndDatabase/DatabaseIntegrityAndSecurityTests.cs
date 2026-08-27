@@ -16,18 +16,29 @@ namespace ERP.UnitTests.SecurityAndDatabase;
 public class DatabaseIntegrityAndSecurityTests
 {
     [Fact]
-    public void DatabaseSchema_WithoutSeedData_ShouldBeCompletelyEmptyByDefault()
+    public void DatabaseSeedData_ShouldContainComprehensiveDataForEnterpriseWorkflows()
     {
-        // Arrange & Act - Create clean database with no seed mock data
-        using var cleanContext = TestDbContextFactory.CreateInMemoryDbContext(seedMockData: false);
+        // Arrange & Act
+        using var context = TestDbContextFactory.CreateInMemoryDbContext();
 
-        // Assert - Tables are completely empty
-        cleanContext.Products.Should().BeEmpty();
-        cleanContext.Suppliers.Should().BeEmpty();
-        cleanContext.InventoryTransactions.Should().BeEmpty();
-        cleanContext.Sales.Should().BeEmpty();
-        cleanContext.PurchaseRequests.Should().BeEmpty();
-        cleanContext.ApprovalWorkflows.Should().BeEmpty();
+        // Assert Roles & Users
+        context.Roles.Should().HaveCount(3);
+        context.Users.Should().HaveCount(3);
+        var admin = context.Users.FirstOrDefault(u => u.Email == "admin@erp.com");
+        admin.Should().NotBeNull();
+        admin!.PasswordHash.Should().StartWith("$2a$");
+
+        // Assert Suppliers & Products
+        context.Suppliers.Should().HaveCount(5);
+        context.Products.Should().HaveCount(7);
+        var criticalProducts = context.Products.Where(p => p.CurrentStock <= p.MinStockLevel).ToList();
+        criticalProducts.Should().NotBeEmpty();
+
+        // Assert Workflows, Requests, Sales & Notifications
+        context.ApprovalWorkflows.Should().NotBeEmpty();
+        context.PurchaseRequests.Should().HaveCount(4);
+        context.Sales.Should().HaveCount(3);
+        context.Notifications.Should().HaveCount(4);
     }
 
     [Fact]

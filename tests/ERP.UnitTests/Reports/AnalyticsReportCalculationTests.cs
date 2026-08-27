@@ -18,11 +18,29 @@ public class AnalyticsReportCalculationTests
         // Arrange
         using var context = TestDbContextFactory.CreateInMemoryDbContext();
 
-        var products = context.Products.Take(2).ToList();
-        var p1 = products[0];
-        var p2 = products[1];
+        var p1 = new Product
+        {
+            Id = Guid.NewGuid(),
+            Code = "TEST-ACT-001",
+            Name = "Aktif Satılan Ürün",
+            Unit = "Adet",
+            CurrentStock = 50,
+            UnitPrice = 100m,
+            IsActive = true
+        };
+        var p2 = new Product
+        {
+            Id = Guid.NewGuid(),
+            Code = "TEST-DEAD-001",
+            Name = "Hareketsiz Ürün",
+            Unit = "Adet",
+            CurrentStock = 20,
+            UnitPrice = 250m,
+            IsActive = true
+        };
+        context.Products.AddRange(p1, p2);
 
-        // Add a recent outbound movement for p1 (Today)
+        // Add a recent outbound movement for p1 (2 days ago)
         context.InventoryTransactions.Add(new InventoryTransaction
         {
             ProductId = p1.Id,
