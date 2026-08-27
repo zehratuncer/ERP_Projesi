@@ -1,4 +1,4 @@
-import { CartItem, PaymentMethod } from '../../core/models/pos.model';
+import { CartItem, PaymentMethod, PosProduct } from '../../core/models/pos.model';
 
 describe('POS Logic & Calculations', () => {
   function getSubTotal(cart: CartItem[]): number {
@@ -24,19 +24,45 @@ describe('POS Logic & Calculations', () => {
     return Math.max(0, (receivedAmount || 0) - final);
   }
 
+  const mockProduct1: PosProduct = {
+    id: '1',
+    code: 'KRT-001',
+    name: 'A4 Kağıt',
+    unit: 'Koli',
+    unitPrice: 780,
+    currentStock: 20,
+    minStockLevel: 5,
+    isLowStock: false,
+    isActive: true
+  };
+
+  const mockProduct2: PosProduct = {
+    id: '2',
+    code: 'KRT-003',
+    name: 'Defter',
+    unit: 'Adet',
+    unitPrice: 65,
+    currentStock: 50,
+    minStockLevel: 10,
+    isLowStock: false,
+    isActive: true
+  };
+
   it('should calculate gross subtotal correctly for multiple items', () => {
     const cart: CartItem[] = [
       {
-        product: { id: '1', code: 'KRT-001', name: 'A4 Kağıt', unit: 'Koli', unitPrice: 780, currentStock: 20 },
+        product: mockProduct1,
         quantity: 2,
         unitPrice: 780,
-        discountRate: 0
+        discountRate: 0,
+        totalPrice: 1560
       },
       {
-        product: { id: '2', code: 'KRT-003', name: 'Defter', unit: 'Adet', unitPrice: 65, currentStock: 50 },
+        product: mockProduct2,
         quantity: 4,
         unitPrice: 65,
-        discountRate: 0
+        discountRate: 0,
+        totalPrice: 260
       }
     ];
 
@@ -48,10 +74,11 @@ describe('POS Logic & Calculations', () => {
   it('should calculate item level and general discounts correctly', () => {
     const cart: CartItem[] = [
       {
-        product: { id: '1', code: 'KRT-001', name: 'A4 Kağıt', unit: 'Koli', unitPrice: 1000, currentStock: 10 },
+        product: { ...mockProduct1, unitPrice: 1000 },
         quantity: 1,
         unitPrice: 1000,
-        discountRate: 10 // %10 = 100 TL
+        discountRate: 10, // %10 = 100 TL
+        totalPrice: 900
       }
     ];
 
@@ -63,10 +90,11 @@ describe('POS Logic & Calculations', () => {
   it('should calculate cash change correctly', () => {
     const cart: CartItem[] = [
       {
-        product: { id: '1', code: 'KRT-001', name: 'A4 Kağıt', unit: 'Koli', unitPrice: 780, currentStock: 10 },
+        product: mockProduct1,
         quantity: 1,
         unitPrice: 780,
-        discountRate: 0
+        discountRate: 0,
+        totalPrice: 780
       }
     ];
 
@@ -78,10 +106,11 @@ describe('POS Logic & Calculations', () => {
   it('should return 0 change for non-cash payment methods', () => {
     const cart: CartItem[] = [
       {
-        product: { id: '1', code: 'KRT-001', name: 'A4 Kağıt', unit: 'Koli', unitPrice: 780, currentStock: 10 },
+        product: mockProduct1,
         quantity: 1,
         unitPrice: 780,
-        discountRate: 0
+        discountRate: 0,
+        totalPrice: 780
       }
     ];
 

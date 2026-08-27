@@ -219,13 +219,13 @@ Bu faz, ERP sisteminin tüm modüllerinin (Kimlik Doğrulama, Stok, POS Kasa, Sa
 ---
 
 ### 6.3. Uçtan Uca Senaryo & İş Akışı Testleri (E2E Workflow Scenarios)
-- [ ] **Senaryo 1: Tam Kasa Satış & Otomatik Stok Düşümü Akışı:**
+- [x] **Senaryo 1: Tam Kasa Satış & Otomatik Stok Düşümü Akışı:**
   - `Kasiyer (Employee)` ile giriş yap ➔ `/pos` sayfasına git ➔ Barkod okutarak 3 farklı kırtasiye ürününü sepete ekle ➔ `F2` ile tahsilat panelini aç ➔ Nakit ödeme tutarını gir ➔ Satışı onayla ➔ Fiş çıktısını al ➔ `/inventory` sayfasına git ve satılan ürünlerin stok miktarlarının tam olarak satılan adet kadar düştüğünü teyit et.
-- [ ] **Senaryo 2: Kritik Stok Alarmı & Satın Alma Talep Oluşturma Akışı:**
+- [x] **Senaryo 2: Kritik Stok Alarmı & Satın Alma Talep Oluşturma Akışı:**
   - Depodaki bir ürünün stoğunu kritik eşiğin (`MinStockLevel`) altına düşür ➔ Dashboard'da ve Bildirim Çanında kırmızı kritik stok uyarısının belirdiğini doğrula ➔ `/purchase-requests` sayfasına git ➔ `+ Yeni Talep Oluştur` modalını aç ➔ Kritik ürünü seçerek satın alma talebini onaya gönder (`PendingApproval`).
-- [ ] **Senaryo 3: Yönetici Onayı & Depoya Mal Kabul / Stok Artış Akışı:**
+- [x] **Senaryo 3: Yönetici Onayı & Depoya Mal Kabul / Stok Artış Akışı:**
   - `Yönetici (Manager/Admin)` ile giriş yap ➔ Satın Alma Talepleri `Onayımı Bekleyenler` sekmesine git ➔ Talebi incele ve onay notu girerek `Onayla` ➔ Talebin durumu `Approved` olsun ➔ `Depoya Mal Kabul Et` butonuna bas ➔ Mal kabul fişini onayla ➔ Ürünün mevcut stoğunun depoda otomatik olarak arttığını ve talebin `Completed` durumuna geçtiğini doğrula.
-- [ ] **Senaryo 4: Excel & PDF Kurumsal Belge Dışa Aktarım Akışı:**
+- [x] **Senaryo 4: Excel & PDF Kurumsal Belge Dışa Aktarım Akışı:**
   - Satın alma talebinin detayına git ➔ `Antetli PDF İndir` butonuna bas ➔ PDF belgesinin tarayıcıda önizlendiğini ve Türkçe karakterlerin düzgün basıldığını doğrula ➔ Raporlar sayfasına git ➔ `Excel İndir` butonuna bas ➔ İndirilen `.xlsx` dosyasında sayıların ve tarihlerin doğru hücre formatında açıldığını teyit et.
 
 ---
