@@ -4,17 +4,23 @@ Bu belge, **Kırtasiye & Ofis ERP** sisteminin tüm modüllerini, iş akışlar�
 
 ---
 
-## 🔐 1. Sisteme Giriş ve Kullanıcı Rolleri
+## 🔐 1. Sisteme Giriş, Roller ve Yetkilendirme (RBAC)
 
-Sistemde rol bazlı yetkilendirme (Role-Based Access Control) ve limit kurallı onay iş akışları mevcuttur. Test edebilmeniz için 3 farklı rol seviyesinde kullanıcı hazır olarak tanımlanmıştır:
+Sistemde gelişmiş **Rol Bazlı Erişim Kontrolü (Role-Based Access Control - RBAC)**, akıllı giriş yönlendirmesi ve limit kurallı onay iş akışları devrededir:
 
 > **🔑 Tüm kullanıcılar için varsayılan şifre:** `Admin123!`
 
-| Rol | E-Posta | Ad Soyad | Yetki ve Sorumluluk Alanı |
-| :--- | :--- | :--- | :--- |
-| 👑 **Admin** | `admin@erp.com` | Zehra Tuncer | **Tam Sistem Yöneticisi:** Tüm modüllere tam erişim, 10.000 TL üzeri satın alma taleplerini onaylama/reddetme, kullanıcı & sistem yönetimi. |
-| 👔 **Manager** | `manager@erp.com` | Ahmet Yılmaz | **Kırtasiye & Şube Müdürü:** Stok yönetimi, tedarikçi ilişkileri, 10.000 TL altı talepleri onaylama, satış ve analitik raporları inceleme. |
-| 🧑‍💼 **Employee** | `kasiyer@erp.com` | Elif Kaya | **Kasa & Satış Personeli:** Hızlı Kasa (POS) perakende satış, yeni satın alma talebi açma, stok hareketlerini izleme. |
+| Rol | E-Posta | Ad Soyad | Giriş Ekranı | Menü & Erişim Kapsamı |
+| :--- | :--- | :--- | :--- | :--- |
+| 👑 **Admin** | `admin@erp.com` | Zehra Tuncer | `/dashboard` | **Tam Sistem Yöneticisi:** Tüm menülere ve modüllere sınırsız erişim, 10.000 TL üzeri talepleri onaylama/reddetme. |
+| 👔 **Manager** | `manager@erp.com` | Ahmet Yılmaz | `/dashboard` | **Şube Müdürü:** Dashboard, Stok & Ürünler, Tedarikçiler, 10.000 TL altı onaylar ve Analitik/Raporlar. |
+| 🧑‍💼 **Employee** | `kasiyer@erp.com` | Elif Kaya | `/pos` *(Akıllı Giriş)* | **Kasa Personeli:** Yalnızca **Hızlı Kasa (POS)** ve **Bildirimler** menüsü. Yönetici sayfaları otomatik gizlenir ve kalkanla (403 / RoleGuard) korunur. |
+
+### 🛡️ Kasiyer Güvenlik ve İzolasyon Özellikleri:
+1. **Akıllı Yönlendirme:** Kasiyer (`kasiyer@erp.com`) giriş yaptığında doğrudan `/pos` sayfasına yönlendirilir.
+2. **Dinamik Sidebar:** Kasiyer oturumunda Dashboard, Stok, Tedarikçi, Satın Alma ve Raporlar menüleri arayüzden gizlenir.
+3. **Sayfa Güvenlik Kalkanı (`RoleGuard`):** Adres çubuğuna elle `/dashboard`, `/reports` veya `/inventory` yazılsa dahi sistem erişimi engeller ve `/pos` ekranına geri döndürür.
+4. **Backend API Koruması:** Kasiyer yetkisi dışındaki backend endpoint'leri `[Authorize(Roles = "...")]` filtresi ile **403 Forbidden** döndürerek güvenliği garanti altına alır.
 
 ---
 
