@@ -18,45 +18,46 @@
         }
       </a>
 
-      <div class="nav-section-title">ANA MENÜ</div>
-      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
-        <span class="nav-icon">📊</span>
-        <span class="nav-label">Dashboard</span>
-      </a>
+      <div class="nav-section-title">SATIŞ & KASA</div>
       <a routerLink="/pos" routerLinkActive="active" class="nav-link">
         <span class="nav-icon">🛒</span>
         <span class="nav-label">Hızlı Kasa (POS)</span>
       </a>
 
-      <div class="nav-section-title">YÖNETİM</div>
-      <a routerLink="/inventory" routerLinkActive="active" class="nav-link">
-        <span class="nav-icon">📦</span>
-        <span class="nav-label">Stok & Ürünler</span>
-      </a>
-      <a routerLink="/suppliers" routerLinkActive="active" class="nav-link">
-        <span class="nav-icon">🚚</span>
-        <span class="nav-label">Tedarikçiler</span>
-      </a>
+      @if (authService.isManagerOrAdmin()) {
+        <div class="nav-section-title">YÖNETİCİ PANELİ</div>
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Dashboard</span>
+        </a>
 
-      <div class="nav-section-title">SATIN ALMA & TEDARİK</div>
-      <a routerLink="/purchase-requests" routerLinkActive="active" class="nav-link">
-        <span class="nav-icon">📑</span>
-        <span class="nav-label">Satın Alma Talepleri</span>
-      </a>
+        <div class="nav-section-title">ENVANTER & TEDARİK</div>
+        <a routerLink="/inventory" routerLinkActive="active" class="nav-link">
+          <span class="nav-icon">📦</span>
+          <span class="nav-label">Stok & Ürünler</span>
+        </a>
+        <a routerLink="/suppliers" routerLinkActive="active" class="nav-link">
+          <span class="nav-icon">🚚</span>
+          <span class="nav-label">Tedarikçiler</span>
+        </a>
+        <a routerLink="/purchase-requests" routerLinkActive="active" class="nav-link">
+          <span class="nav-icon">📑</span>
+          <span class="nav-label">Satın Alma Talepleri</span>
+        </a>
 
-      <div class="nav-section-title">ANALİTİK & RAPORLAR</div>
-      <a routerLink="/reports" routerLinkActive="active" class="nav-link">
-        <span class="nav-icon">📈</span>
-        <span class="nav-label">Raporlar & Analitik</span>
-      </a>
+        <div class="nav-section-title">ANALİTİK & RAPORLAR</div>
+        <a routerLink="/reports" routerLinkActive="active" class="nav-link">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">Raporlar & Analitik</span>
+        </a>
 
-      <div class="nav-section-title">GELECEK FAZLAR</div>
-
-      <a class="nav-link disabled" title="v3 ile eklenecek">
-        <span class="nav-icon">🤖</span>
-        <span class="nav-label">AI Copilot (v3)</span>
-        <span class="badge badge-warning">AI</span>
-      </a>
+        <div class="nav-section-title">GELECEK FAZLAR</div>
+        <a class="nav-link disabled" title="v3 ile eklenecek">
+          <span class="nav-icon">🤖</span>
+          <span class="nav-label">AI Copilot (v3)</span>
+          <span class="badge badge-warning">AI</span>
+        </a>
+      }
     </nav>
 
     <div class="sidebar-footer">

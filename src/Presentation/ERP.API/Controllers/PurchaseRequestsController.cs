@@ -9,6 +9,7 @@ using ERP.Application.Features.PurchaseRequests.DTOs;
 using ERP.Application.Features.PurchaseRequests.Queries.GetApprovalHistory;
 using ERP.Application.Features.PurchaseRequests.Queries.GetPurchaseRequestById;
 using ERP.Application.Features.PurchaseRequests.Queries.GetPurchaseRequests;
+using ERP.Domain.Constants;
 using ERP.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -96,6 +97,7 @@ public class PurchaseRequestsController : BaseApiController
     /// Satın alma talebini onaylar (Limit bazlı çok kademeli onay motoru).
     /// </summary>
     [HttpPost("{id:guid}/approve")]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Manager}")]
     [ProducesResponseType(typeof(ApiResponse<PurchaseRequestDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -109,6 +111,7 @@ public class PurchaseRequestsController : BaseApiController
     /// Satın alma talebini reddeder (Gerekçe belirtilmesi zorunludur).
     /// </summary>
     [HttpPost("{id:guid}/reject")]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Manager}")]
     [ProducesResponseType(typeof(ApiResponse<PurchaseRequestDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -134,6 +137,7 @@ public class PurchaseRequestsController : BaseApiController
     /// Onaylanmış satın alma talebini tek tıkla depoya mal kabul / stok girişine dönüştürür.
     /// </summary>
     [HttpPost("{id:guid}/convert-to-inventory")]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Manager}")]
     [ProducesResponseType(typeof(ApiResponse<PurchaseRequestDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

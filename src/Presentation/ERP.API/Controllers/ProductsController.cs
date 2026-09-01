@@ -9,9 +9,11 @@ using ERP.Application.Features.Products.Queries.GetProducts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using ERP.Domain.Constants;
+
 namespace ERP.API.Controllers;
 
-[Authorize]
+[Authorize(Roles = $"{Roles.Admin},{Roles.Manager},{Roles.Employee}")]
 public class ProductsController : BaseApiController
 {
     /// <summary>
@@ -52,6 +54,7 @@ public class ProductsController : BaseApiController
     /// Yeni ürün ekler.
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Manager}")]
     [ProducesResponseType(typeof(ApiResponse<ProductDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
@@ -64,6 +67,7 @@ public class ProductsController : BaseApiController
     /// Mevcut ürünü günceller.
     /// </summary>
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Manager}")]
     [ProducesResponseType(typeof(ApiResponse<ProductDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] UpdateProductCommand command)
@@ -81,6 +85,7 @@ public class ProductsController : BaseApiController
     /// Ürünü siler (Soft-delete).
     /// </summary>
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Manager}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteProduct(Guid id)

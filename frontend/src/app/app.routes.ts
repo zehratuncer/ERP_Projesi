@@ -8,7 +8,7 @@ import { PosComponent } from './features/pos/pos.component';
 import { PurchaseRequestsComponent } from './features/purchase-requests/purchase-requests.component';
 import { ReportsComponent } from './features/reports/reports.component';
 import { NotificationsComponent } from './features/notifications/notifications.component';
-import { authGuard } from './core/guards/auth.guard';
+import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -21,13 +21,48 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'pos', component: PosComponent },
-      { path: 'purchase-requests', component: PurchaseRequestsComponent },
-      { path: 'reports', component: ReportsComponent },
-      { path: 'notifications', component: NotificationsComponent },
-      { path: 'inventory', component: InventoryListComponent },
-      { path: 'suppliers', component: SupplierListComponent }
+      { 
+        path: 'dashboard', 
+        component: DashboardComponent, 
+        canActivate: [roleGuard], 
+        data: { roles: ['Admin', 'Manager'] } 
+      },
+      { 
+        path: 'pos', 
+        component: PosComponent, 
+        canActivate: [roleGuard], 
+        data: { roles: ['Admin', 'Manager', 'Employee'] } 
+      },
+      { 
+        path: 'inventory', 
+        component: InventoryListComponent, 
+        canActivate: [roleGuard], 
+        data: { roles: ['Admin', 'Manager'] } 
+      },
+      { 
+        path: 'suppliers', 
+        component: SupplierListComponent, 
+        canActivate: [roleGuard], 
+        data: { roles: ['Admin', 'Manager'] } 
+      },
+      { 
+        path: 'purchase-requests', 
+        component: PurchaseRequestsComponent, 
+        canActivate: [roleGuard], 
+        data: { roles: ['Admin', 'Manager'] } 
+      },
+      { 
+        path: 'reports', 
+        component: ReportsComponent, 
+        canActivate: [roleGuard], 
+        data: { roles: ['Admin', 'Manager'] } 
+      },
+      { 
+        path: 'notifications', 
+        component: NotificationsComponent, 
+        canActivate: [roleGuard], 
+        data: { roles: ['Admin', 'Manager', 'Employee'] } 
+      }
     ]
   },
 

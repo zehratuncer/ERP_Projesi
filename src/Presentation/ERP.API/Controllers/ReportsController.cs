@@ -8,9 +8,11 @@ using ERP.Application.Features.Reports.Queries.GetSupplierPerformance;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using ERP.Domain.Constants;
+
 namespace ERP.API.Controllers;
 
-[Authorize]
+[Authorize(Roles = $"{Roles.Admin},{Roles.Manager}")]
 [Route("api/reports")]
 public class ReportsController : BaseApiController
 {

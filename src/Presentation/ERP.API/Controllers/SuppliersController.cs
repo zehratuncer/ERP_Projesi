@@ -10,9 +10,11 @@ using ERP.Application.Features.Suppliers.Queries.GetSuppliers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using ERP.Domain.Constants;
+
 namespace ERP.API.Controllers;
 
-[Authorize]
+[Authorize(Roles = $"{Roles.Admin},{Roles.Manager}")]
 public class SuppliersController : BaseApiController
 {
     /// <summary>

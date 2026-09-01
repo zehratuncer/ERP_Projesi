@@ -1,4 +1,4 @@
-describe('Auth Guards (authGuard & roleGuard)', () => {
+describe('Auth & Role Guards', () => {
   function executeAuthGuard(isAuthenticated: boolean, url: string = '/inventory') {
     const routerMock = { navigate: vi.fn() };
     const authServiceMock = { isAuthenticated: () => isAuthenticated };
@@ -7,7 +7,7 @@ describe('Auth Guards (authGuard & roleGuard)', () => {
     if (authServiceMock.isAuthenticated()) {
       canActivate = true;
     } else {
-      if (url && url !== '/' && url !== '/dashboard') {
+      if (url && url !== '/' && url !== '/dashboard' && url !== '/pos') {
         routerMock.navigate(['/auth/login'], { queryParams: { returnUrl: url } });
       } else {
         routerMock.navigate(['/auth/login']);
@@ -20,17 +20,23 @@ describe('Auth Guards (authGuard & roleGuard)', () => {
 
   function executeRoleGuard(userRole: string | null, allowedRoles: string[]) {
     const routerMock = { navigate: vi.fn() };
+    const toastMock = { warning: vi.fn() };
     const user = userRole ? { role: userRole } : null;
 
+    const getDefaultRouteForRole = () => (userRole === 'Employee' ? '/pos' : '/dashboard');
+
     let canActivate = false;
-    if (user && allowedRoles.includes(user.role)) {
+    if (!allowedRoles || allowedRoles.length === 0) {
+      canActivate = true;
+    } else if (user && allowedRoles.includes(user.role)) {
       canActivate = true;
     } else {
-      routerMock.navigate(['/dashboard']);
+      toastMock.warning('Bu sayfaya erişim yetkiniz bulunmamaktadır.');
+      routerMock.navigate([getDefaultRouteForRole()]);
       canActivate = false;
     }
 
-    return { canActivate, routerMock };
+    return { canActivate, routerMock, toastMock };
   }
 
   describe('authGuard', () => {
@@ -54,8 +60,21 @@ describe('Auth Guards (authGuard & roleGuard)', () => {
       expect(routerMock.navigate).not.toHaveBeenCalled();
     });
 
-    it('should redirect to /dashboard when user role is not allowed', () => {
-      const { canActivate, routerMock } = executeRoleGuard('Employee', ['Admin', 'Manager']);
+    it('should allow employee access to POS and notifications', () => {
+      const { canActivate, routerMock } = executeRoleGuard('Employee', ['Admin', 'Manager', 'Employee']);
+      expect(canActivate).toBe(true);
+      expect(routerMock.navigate).not.toHaveBeenCalled();
+    });
+
+    it('should redirect Employee to /pos and show warning when trying to access managerial pages', () => {
+      const { canActivate, routerMock, toastMock } = executeRoleGuard('Employee', ['Admin', 'Manager']);
+      expect(canActivate).toBe(false);
+      expect(routerMock.navigate).toHaveBeenCalledWith(['/pos']);
+      expect(toastMock.warning).toHaveBeenCalledWith('Bu sayfaya erişim yetkiniz bulunmamaktadır.');
+    });
+
+    it('should redirect to /dashboard when non-manager user is unauthorized and not an Employee', () => {
+      const { canActivate, routerMock } = executeRoleGuard('Guest', ['Admin', 'Manager']);
       expect(canActivate).toBe(false);
       expect(routerMock.navigate).toHaveBeenCalledWith(['/dashboard']);
     });

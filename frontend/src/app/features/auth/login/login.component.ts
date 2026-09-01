@@ -46,7 +46,11 @@ export class LoginComponent {
         this.isLoading = false;
         if (response.isSuccess) {
           this.toastService.success(`Hoş geldiniz, ${response.data.user.fullName}!`);
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+          const defaultRoute = this.authService.getDefaultRouteForRole();
+          const queryReturnUrl = this.route.snapshot.queryParams['returnUrl'];
+          const returnUrl = (queryReturnUrl && queryReturnUrl !== '/' && queryReturnUrl !== '/dashboard') 
+            ? queryReturnUrl 
+            : defaultRoute;
           this.router.navigateByUrl(returnUrl);
         } else {
           this.errorMessage = response.message || 'Giriş başarısız.';

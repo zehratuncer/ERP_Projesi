@@ -4,9 +4,11 @@ using ERP.Application.Features.Dashboard.Queries.GetDashboardSummary;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using ERP.Domain.Constants;
+
 namespace ERP.API.Controllers;
 
-[Authorize]
+[Authorize(Roles = $"{Roles.Admin},{Roles.Manager}")]
 public class DashboardController : BaseApiController
 {
     /// <summary>

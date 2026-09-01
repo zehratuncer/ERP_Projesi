@@ -19,7 +19,23 @@ export class AuthService {
 
   isAuthenticated = computed(() => !!this.token());
   isAdmin = computed(() => this.currentUser()?.role === 'Admin');
-  isManager = computed(() => this.currentUser()?.role === 'Manager' || this.currentUser()?.role === 'Admin');
+  isManager = computed(() => this.currentUser()?.role === 'Manager');
+  isEmployee = computed(() => this.currentUser()?.role === 'Employee');
+  isManagerOrAdmin = computed(() => this.currentUser()?.role === 'Manager' || this.currentUser()?.role === 'Admin');
+
+  hasRole(allowedRoles: string[]): boolean {
+    const userRole = this.currentUser()?.role;
+    if (!userRole) return false;
+    return allowedRoles.includes(userRole);
+  }
+
+  getDefaultRouteForRole(): string {
+    const userRole = this.currentUser()?.role;
+    if (userRole === 'Employee') {
+      return '/pos';
+    }
+    return '/dashboard';
+  }
 
   constructor(private http: HttpClient, private router: Router) {
     // Sayfa ilk yüklendiğinde token varsa arka planda profil güncelle
